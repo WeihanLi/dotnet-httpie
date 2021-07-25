@@ -1,0 +1,12 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+
+    <RepositoryType>git</RepositoryType>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <RepositoryUrl>https://github.com/WeihanLi/dotnet-httpie</RepositoryUrl>
+    <Authors>WeihanLi</Authors>
+    <Copyright>Copyright 2021 (c) WeihanLi</Copyright>
+  </PropertyGroup>
+</Project>
