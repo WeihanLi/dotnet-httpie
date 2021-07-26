@@ -16,7 +16,8 @@ namespace HTTPie.Middleware
 
         public async Task Invoke(HttpRequestModel model, Func<Task> next)
         {
-            if (model.Url.StartsWith(':')) model.Url = $"http://localhost{model.Url}";
+            if (model.Url.StartsWith(":/")) model.Url = $"localhost{model.Url[1..]}";
+            if (model.Url.StartsWith(':')) model.Url = $"localhost{model.Url}";
             if (!model.Url.StartsWith("http") && !model.Url.StartsWith("https"))
                 model.Url = $"{model.Schema}://{model.Url}";
             model.Headers.TryAdd("User-Agent", Constants.DefaultUserAgent);
