@@ -4,7 +4,12 @@
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-
+    <PackageId>HTTPie</PackageId>
+    <Title>HTTPie</Title>
+    <Description>dotnet httpie</Description>
+    <PackageTags>HTTPie http https curl rest</PackageTags>
+    <PackageIconUrl>https://avatars3.githubusercontent.com/u/7604648</PackageIconUrl>    
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <RepositoryUrl>https://github.com/WeihanLi/dotnet-httpie</RepositoryUrl>
