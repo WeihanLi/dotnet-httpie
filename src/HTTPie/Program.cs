@@ -38,11 +38,12 @@ await using var services = new ServiceCollection()
             pipelineBuilder.Use(middleware.Invoke);
         return pipelineBuilder.Build();
     })
+    .AddSingleton<HttpRequestModel>()
     .BuildServiceProvider();
-if (args is not { Length: > 0 } || args.Contains("-h") || args.Contains("--help"))
+if (args is not {Length: > 0} || args.Contains("-h") || args.Contains("--help"))
 {
     // Print Help
-    var helpText = ParseHelper.GetHelpText(services);
+    var helpText = Helpers.GetHelpText(services);
     Console.WriteLine(helpText);
     return 0;
 }
@@ -52,7 +53,8 @@ var logger = services.GetRequiredService<ILoggerFactory>()
 logger.LogDebug($"Input parameters: {args.StringJoin(";")}");
 try
 {
-    var requestModel = ParseHelper.GetRequestModel(args);
+    var requestModel = services.GetRequiredService<HttpRequestModel>();
+    Helpers.InitRequestModel(requestModel, args);
     logger.LogDebug("requestModel:{requestModel}", requestModel.ToJson());
     var responseModel = await services.GetRequiredService<IRequestExecutor>()
         .ExecuteAsync(requestModel);

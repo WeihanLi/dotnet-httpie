@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace HTTPie.Utilities
 {
-    public static class ParseHelper
+    public static class Helpers
     {
         private static readonly HashSet<string> HttpMethods = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -53,12 +53,9 @@ namespace HTTPie.Utilities
             return helpTextBuilder.ToString();
         }
 
-        public static HttpRequestModel GetRequestModel(string[] args)
+        public static void InitRequestModel(HttpRequestModel requestModel, string[] args)
         {
-            var requestModel = new HttpRequestModel
-            {
-                RawInput = args
-            };
+            requestModel.RawInput = args;
             try
             {
                 requestModel.RawConfiguration = new ConfigurationBuilder()
@@ -80,7 +77,6 @@ namespace HTTPie.Utilities
 #if DEBUG
             if (string.IsNullOrEmpty(requestModel.Url)) requestModel.Url = "https://reservation.weihanli.xyz/health";
 #endif
-            return requestModel;
         }
     }
 }

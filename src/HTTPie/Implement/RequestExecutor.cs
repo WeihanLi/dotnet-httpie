@@ -39,7 +39,10 @@ namespace HTTPie.Implement
 
         public async Task<HttpResponseModel> ExecuteAsync(HttpRequestModel requestModel)
         {
-            using var httpClientHandler = new HttpClientHandler();
+            using var httpClientHandler = new HttpClientHandler()
+            {
+                AllowAutoRedirect = false
+            };
             await _httpHandlerPipeline(httpClientHandler);
             await _requestPipeline(requestModel);
             using var requestMessage = await _requestMapper.ToRequestMessage(requestModel);

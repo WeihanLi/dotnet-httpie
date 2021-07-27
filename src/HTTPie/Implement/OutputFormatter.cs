@@ -13,28 +13,29 @@ namespace HTTPie.Implement
     {
         private readonly Dictionary<string, string> _supportedFormat = new()
         {
-            {"--header", "output response headers only"},
+            {"--headers", "output response headers only"},
             {"--body", "output response headers and response body"},
             {"--bodyOnly", "output response body only"},
             {"--full", "output request/response, response headers and response body"}
         };
 
-        public Dictionary<string, string> SupportedParameters()
-        {
-            return _supportedFormat;
-        }
+        public Dictionary<string, string> SupportedParameters() => _supportedFormat;
 
         public string GetOutput(HttpRequestModel requestModel, HttpResponseModel responseModel)
         {
-            var outputFormat = OutputFormat.ResponseStatus | OutputFormat.ResponseHeaders;
+            var outputFormat = OutputFormat.ResponseStatus | OutputFormat.ResponseHeaders | OutputFormat.ResponseBody;
             if (requestModel.RawInput.Contains("--full"))
             {
-                outputFormat |= OutputFormat.RequestStatus;
-                outputFormat |= OutputFormat.RequestHeaders;
-                outputFormat |= OutputFormat.RequestBody;
-                outputFormat |= OutputFormat.ResponseBody;
+                outputFormat = Enum.GetValues(typeof(OutputFormat)).Cast<OutputFormat>().Aggregate(outputFormat, (current, format) => current | format);
             }
-            if (requestModel.RawInput.Contains("--bodyOnly")) outputFormat = OutputFormat.ResponseBody;
+            else if (requestModel.RawInput.Contains("--bodyOnly"))
+            {
+                outputFormat = OutputFormat.ResponseBody;
+            }
+            else if (requestModel.RawInput.Contains("--headers"))
+            {
+                outputFormat = OutputFormat.ResponseStatus | OutputFormat.ResponseHeaders;
+            }
 
             var output = new StringBuilder();
             output.AppendLineIf(GetRequestVersionAndStatus(requestModel),
