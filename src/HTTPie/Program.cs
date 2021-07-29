@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;
 using HTTPie.Abstractions;
+using HTTPie.Implement;
+using HTTPie.Middleware;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,9 +12,12 @@ using WeihanLi.Common.Helpers;
 using WeihanLi.Extensions;
 
 var debugEnabled = args.Contains("--debug", StringComparer.OrdinalIgnoreCase);
-await using var services = new ServiceCollection()
+var serviceCollection = new ServiceCollection()
     .AddLogging(builder => builder.AddConsole().SetMinimumLevel(debugEnabled ? LogLevel.Debug : LogLevel.Warning))
-    .RegisterAssemblyTypesAsImplementedInterfaces(Assembly.GetExecutingAssembly())
+    .AddSingleton<IRequestExecutor, RequestExecutor>()
+    .AddSingleton<IRequestMapper, RequestMapper>()
+    .AddSingleton<IResponseMapper, ResponseMapper>()
+    .AddSingleton<IOutputFormatter, OutputFormatter>()
     .AddSingleton(sp =>
     {
         var pipelineBuilder = PipelineBuilder.CreateAsync<HttpRequestModel>();
@@ -39,7 +43,17 @@ await using var services = new ServiceCollection()
         return pipelineBuilder.Build();
     })
     .AddSingleton<HttpRequestModel>()
-    .BuildServiceProvider();
+    .AddSingleton<ILogger>(sp => sp.GetRequiredService<ILoggerFactory>().CreateLogger("dotnet-HTTPie"));
+
+// HttpHandlerMiddleware
+serviceCollection.AddHttpHandlerMiddleware<FollowRedirectMiddleware>();
+// RequestMiddleware
+serviceCollection.AddRequestMiddleware<QueryStringMiddleware>();
+serviceCollection.AddRequestMiddleware<RequestHeadersMiddleware>();
+serviceCollection.AddRequestMiddleware<DefaultRequestMiddleware>();
+// ResponseMiddleware
+serviceCollection.AddResponseMiddleware<DefaultResponseMiddleware>();
+await using var services = serviceCollection.BuildServiceProvider();
 if (args is not {Length: > 0} || args.Contains("-h") || args.Contains("--help"))
 {
     // Print Help
@@ -48,14 +62,12 @@ if (args is not {Length: > 0} || args.Contains("-h") || args.Contains("--help"))
     return 0;
 }
 
-var logger = services.GetRequiredService<ILoggerFactory>()
-    .CreateLogger("dotnet-HTTPie");
+var logger = services.GetRequiredService<ILogger>();
 logger.LogDebug($"Input parameters: {args.StringJoin(";")}");
 try
 {
     var requestModel = services.GetRequiredService<HttpRequestModel>();
     Helpers.InitRequestModel(requestModel, args);
-    logger.LogDebug("requestModel:{requestModel}", requestModel.ToJson());
     var responseModel = await services.GetRequiredService<IRequestExecutor>()
         .ExecuteAsync(requestModel);
     var output = services.GetRequiredService<IOutputFormatter>()

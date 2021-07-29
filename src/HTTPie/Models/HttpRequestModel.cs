@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Net.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Primitives;
 
 namespace HTTPie.Models
@@ -22,6 +21,5 @@ namespace HTTPie.Models
         public string? Body { get; set; }
 
         public string[] RawInput { get; set; } = Array.Empty<string>();
-        public IConfiguration RawConfiguration { get; set; } = null!;
     }
 }

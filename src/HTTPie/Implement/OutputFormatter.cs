@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using HTTPie.Abstractions;
 using HTTPie.Models;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using WeihanLi.Extensions;
 
@@ -11,31 +12,38 @@ namespace HTTPie.Implement
 {
     public class OutputFormatter : IOutputFormatter
     {
+        private readonly ILogger _logger;
+
         private readonly Dictionary<string, string> _supportedFormat = new()
         {
             {"--headers", "output response headers only"},
             {"--body", "output response headers and response body"},
             {"--bodyOnly", "output response body only"},
-            {"--full", "output request/response, response headers and response body"}
+            {"--full", "output request/response, response headers and response body"},
+            {"--offline", "offline mode"}
         };
 
-        public Dictionary<string, string> SupportedParameters() => _supportedFormat;
+        public OutputFormatter(ILogger logger)
+        {
+            _logger = logger;
+        }
+
+        public Dictionary<string, string> SupportedParameters()
+        {
+            return _supportedFormat;
+        }
 
         public string GetOutput(HttpRequestModel requestModel, HttpResponseModel responseModel)
         {
-            var outputFormat = OutputFormat.ResponseStatus | OutputFormat.ResponseHeaders | OutputFormat.ResponseBody;
-            if (requestModel.RawInput.Contains("--full"))
-            {
-                outputFormat = Enum.GetValues(typeof(OutputFormat)).Cast<OutputFormat>().Aggregate(outputFormat, (current, format) => current | format);
-            }
+            var outputFormat = OutputFormat.ResponseInfo;
+            if (requestModel.RawInput.Contains("--offline"))
+                outputFormat = OutputFormat.RequestInfo;
+            else if (requestModel.RawInput.Contains("--full"))
+                outputFormat = OutputFormat.ResponseInfo | OutputFormat.RequestInfo;
             else if (requestModel.RawInput.Contains("--bodyOnly"))
-            {
                 outputFormat = OutputFormat.ResponseBody;
-            }
             else if (requestModel.RawInput.Contains("--headers"))
-            {
                 outputFormat = OutputFormat.ResponseStatus | OutputFormat.ResponseHeaders;
-            }
 
             var output = new StringBuilder();
             output.AppendLineIf(GetRequestVersionAndStatus(requestModel),
@@ -47,7 +55,8 @@ namespace HTTPie.Implement
                 output.AppendLineIf(string.Empty, output.Length > 0);
                 output.AppendLine(requestModel.Body);
             }
-            output.AppendLineIf(string.Empty, output.Length > 0);
+
+            output.AppendLineIf(string.Empty, output.Length > 0 && (outputFormat & OutputFormat.ResponseInfo) != 0);
 
             var requestLength = output.Length;
             output.AppendLineIf(GetResponseVersionAndStatus(responseModel),
@@ -63,11 +72,12 @@ namespace HTTPie.Implement
             return output.ToString();
         }
 
-        private static string GetRequestVersionAndStatus(HttpRequestModel requestModel)
+        private string GetRequestVersionAndStatus(HttpRequestModel requestModel)
         {
+            _logger.LogDebug($"RequestUrl: {requestModel.Url}");
             var uri = new Uri(requestModel.Url);
             return
-                $@"{requestModel.Method.Method.ToUpper()} {requestModel.Url} HTTP/{requestModel.HttpVersion.ToString(2)}
+                $@"{requestModel.Method.Method.ToUpper()} {uri.PathAndQuery} HTTP/{requestModel.HttpVersion.ToString(2)}
 Host: {uri.Host}
 Schema: {uri.Scheme}";
         }

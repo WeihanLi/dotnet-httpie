@@ -12,10 +12,10 @@ namespace HTTPie.Middleware
         public Task Invoke(HttpRequestModel model, Func<Task> next)
         {
             foreach (var input in model.RawInput
-                .Where(x => x.IndexOf(':') > 0 
-                            && !x.StartsWith("http://", StringComparison.Ordinal) 
-                            && !x.StartsWith("https://", StringComparison.Ordinal) 
-                            && x.IndexOf(":=", StringComparison.OrdinalIgnoreCase)<0))
+                .Where(x => x.IndexOf(':') > 0
+                            && !x.StartsWith("http://", StringComparison.Ordinal)
+                            && !x.StartsWith("https://", StringComparison.Ordinal)
+                            && x.IndexOf(":=", StringComparison.OrdinalIgnoreCase) < 0))
             {
                 var arr = input.Split(':');
                 if (arr.Length == 2)
@@ -26,6 +26,7 @@ namespace HTTPie.Middleware
                         model.Headers[arr[0]] = arr[1];
                 }
             }
+
             return next();
         }
     }

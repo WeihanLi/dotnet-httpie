@@ -1,11 +1,9 @@
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using HTTPie.Abstractions;
 using HTTPie.Models;
 using WeihanLi.Common.Helpers;
-using WeihanLi.Extensions;
 
 namespace HTTPie.Implement
 {
@@ -13,15 +11,7 @@ namespace HTTPie.Implement
     {
         public Task<HttpRequestMessage> ToRequestMessage(HttpRequestModel requestModel)
         {
-            var url = requestModel.Url;
-            if (requestModel.Query.Count > 0)
-            {
-                url += url.LastIndexOf('?') > 0 ? "&" : "?";
-                url += requestModel.Query.Select(x => x.Value.Select(v => $"{x.Key}={v}").StringJoin("&"))
-                    .StringJoin("&");
-            }
-            requestModel.Url = url;
-            var request = new HttpRequestMessage(requestModel.Method, url);
+            var request = new HttpRequestMessage(requestModel.Method, requestModel.Url);
             if (requestModel.Headers is {Count: > 0})
                 foreach (var header in requestModel.Headers)
                     if (HttpHelper.IsWellKnownContentHeader(header.Key))

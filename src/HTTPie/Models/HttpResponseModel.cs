@@ -7,9 +7,9 @@ namespace HTTPie.Models
 {
     public class HttpResponseModel
     {
-        public Version HttpVersion { get; set; } = null!;
+        public Version HttpVersion { get; set; } = new(1, 1);
         public HttpStatusCode StatusCode { get; set; }
-        public Dictionary<string, StringValues> Headers { get; set; } = null!;
+        public Dictionary<string, StringValues> Headers { get; set; } = new();
         public string? Body { get; set; }
     }
 }

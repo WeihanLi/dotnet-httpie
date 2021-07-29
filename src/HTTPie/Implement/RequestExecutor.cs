@@ -1,22 +1,25 @@
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using HTTPie.Abstractions;
 using HTTPie.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using WeihanLi.Common.Http;
+using WeihanLi.Extensions;
 
 namespace HTTPie.Implement
 {
     public class RequestExecutor : IRequestExecutor
     {
         private readonly Func<HttpClientHandler, Task> _httpHandlerPipeline;
+        private readonly ILogger _logger;
         private readonly IRequestMapper _requestMapper;
         private readonly Func<HttpRequestModel, Task> _requestPipeline;
         private readonly IResponseMapper _responseMapper;
         private readonly Func<HttpContext, Task> _responsePipeline;
         private readonly IServiceProvider _serviceProvider;
-        private readonly ILogger<RequestExecutor> _logger;
 
         public RequestExecutor(
             IRequestMapper requestMapper,
@@ -25,7 +28,7 @@ namespace HTTPie.Implement
             Func<HttpRequestModel, Task> requestPipeline,
             Func<HttpContext, Task> responsePipeline,
             IServiceProvider serviceProvider,
-            ILogger<RequestExecutor> logger
+            ILogger logger
         )
         {
             _requestMapper = requestMapper;
@@ -39,17 +42,30 @@ namespace HTTPie.Implement
 
         public async Task<HttpResponseModel> ExecuteAsync(HttpRequestModel requestModel)
         {
-            using var httpClientHandler = new HttpClientHandler()
+            await _requestPipeline(requestModel);
+            _logger.LogDebug($"Request message: {requestModel.ToJson()}");
+            if (requestModel.RawInput.Contains("--offline"))
+            {
+                _logger.LogDebug("Request should be offline, wont send request");
+                return new HttpResponseModel();
+            }
+
+            using var requestMessage = await _requestMapper.ToRequestMessage(requestModel);
+            using var httpClientHandler = new NoProxyHttpClientHandler
             {
                 AllowAutoRedirect = false
             };
             await _httpHandlerPipeline(httpClientHandler);
-            await _requestPipeline(requestModel);
-            using var requestMessage = await _requestMapper.ToRequestMessage(requestModel);
-            _logger.LogDebug($"Request message: {requestMessage.Method.Method.ToUpper()} {requestMessage.RequestUri.AbsoluteUri} HTTP/{requestMessage.Version.ToString(2)}");
             using var httpClient = new HttpClient(httpClientHandler);
+            var timeoutConfig =
+                requestModel.RawInput.FirstOrDefault(x => x.StartsWith("--timeout="))?["--timeout=".Length..];
+            if (int.TryParse(timeoutConfig, out var timeout) && timeout > 0)
+                httpClient.Timeout = TimeSpan.FromSeconds(timeout);
+            _logger.LogDebug(
+                $"Request message: {requestMessage.Method.Method.ToUpper()} {requestMessage.RequestUri.AbsoluteUri} HTTP/{requestMessage.Version.ToString(2)}");
             using var responseMessage = await httpClient.SendAsync(requestMessage);
-            _logger.LogDebug($"Response message: HTTP/{responseMessage.Version.ToString(2)} {(int)responseMessage.StatusCode} {responseMessage.StatusCode}");
+            _logger.LogDebug(
+                $"Response message: HTTP/{responseMessage.Version.ToString(2)} {(int) responseMessage.StatusCode} {responseMessage.StatusCode}");
             var responseModel = await _responseMapper.ToResponseModel(responseMessage);
             using var scope = _serviceProvider.CreateScope();
             var context = new HttpContext(requestModel, responseModel, scope.ServiceProvider);

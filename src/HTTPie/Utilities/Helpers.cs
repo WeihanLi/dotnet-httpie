@@ -5,8 +5,8 @@ using System.Net.Http;
 using System.Text;
 using HTTPie.Abstractions;
 using HTTPie.Models;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace HTTPie.Utilities
 {
@@ -50,33 +50,65 @@ namespace HTTPie.Utilities
                 helpTextBuilder.AppendLine($"{parameter.Key}\t\t{parameter.Value}");
             foreach (var parameter in serviceProvider.GetRequiredService<IOutputFormatter>().SupportedParameters())
                 helpTextBuilder.AppendLine($"{parameter.Key}\t\t{parameter.Value}");
+
+            helpTextBuilder.AppendLine("Usage examples:");
+            foreach (var example in UsageExamples) helpTextBuilder.AppendLine(example);
             return helpTextBuilder.ToString();
+        }
+
+        public static IServiceCollection AddHttpHandlerMiddleware<THttpHandlerMiddleware>(
+            this IServiceCollection serviceCollection)
+            where THttpHandlerMiddleware : IHttpHandlerMiddleware
+        {
+            serviceCollection.TryAddEnumerable(new ServiceDescriptor(typeof(IHttpHandlerMiddleware),
+                typeof(THttpHandlerMiddleware), ServiceLifetime.Singleton));
+            return serviceCollection;
+        }
+
+
+        public static IServiceCollection AddRequestMiddleware<TRequestMiddleware>(
+            this IServiceCollection serviceCollection)
+            where TRequestMiddleware : IRequestMiddleware
+        {
+            serviceCollection.TryAddEnumerable(new ServiceDescriptor(typeof(IRequestMiddleware),
+                typeof(TRequestMiddleware), ServiceLifetime.Singleton));
+            return serviceCollection;
+        }
+
+
+        public static IServiceCollection AddResponseMiddleware<TResponseMiddleware>(
+            this IServiceCollection serviceCollection)
+            where TResponseMiddleware : IResponseMiddleware
+        {
+            serviceCollection.TryAddEnumerable(new ServiceDescriptor(typeof(IResponseMiddleware),
+                typeof(TResponseMiddleware), ServiceLifetime.Singleton));
+            return serviceCollection;
         }
 
         public static void InitRequestModel(HttpRequestModel requestModel, string[] args)
         {
             requestModel.RawInput = args;
-            try
-            {
-                requestModel.RawConfiguration = new ConfigurationBuilder()
-                    .AddCommandLine(args)
-                    .Build();
-            }
-            catch (Exception e)
-            {
-                Console.Error.WriteLine(e);
-                requestModel.RawConfiguration = new ConfigurationBuilder().Build();
-            }
-
             var method = args.FirstOrDefault(x => HttpMethods.Contains(x));
             if (!string.IsNullOrEmpty(method)) requestModel.Method = new HttpMethod(method);
             // Url
             requestModel.Url =
                 args.FirstOrDefault(x => !x.StartsWith("-", StringComparison.Ordinal) && !HttpMethods.Contains(x)) ??
                 string.Empty;
-#if DEBUG
-            if (string.IsNullOrEmpty(requestModel.Url)) requestModel.Url = "https://reservation.weihanli.xyz/health";
-#endif
+            var schema = requestModel.RawInput.FirstOrDefault(x => x.StartsWith("--schema="))?["--schema=".Length..];
+            if (!string.IsNullOrEmpty(schema)) requestModel.Schema = schema;
+
+            if (requestModel.Url == ":")
+            {
+                requestModel.Url = "localhost";
+            }
+            else
+            {
+                if (requestModel.Url.StartsWith(":/")) requestModel.Url = $"localhost{requestModel.Url[1..]}";
+                if (requestModel.Url.StartsWith(':')) requestModel.Url = $"localhost{requestModel.Url}";
+            }
+
+            if (!requestModel.Url.StartsWith("http") && !requestModel.Url.StartsWith("https"))
+                requestModel.Url = $"{requestModel.Schema}://{requestModel.Url}";
         }
     }
 }
