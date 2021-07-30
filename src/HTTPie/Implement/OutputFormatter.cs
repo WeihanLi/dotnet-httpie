@@ -16,11 +16,15 @@ namespace HTTPie.Implement
 
         private readonly Dictionary<string, string> _supportedFormat = new()
         {
-            {"--headers", "output response headers only"},
-            {"--body", "output response headers and response body"},
-            {"--bodyOnly", "output response body only"},
-            {"--full", "output request/response, response headers and response body"},
-            {"--offline", "offline mode"}
+            {"--headers, -h", "output response headers only"},
+            {"--body, -b", "output response headers and response body only"},
+            {"--verbose, -v", "output request/response, response headers and response body"},
+            {"--quiet, -q", "quiet mode, output nothing"},
+            {
+                "--print, -p",
+                "print mode, output specific info,H:request headers,B:request body,h:response headers,b:response body"
+            },
+            {"--offline", "offline mode, would not send the request, print request info"}
         };
 
         public OutputFormatter(ILogger logger)
@@ -35,21 +39,50 @@ namespace HTTPie.Implement
 
         public string GetOutput(HttpRequestModel requestModel, HttpResponseModel responseModel)
         {
+            if (requestModel.RawInput.Contains("--quiet") || requestModel.RawInput.Contains("-q")) return string.Empty;
             var outputFormat = OutputFormat.ResponseInfo;
             if (requestModel.RawInput.Contains("--offline"))
+            {
                 outputFormat = OutputFormat.RequestInfo;
-            else if (requestModel.RawInput.Contains("--full"))
-                outputFormat = OutputFormat.ResponseInfo | OutputFormat.RequestInfo;
-            else if (requestModel.RawInput.Contains("--bodyOnly"))
+            }
+            else if (requestModel.RawInput.Contains("--verbose") || requestModel.RawInput.Contains("-v"))
+            {
+                outputFormat = OutputFormat.All;
+            }
+            else if (requestModel.RawInput.Contains("--body") || requestModel.RawInput.Contains("-b"))
+            {
                 outputFormat = OutputFormat.ResponseBody;
-            else if (requestModel.RawInput.Contains("--headers"))
-                outputFormat = OutputFormat.ResponseStatus | OutputFormat.ResponseHeaders;
+            }
+            else if (requestModel.RawInput.Contains("--headers") || requestModel.RawInput.Contains("-h"))
+            {
+                outputFormat = OutputFormat.ResponseHeaders;
+            }
+            else if (requestModel.RawInput.Any(x => x.StartsWith("--print=") || x.StartsWith("-p=")))
+            {
+                var mode = requestModel.RawInput.FirstOrDefault(x => x.StartsWith("--print="))?["--print=".Length..]
+                           ?? requestModel.RawInput.FirstOrDefault(x =>
+                               x.StartsWith("-p="))?["-p=".Length..];
+                if (!string.IsNullOrEmpty(mode))
+                {
+                    outputFormat = mode.Select(m => m switch
+                        {
+                            'H' => OutputFormat.RequestHeaders,
+                            'B' => OutputFormat.RequestBody,
+                            'h' => OutputFormat.ResponseHeaders,
+                            'b' => OutputFormat.ResponseBody,
+                            _ => OutputFormat.None
+                        })
+                        .Aggregate(OutputFormat.None, (current, format) => current | format);
+                }
+            }
 
             var output = new StringBuilder();
-            output.AppendLineIf(GetRequestVersionAndStatus(requestModel),
-                outputFormat.HasFlag(OutputFormat.RequestStatus));
-            output.AppendLineIf(GetHeadersString(requestModel.Headers),
-                outputFormat.HasFlag(OutputFormat.RequestHeaders));
+            if (outputFormat.HasFlag(OutputFormat.RequestHeaders))
+            {
+                output.AppendLine(GetRequestVersionAndStatus(requestModel));
+                output.AppendLine(GetHeadersString(requestModel.Headers));
+            }
+
             if (outputFormat.HasFlag(OutputFormat.RequestBody) && !string.IsNullOrEmpty(requestModel.Body))
             {
                 output.AppendLineIf(string.Empty, output.Length > 0);
@@ -59,10 +92,12 @@ namespace HTTPie.Implement
             output.AppendLineIf(string.Empty, output.Length > 0 && (outputFormat & OutputFormat.ResponseInfo) != 0);
 
             var requestLength = output.Length;
-            output.AppendLineIf(GetResponseVersionAndStatus(responseModel),
-                outputFormat.HasFlag(OutputFormat.ResponseStatus));
-            output.AppendLineIf(GetHeadersString(responseModel.Headers),
-                outputFormat.HasFlag(OutputFormat.ResponseHeaders));
+            if (outputFormat.HasFlag(OutputFormat.ResponseHeaders))
+            {
+                output.AppendLine(GetResponseVersionAndStatus(responseModel));
+                output.AppendLine(GetHeadersString(responseModel.Headers));
+            }
+
             if (outputFormat.HasFlag(OutputFormat.ResponseBody) && !string.IsNullOrEmpty(responseModel.Body))
             {
                 output.AppendLineIf(string.Empty, output.Length > requestLength);
