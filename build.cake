@@ -11,7 +11,7 @@ var solutionPath = "./dotnet-httpie.sln";
 var srcProjects  = GetFiles("./src/**/*.csproj");
 var testProjects  = GetFiles("./test/**/*.csproj");
 
-var artifacts = "./artifacts/";
+var artifacts = "./artifacts";
 var branchName = EnvironmentVariable("BUILD_SOURCEBRANCHNAME") ?? "local";
 
 void PrintBuildInfo(ICakeContext context){
