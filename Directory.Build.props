@@ -4,16 +4,23 @@
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <PackageId>HTTPie</PackageId>
-    <Title>HTTPie</Title>
-    <Description>dotnet httpie</Description>
+    <PackageId>dotnet-httpie</PackageId>
+    <Title>dotnet-HTTPie</Title>
+    <Description>dotnet httpie, a command-line HTTP client</Description>
+    <PackageIcon>icon.png</PackageIcon>
     <PackageTags>HTTPie http https curl rest</PackageTags>
     <PackageIconUrl>https://avatars3.githubusercontent.com/u/7604648</PackageIconUrl>    
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <RepositoryUrl>https://github.com/WeihanLi/dotnet-httpie</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/WeihanLi/dotnet-httpie</PackageProjectUrl>
+    <Product>dotnet-HTTPie</Product>
     <Authors>WeihanLi</Authors>
+    <PackageReleaseNotes>https://github.com/WeihanLi/dotnet-httpie/tree/main/docs/ReleaseNotes.md</PackageReleaseNotes>
     <Copyright>Copyright 2021 (c) WeihanLi</Copyright>
   </PropertyGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)icon.png" Pack="true" Visible="false" PackagePath=""/>
+  </ItemGroup>
 </Project>
