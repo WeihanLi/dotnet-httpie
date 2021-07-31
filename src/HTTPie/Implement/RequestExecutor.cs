@@ -43,7 +43,7 @@ namespace HTTPie.Implement
         public async Task<HttpResponseModel> ExecuteAsync(HttpRequestModel requestModel)
         {
             await _requestPipeline(requestModel);
-            _logger.LogDebug($"Request message: {requestModel.ToJson()}");
+            _logger.LogDebug("RequestModel info: {requestModel}", requestModel.ToJson());
             if (requestModel.RawInput.Contains("--offline"))
             {
                 _logger.LogDebug("Request should be offline, wont send request");

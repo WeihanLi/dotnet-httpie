@@ -63,7 +63,6 @@ namespace HTTPie.Implement
                            ?? requestModel.RawInput.FirstOrDefault(x =>
                                x.StartsWith("-p="))?["-p=".Length..];
                 if (!string.IsNullOrEmpty(mode))
-                {
                     outputFormat = mode.Select(m => m switch
                         {
                             'H' => OutputFormat.RequestHeaders,
@@ -73,7 +72,6 @@ namespace HTTPie.Implement
                             _ => OutputFormat.None
                         })
                         .Aggregate(OutputFormat.None, (current, format) => current | format);
-                }
             }
 
             var output = new StringBuilder();

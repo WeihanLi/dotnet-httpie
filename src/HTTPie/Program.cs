@@ -46,13 +46,20 @@ var serviceCollection = new ServiceCollection()
     .AddSingleton<ILogger>(sp => sp.GetRequiredService<ILoggerFactory>().CreateLogger("dotnet-HTTPie"));
 
 // HttpHandlerMiddleware
-serviceCollection.AddHttpHandlerMiddleware<FollowRedirectMiddleware>();
+serviceCollection
+    .AddHttpHandlerMiddleware<FollowRedirectMiddleware>()
+    .AddHttpHandlerMiddleware<HttpSslMiddleware>()
+    ;
 // RequestMiddleware
-serviceCollection.AddRequestMiddleware<QueryStringMiddleware>();
-serviceCollection.AddRequestMiddleware<RequestHeadersMiddleware>();
-serviceCollection.AddRequestMiddleware<DefaultRequestMiddleware>();
+serviceCollection
+    .AddRequestMiddleware<QueryStringMiddleware>()
+    .AddRequestMiddleware<RequestHeadersMiddleware>()
+    .AddRequestMiddleware<RequestDataMiddleware>()
+    .AddRequestMiddleware<DefaultRequestMiddleware>()
+    ;
 // ResponseMiddleware
 serviceCollection.AddResponseMiddleware<DefaultResponseMiddleware>();
+
 await using var services = serviceCollection.BuildServiceProvider();
 if (args is not {Length: > 0} || args.Contains("-h") || args.Contains("--help"))
 {
@@ -62,12 +69,18 @@ if (args is not {Length: > 0} || args.Contains("-h") || args.Contains("--help"))
     return 0;
 }
 
+if (args.Contains("--version"))
+{
+    Console.WriteLine(Constants.DefaultUserAgent);
+    return 0;
+}
+
 var logger = services.GetRequiredService<ILogger>();
 logger.LogDebug($"Input parameters: {args.StringJoin(";")}");
 try
 {
     var requestModel = services.GetRequiredService<HttpRequestModel>();
-    Helpers.InitRequestModel(requestModel, args);
+    Helpers.InitRequestModel(requestModel, Environment.GetCommandLineArgs());
     var responseModel = await services.GetRequiredService<IRequestExecutor>()
         .ExecuteAsync(requestModel);
     var output = services.GetRequiredService<IOutputFormatter>()

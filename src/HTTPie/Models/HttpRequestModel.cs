@@ -15,10 +15,10 @@ namespace HTTPie.Models
         [Required] public string Url { get; set; } = string.Empty;
 
         public Version HttpVersion { get; set; } = new(1, 1);
-        public int? Timeout { get; set; }
         public IDictionary<string, StringValues> Headers { get; } = new Dictionary<string, StringValues>();
         public IDictionary<string, StringValues> Query { get; set; } = new Dictionary<string, StringValues>();
         public string? Body { get; set; }
+        public bool IsJsonContent { get; set; } = true;
 
         public string[] RawInput { get; set; } = Array.Empty<string>();
     }

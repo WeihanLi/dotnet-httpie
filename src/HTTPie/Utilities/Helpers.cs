@@ -7,6 +7,7 @@ using HTTPie.Abstractions;
 using HTTPie.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using WeihanLi.Extensions;
 
 namespace HTTPie.Utilities
 {
@@ -35,24 +36,26 @@ namespace HTTPie.Utilities
         {
             var helpTextBuilder = new StringBuilder();
             helpTextBuilder.AppendLine("Supported parameters:");
-            helpTextBuilder.AppendLine("Parameter Name\t\tParameter Description");
+            helpTextBuilder.AppendLine("\tParameter Name\t\tParameter Description");
+            helpTextBuilder.AppendLine($"\t{new[] {"--debug", "debug mode, output debug log"}.StringJoin("\t\t\t")}");
             foreach (var parameter in serviceProvider.GetServices<IHttpHandlerMiddleware>()
                 .SelectMany(x => x.SupportedParameters())
             )
-                helpTextBuilder.AppendLine($"{parameter.Key}\t\t{parameter.Value}");
+                helpTextBuilder.AppendLine($"\t{parameter.Key}\t\t{parameter.Value}");
             foreach (var parameter in serviceProvider.GetServices<IRequestMiddleware>()
                 .SelectMany(x => x.SupportedParameters())
             )
-                helpTextBuilder.AppendLine($"{parameter.Key}\t\t{parameter.Value}");
+                helpTextBuilder.AppendLine($"\t{parameter.Key}\t\t{parameter.Value}");
             foreach (var parameter in serviceProvider.GetServices<IResponseMiddleware>()
                 .SelectMany(x => x.SupportedParameters())
             )
-                helpTextBuilder.AppendLine($"{parameter.Key}\t\t{parameter.Value}");
+                helpTextBuilder.AppendLine($"\t{parameter.Key}\t\t{parameter.Value}");
             foreach (var parameter in serviceProvider.GetRequiredService<IOutputFormatter>().SupportedParameters())
-                helpTextBuilder.AppendLine($"{parameter.Key}\t\t{parameter.Value}");
+                helpTextBuilder.AppendLine($"\t{parameter.Key}\t\t{parameter.Value}");
 
             helpTextBuilder.AppendLine("Usage examples:");
-            foreach (var example in UsageExamples) helpTextBuilder.AppendLine(example);
+            foreach (var example in UsageExamples) helpTextBuilder.AppendLine($"\t{example}");
+            
             return helpTextBuilder.ToString();
         }
 
@@ -87,6 +90,10 @@ namespace HTTPie.Utilities
 
         public static void InitRequestModel(HttpRequestModel requestModel, string[] args)
         {
+#if DEBUG
+            if (args[0].EndsWith(".dll"))
+                args = args[1..];
+#endif
             requestModel.RawInput = args;
             var method = args.FirstOrDefault(x => HttpMethods.Contains(x));
             if (!string.IsNullOrEmpty(method)) requestModel.Method = new HttpMethod(method);
@@ -106,9 +113,10 @@ namespace HTTPie.Utilities
                 if (requestModel.Url.StartsWith(":/")) requestModel.Url = $"localhost{requestModel.Url[1..]}";
                 if (requestModel.Url.StartsWith(':')) requestModel.Url = $"localhost{requestModel.Url}";
             }
-
-            if (!requestModel.Url.StartsWith("http") && !requestModel.Url.StartsWith("https"))
+            if (requestModel.Url.IndexOf("://", StringComparison.Ordinal) < 0)
                 requestModel.Url = $"{requestModel.Schema}://{requestModel.Url}";
+            if (requestModel.Url.StartsWith("://"))
+                requestModel.Url = $"{requestModel.Schema}{requestModel.Url}";
         }
     }
 }

@@ -13,8 +13,7 @@ namespace HTTPie.Middleware
         {
             foreach (var input in model.RawInput
                 .Where(x => x.IndexOf(':') > 0
-                            && !x.StartsWith("http://", StringComparison.Ordinal)
-                            && !x.StartsWith("https://", StringComparison.Ordinal)
+                            && x.IndexOf("://", StringComparison.Ordinal) < 0
                             && x.IndexOf(":=", StringComparison.OrdinalIgnoreCase) < 0))
             {
                 var arr = input.Split(':');
