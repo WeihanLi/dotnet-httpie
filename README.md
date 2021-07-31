@@ -48,7 +48,7 @@ Here's a sample: ![sample](./images/sample.png)
 
 ## Docker
 
-There's docker image that you could use directly without install the tool, use sample:
+There's a docker image(weihanli/dotnet-httpie) that you could use directly without installing the tool, use sample:
 
 ``` bash
 docker run --rm weihanli/dotnet-httpie http -v github.com
