@@ -4,7 +4,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using HTTPie.Abstractions;
 using HTTPie.Models;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using WeihanLi.Common.Http;
 using WeihanLi.Extensions;
@@ -19,7 +18,6 @@ namespace HTTPie.Implement
         private readonly Func<HttpRequestModel, Task> _requestPipeline;
         private readonly IResponseMapper _responseMapper;
         private readonly Func<HttpContext, Task> _responsePipeline;
-        private readonly IServiceProvider _serviceProvider;
 
         public RequestExecutor(
             IRequestMapper requestMapper,
@@ -27,7 +25,6 @@ namespace HTTPie.Implement
             Func<HttpClientHandler, Task> httpHandlerPipeline,
             Func<HttpRequestModel, Task> requestPipeline,
             Func<HttpContext, Task> responsePipeline,
-            IServiceProvider serviceProvider,
             ILogger logger
         )
         {
@@ -36,7 +33,6 @@ namespace HTTPie.Implement
             _httpHandlerPipeline = httpHandlerPipeline;
             _requestPipeline = requestPipeline;
             _responsePipeline = responsePipeline;
-            _serviceProvider = serviceProvider;
             _logger = logger;
         }
 
@@ -67,8 +63,7 @@ namespace HTTPie.Implement
             _logger.LogDebug(
                 $"Response message: HTTP/{responseMessage.Version.ToString(2)} {(int) responseMessage.StatusCode} {responseMessage.StatusCode}");
             var responseModel = await _responseMapper.ToResponseModel(responseMessage);
-            using var scope = _serviceProvider.CreateScope();
-            var context = new HttpContext(requestModel, responseModel, scope.ServiceProvider);
+            var context = new HttpContext(requestModel, responseModel);
             await _responsePipeline(context);
             return responseModel;
         }
