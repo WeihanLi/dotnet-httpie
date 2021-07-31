@@ -46,6 +46,22 @@ Request-Data | name`=`test, raw data field example(Only effective for JSON): age
 
 Here's a sample: ![sample](./images/sample.png)
 
+## Docker
+
+There's docker image that you could use directly without install the tool, use sample:
+
+``` bash
+docker run --rm weihanli/dotnet-httpie http -v github.com
+
+docker run --rm weihanli/dotnet-httpie http reservation.weihanli.xyz/health job:='{"id":1,"name":"tester"}' --offline
+
+docker run --rm weihanli/dotnet-httpie http PUT httpbin.org hello=world
+
+docker run --rm weihanli/dotnet-httpie http get httpbin.org/status/400
+```
+
+## More
+
 There're some examples you may wanna have a look
 
 ``` bash
