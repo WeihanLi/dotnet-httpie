@@ -42,7 +42,9 @@ Type | Grammer
 -----|-------
 Query| name`==`test
 Header| X-Api-Key`:`test
-Request-Data | name`=`test, raw data field example(Only effective for JSON): age`:=`10, job`:=`'{"Id":1,"Name":"test}'
+Request-Data | name`=`test, raw data field example(Only effective for JSON): age`:=`10, job`:=`'{"Id":1,"Name":"test"}'(Escape needed for Windows)
+
+Here's a sample: ![sample](./images/sample.png)
 
 There're some examples you may wanna have a look
 
