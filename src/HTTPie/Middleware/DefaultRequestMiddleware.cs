@@ -35,6 +35,7 @@ namespace HTTPie.Middleware
                 url += requestModel.Query.Select(x => x.Value.Select(v => $"{x.Key}={v}").StringJoin("&"))
                     .StringJoin("&");
             }
+
             requestModel.Url = url;
 
             var httpVersionOption =
@@ -42,18 +43,18 @@ namespace HTTPie.Middleware
             if (!string.IsNullOrEmpty(httpVersionOption))
             {
                 _logger.LogDebug($"httpVersion: {httpVersionOption}");
-                if (httpVersionOption.IndexOf('.') < 0)
-                {
-                    httpVersionOption = $"{httpVersionOption}.0";
-                }
-                if(Version.TryParse(httpVersionOption, out var version))
-                  requestModel.HttpVersion = version;
+                if (httpVersionOption.IndexOf('.') < 0) httpVersionOption = $"{httpVersionOption}.0";
+                if (Version.TryParse(httpVersionOption, out var version))
+                    requestModel.HttpVersion = version;
             }
 
             requestModel.Headers.TryAdd("User-Agent", Constants.DefaultUserAgent);
             await next();
         }
 
-        public Dictionary<string, string> SupportedParameters() => _supportedParameters;
+        public Dictionary<string, string> SupportedParameters()
+        {
+            return _supportedParameters;
+        }
     }
 }

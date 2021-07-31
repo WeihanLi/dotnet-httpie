@@ -16,10 +16,13 @@ namespace HTTPie.Middleware
         private readonly Dictionary<string, string> _supportedParameters = new()
         {
             {"--form, -f", $"The request is form data, and content type is '{Constants.FormContentType}'"},
-            {"--json, -j", $"The request body is json by default, and content type is '{Constants.JsonContentType}'"},
+            {"--json, -j", $"The request body is json by default, and content type is '{Constants.JsonContentType}'"}
         };
 
-        public Dictionary<string, string> SupportedParameters() => _supportedParameters;
+        public Dictionary<string, string> SupportedParameters()
+        {
+            return _supportedParameters;
+        }
 
         public Task Invoke(HttpRequestModel requestModel, Func<Task> next)
         {
@@ -29,7 +32,7 @@ namespace HTTPie.Middleware
                 ? new StringValues(Constants.FormContentType)
                 : new StringValues(Constants.JsonContentType);
             var dataInput = requestModel.RawInput
-                .Where(x => x.IndexOf('=') > 0 
+                .Where(x => x.IndexOf('=') > 0
                             && x.IndexOf("==", StringComparison.OrdinalIgnoreCase) < 0
                             && !x.StartsWith("--"))
                 .ToArray();

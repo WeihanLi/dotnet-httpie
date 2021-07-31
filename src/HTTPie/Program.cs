@@ -59,7 +59,6 @@ serviceCollection
     ;
 // ResponseMiddleware
 serviceCollection.AddResponseMiddleware<DefaultResponseMiddleware>();
-
 await using var services = serviceCollection.BuildServiceProvider();
 if (args is not {Length: > 0} || args.Contains("-h") || args.Contains("--help"))
 {

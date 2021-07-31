@@ -55,7 +55,7 @@ namespace HTTPie.Utilities
 
             helpTextBuilder.AppendLine("Usage examples:");
             foreach (var example in UsageExamples) helpTextBuilder.AppendLine($"\t{example}");
-            
+
             return helpTextBuilder.ToString();
         }
 
@@ -90,10 +90,7 @@ namespace HTTPie.Utilities
 
         public static void InitRequestModel(HttpRequestModel requestModel, string[] args)
         {
-#if DEBUG
-            if (args[0].EndsWith(".dll"))
-                args = args[1..];
-#endif
+            if (args[0].EndsWith("HTTPie.dll", StringComparison.OrdinalIgnoreCase)) args = args[1..];
             requestModel.RawInput = args;
             var method = args.FirstOrDefault(x => HttpMethods.Contains(x));
             if (!string.IsNullOrEmpty(method)) requestModel.Method = new HttpMethod(method);
@@ -113,6 +110,7 @@ namespace HTTPie.Utilities
                 if (requestModel.Url.StartsWith(":/")) requestModel.Url = $"localhost{requestModel.Url[1..]}";
                 if (requestModel.Url.StartsWith(':')) requestModel.Url = $"localhost{requestModel.Url}";
             }
+
             if (requestModel.Url.IndexOf("://", StringComparison.Ordinal) < 0)
                 requestModel.Url = $"{requestModel.Schema}://{requestModel.Url}";
             if (requestModel.Url.StartsWith("://"))

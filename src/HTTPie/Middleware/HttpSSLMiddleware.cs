@@ -6,7 +6,6 @@ using System.Security.Authentication;
 using System.Threading.Tasks;
 using HTTPie.Abstractions;
 using HTTPie.Models;
-using WeihanLi.Extensions;
 
 namespace HTTPie.Middleware
 {
@@ -19,12 +18,14 @@ namespace HTTPie.Middleware
             _requestModel = requestModel;
         }
 
-        public Dictionary<string, string> SupportedParameters() =>
-            new()
+        public Dictionary<string, string> SupportedParameters()
+        {
+            return new()
             {
                 {"--verify=no", "disable ssl cert check"},
                 {"--ssl", "specific the ssl protocols, ssl3, tls, tls1.1, tls1.2, tls1.3"}
             };
+        }
 
         public Task Invoke(HttpClientHandler httpClientHandler, Func<Task> next)
         {
@@ -36,9 +37,10 @@ namespace HTTPie.Middleware
             if (!string.IsNullOrEmpty(sslOption))
             {
                 sslOption = sslOption.Replace(".", string.Empty);
-                if(Enum.TryParse(sslOption, out SslProtocols sslProtocols))
-                  httpClientHandler.SslProtocols = sslProtocols;
+                if (Enum.TryParse(sslOption, out SslProtocols sslProtocols))
+                    httpClientHandler.SslProtocols = sslProtocols;
             }
+
             return next();
         }
     }

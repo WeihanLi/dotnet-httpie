@@ -1,4 +1,3 @@
-using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -28,23 +27,24 @@ namespace HTTPie.Implement
                 Version = requestModel.HttpVersion
             };
             if (!string.IsNullOrEmpty(requestModel.Body))
-                request.Content = new StringContent(requestModel.Body, Encoding.UTF8, requestModel.IsJsonContent ? Constants.JsonMediaType : Constants.PlainTextMediaType);
+                request.Content = new StringContent(requestModel.Body, Encoding.UTF8,
+                    requestModel.IsJsonContent ? Constants.JsonMediaType : Constants.PlainTextMediaType);
             if (requestModel.Headers is {Count: > 0})
                 foreach (var header in requestModel.Headers)
                 {
                     if (Constants.ContentTypeHeaderName.EqualsIgnoreCase(header.Key))
                     {
-                        if(request.Content != null)
-                        {
+                        if (request.Content != null)
                             request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse(header.Value);
-                        }
                         continue;
                     }
+
                     if (HttpHelper.IsWellKnownContentHeader(header.Key) && request.Content != null)
                         request.Content.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
                     else
                         request.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
                 }
+
             _logger.LogDebug("Request message: {requestMessage}", request.ToString());
             return Task.FromResult(request);
         }
