@@ -79,7 +79,7 @@ logger.LogDebug($"Input parameters: {args.StringJoin(";")}");
 try
 {
     var requestModel = services.GetRequiredService<HttpRequestModel>();
-    Helpers.InitRequestModel(requestModel, Environment.GetCommandLineArgs());
+    Helpers.InitRequestModel(requestModel, args);
     var responseModel = await services.GetRequiredService<IRequestExecutor>()
         .ExecuteAsync(requestModel);
     var output = services.GetRequiredService<IOutputFormatter>()
