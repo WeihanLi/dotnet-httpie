@@ -34,7 +34,7 @@ namespace HTTPie.Middleware
             var dataInput = requestModel.RawInput
                 .Where(x => x.IndexOf('=') > 0
                             && x.IndexOf("==", StringComparison.OrdinalIgnoreCase) < 0
-                            && !x.StartsWith("--"))
+                            && !x.StartsWith("-"))
                 .ToArray();
             if (dataInput.Length > 0)
             {
