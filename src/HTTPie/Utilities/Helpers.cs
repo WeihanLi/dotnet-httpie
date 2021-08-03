@@ -127,7 +127,7 @@ namespace HTTPie.Utilities
                     return pipelineBuilder.Build();
                 })
                 .AddSingleton<HttpRequestModel>()
-                .AddSingleton<ILogger>(sp => sp.GetRequiredService<ILoggerFactory>().CreateLogger("dotnet-HTTPie"));
+                .AddSingleton<ILogger>(sp => sp.GetRequiredService<ILoggerFactory>().CreateLogger(Constants.ApplicationName));
 
             // HttpHandlerMiddleware
             serviceCollection
