@@ -5,6 +5,9 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>http</ToolCommandName>
+    <PackageId>dotnet-httpie</PackageId>
+    <Title>dotnet-HTTPie</Title>
+    <Description>dotnet httpie, a command-line HTTP client</Description>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="WeihanLi.Common" Version="1.0.46" />

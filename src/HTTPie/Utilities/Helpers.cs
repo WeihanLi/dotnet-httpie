@@ -4,9 +4,13 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using HTTPie.Abstractions;
+using HTTPie.Implement;
+using HTTPie.Middleware;
 using HTTPie.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using WeihanLi.Common.Helpers;
 using WeihanLi.Extensions;
 
 namespace HTTPie.Utilities
@@ -59,7 +63,7 @@ namespace HTTPie.Utilities
             return helpTextBuilder.ToString();
         }
 
-        public static IServiceCollection AddHttpHandlerMiddleware<THttpHandlerMiddleware>(
+        private static IServiceCollection AddHttpHandlerMiddleware<THttpHandlerMiddleware>(
             this IServiceCollection serviceCollection)
             where THttpHandlerMiddleware : IHttpHandlerMiddleware
         {
@@ -69,7 +73,7 @@ namespace HTTPie.Utilities
         }
 
 
-        public static IServiceCollection AddRequestMiddleware<TRequestMiddleware>(
+        private static IServiceCollection AddRequestMiddleware<TRequestMiddleware>(
             this IServiceCollection serviceCollection)
             where TRequestMiddleware : IRequestMiddleware
         {
@@ -79,12 +83,67 @@ namespace HTTPie.Utilities
         }
 
 
-        public static IServiceCollection AddResponseMiddleware<TResponseMiddleware>(
+        private static IServiceCollection AddResponseMiddleware<TResponseMiddleware>(
             this IServiceCollection serviceCollection)
             where TResponseMiddleware : IResponseMiddleware
         {
             serviceCollection.TryAddEnumerable(new ServiceDescriptor(typeof(IResponseMiddleware),
                 typeof(TResponseMiddleware), ServiceLifetime.Singleton));
+            return serviceCollection;
+        }
+
+        // ReSharper disable once InconsistentNaming
+        public static IServiceCollection RegisterHTTPieServices(this IServiceCollection serviceCollection,
+            bool debugEnabled = false)
+        {
+            serviceCollection.AddLogging(builder =>
+                    builder.AddConsole().SetMinimumLevel(debugEnabled ? LogLevel.Debug : LogLevel.Warning))
+                .AddSingleton<IRequestExecutor, RequestExecutor>()
+                .AddSingleton<IRequestMapper, RequestMapper>()
+                .AddSingleton<IResponseMapper, ResponseMapper>()
+                .AddSingleton<IOutputFormatter, OutputFormatter>()
+                .AddSingleton(sp =>
+                {
+                    var pipelineBuilder = PipelineBuilder.CreateAsync<HttpRequestModel>();
+                    foreach (var middleware in
+                        sp.GetServices<IRequestMiddleware>())
+                        pipelineBuilder.Use(middleware.Invoke);
+                    return pipelineBuilder.Build();
+                })
+                .AddSingleton(sp =>
+                {
+                    var pipelineBuilder = PipelineBuilder.CreateAsync<HttpContext>();
+                    foreach (var middleware in
+                        sp.GetServices<IResponseMiddleware>())
+                        pipelineBuilder.Use(middleware.Invoke);
+                    return pipelineBuilder.Build();
+                })
+                .AddSingleton(sp =>
+                {
+                    var pipelineBuilder = PipelineBuilder.CreateAsync<HttpClientHandler>();
+                    foreach (var middleware in
+                        sp.GetServices<IHttpHandlerMiddleware>())
+                        pipelineBuilder.Use(middleware.Invoke);
+                    return pipelineBuilder.Build();
+                })
+                .AddSingleton<HttpRequestModel>()
+                .AddSingleton<ILogger>(sp => sp.GetRequiredService<ILoggerFactory>().CreateLogger("dotnet-HTTPie"));
+
+            // HttpHandlerMiddleware
+            serviceCollection
+                .AddHttpHandlerMiddleware<FollowRedirectMiddleware>()
+                .AddHttpHandlerMiddleware<HttpSslMiddleware>()
+                ;
+            // RequestMiddleware
+            serviceCollection
+                .AddRequestMiddleware<QueryStringMiddleware>()
+                .AddRequestMiddleware<RequestHeadersMiddleware>()
+                .AddRequestMiddleware<RequestDataMiddleware>()
+                .AddRequestMiddleware<DefaultRequestMiddleware>()
+                ;
+            // ResponseMiddleware
+            serviceCollection.AddResponseMiddleware<DefaultResponseMiddleware>();
+
             return serviceCollection;
         }
 

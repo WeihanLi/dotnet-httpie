@@ -111,7 +111,7 @@ namespace HTTPie.Implement
             var uri = new Uri(requestModel.Url);
             return
                 $@"{requestModel.Method.Method.ToUpper()} {uri.PathAndQuery} HTTP/{requestModel.HttpVersion.ToString(2)}
-Host: {uri.Host}{(uri.IsDefaultPort?"":$":{uri.Port}")}
+Host: {uri.Host}{(uri.IsDefaultPort ? "" : $":{uri.Port}")}
 Schema: {uri.Scheme}";
         }
 

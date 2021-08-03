@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace HTTPie.Models
@@ -10,6 +9,7 @@ namespace HTTPie.Models
             Request = request;
             Response = response;
         }
+
         public HttpRequestModel Request { get; }
         public HttpResponseModel Response { get; }
         public Dictionary<string, object> Properties { get; } = new();
