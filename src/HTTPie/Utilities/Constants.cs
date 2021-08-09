@@ -14,5 +14,10 @@ namespace HTTPie.Utilities
         private static readonly string AppVersion = typeof(Constants).Assembly.GetName().Version.ToString(3);
 #pragma warning restore 8602
         public static readonly string DefaultUserAgent = $"{ApplicationName}/{AppVersion}";
+
+        public static class FeatureFlagNames
+        {
+            public const string IsFormContentType = "IsFormContentType";
+        }
     }
 }

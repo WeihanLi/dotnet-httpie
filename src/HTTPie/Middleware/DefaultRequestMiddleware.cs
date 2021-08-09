@@ -16,9 +16,9 @@ namespace HTTPie.Middleware
 
         private readonly Dictionary<string, string> _supportedParameters = new()
         {
-            {"--schema", "The request schema"},
-            {"--httpVersion", "The request http version"},
-            {"--timeout", "timeout for the request, in seconds"}
+            { "--schema", "The request schema" },
+            { "--httpVersion", "The request http version" },
+            { "--timeout", "timeout for the request, in seconds" }
         };
 
         public DefaultRequestMiddleware(ILogger logger)

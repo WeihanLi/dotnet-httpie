@@ -20,16 +20,19 @@ namespace HTTPie.Implement
             _logger = logger;
         }
 
-        public Task<HttpRequestMessage> ToRequestMessage(HttpRequestModel requestModel)
+        public Task<HttpRequestMessage> ToRequestMessage(HttpContext httpContext)
         {
+            var requestModel = httpContext.Request;
             var request = new HttpRequestMessage(requestModel.Method, requestModel.Url)
             {
                 Version = requestModel.HttpVersion
             };
             if (!string.IsNullOrEmpty(requestModel.Body))
                 request.Content = new StringContent(requestModel.Body, Encoding.UTF8,
-                    requestModel.IsJsonContent ? Constants.JsonMediaType : Constants.PlainTextMediaType);
-            if (requestModel.Headers is {Count: > 0})
+                    httpContext.GetFlag(Constants.FeatureFlagNames.IsFormContentType)
+                        ? Constants.PlainTextMediaType
+                        : Constants.JsonMediaType);
+            if (requestModel.Headers is { Count: > 0 })
                 foreach (var header in requestModel.Headers)
                 {
                     if (Constants.ContentTypeHeaderName.EqualsIgnoreCase(header.Key))

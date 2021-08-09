@@ -12,6 +12,7 @@ namespace HTTPie.Implement
 {
     public class RequestExecutor : IRequestExecutor
     {
+        private readonly HttpContext _httpContext;
         private readonly Func<HttpClientHandler, Task> _httpHandlerPipeline;
         private readonly ILogger _logger;
         private readonly IRequestMapper _requestMapper;
@@ -22,6 +23,7 @@ namespace HTTPie.Implement
         public RequestExecutor(
             IRequestMapper requestMapper,
             IResponseMapper responseMapper,
+            HttpContext httpContext,
             Func<HttpClientHandler, Task> httpHandlerPipeline,
             Func<HttpRequestModel, Task> requestPipeline,
             Func<HttpContext, Task> responsePipeline,
@@ -30,23 +32,25 @@ namespace HTTPie.Implement
         {
             _requestMapper = requestMapper;
             _responseMapper = responseMapper;
+            _httpContext = httpContext;
             _httpHandlerPipeline = httpHandlerPipeline;
             _requestPipeline = requestPipeline;
             _responsePipeline = responsePipeline;
             _logger = logger;
         }
 
-        public async Task<HttpResponseModel> ExecuteAsync(HttpRequestModel requestModel)
+        public async ValueTask ExecuteAsync(HttpContext httpContext)
         {
+            var requestModel = httpContext.Request;
             await _requestPipeline(requestModel);
             _logger.LogDebug("RequestModel info: {requestModel}", requestModel.ToJson());
             if (requestModel.RawInput.Contains("--offline"))
             {
                 _logger.LogDebug("Request should be offline, wont send request");
-                return new HttpResponseModel();
+                return;
             }
 
-            using var requestMessage = await _requestMapper.ToRequestMessage(requestModel);
+            using var requestMessage = await _requestMapper.ToRequestMessage(httpContext);
             using var httpClientHandler = new NoProxyHttpClientHandler
             {
                 AllowAutoRedirect = false
@@ -61,11 +65,9 @@ namespace HTTPie.Implement
                 $"Request message: {requestMessage.Method.Method.ToUpper()} {requestMessage.RequestUri.AbsoluteUri} HTTP/{requestMessage.Version.ToString(2)}");
             using var responseMessage = await httpClient.SendAsync(requestMessage);
             _logger.LogDebug(
-                $"Response message: HTTP/{responseMessage.Version.ToString(2)} {(int) responseMessage.StatusCode} {responseMessage.StatusCode}");
-            var responseModel = await _responseMapper.ToResponseModel(responseMessage);
-            var context = new HttpContext(requestModel, responseModel);
-            await _responsePipeline(context);
-            return responseModel;
+                $"Response message: HTTP/{responseMessage.Version.ToString(2)} {(int)responseMessage.StatusCode} {responseMessage.StatusCode}");
+            _httpContext.Response = await _responseMapper.ToResponseModel(responseMessage);
+            await _responsePipeline(_httpContext);
         }
     }
 }

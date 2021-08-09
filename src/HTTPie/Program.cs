@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Linq;
-using HTTPie.Abstractions;
-using HTTPie.Models;
 using HTTPie.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -11,7 +9,7 @@ var debugEnabled = args.Contains("--debug", StringComparer.OrdinalIgnoreCase);
 var serviceCollection = new ServiceCollection()
     .RegisterHTTPieServices(debugEnabled);
 await using var services = serviceCollection.BuildServiceProvider();
-if (args is not {Length: > 0} || args.Contains("--help"))
+if (args is not { Length: > 0 } || args.Contains("--help"))
 {
     // Print Help
     var helpText = Helpers.GetHelpText(services);
@@ -29,12 +27,7 @@ var logger = services.GetRequiredService<ILogger>();
 logger.LogDebug($"Input parameters: {args.StringJoin(";")}");
 try
 {
-    var requestModel = services.GetRequiredService<HttpRequestModel>();
-    Helpers.InitRequestModel(requestModel, args);
-    var responseModel = await services.GetRequiredService<IRequestExecutor>()
-        .ExecuteAsync(requestModel);
-    var output = services.GetRequiredService<IOutputFormatter>()
-        .GetOutput(requestModel, responseModel);
+    var output = await Helpers.GetOutput(services, args);
     Console.WriteLine(output);
     return 0;
 }

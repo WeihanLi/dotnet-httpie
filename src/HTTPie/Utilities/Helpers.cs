@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 using HTTPie.Abstractions;
 using HTTPie.Implement;
 using HTTPie.Middleware;
@@ -41,7 +42,7 @@ namespace HTTPie.Utilities
             var helpTextBuilder = new StringBuilder();
             helpTextBuilder.AppendLine("Supported parameters:");
             helpTextBuilder.AppendLine("\tParameter Name\t\tParameter Description");
-            helpTextBuilder.AppendLine($"\t{new[] {"--debug", "debug mode, output debug log"}.StringJoin("\t\t\t")}");
+            helpTextBuilder.AppendLine($"\t{new[] { "--debug", "debug mode, output debug log" }.StringJoin("\t\t\t")}");
             foreach (var parameter in serviceProvider.GetServices<IHttpHandlerMiddleware>()
                 .SelectMany(x => x.SupportedParameters())
             )
@@ -127,7 +128,9 @@ namespace HTTPie.Utilities
                     return pipelineBuilder.Build();
                 })
                 .AddSingleton<HttpRequestModel>()
-                .AddSingleton<ILogger>(sp => sp.GetRequiredService<ILoggerFactory>().CreateLogger(Constants.ApplicationName));
+                .AddSingleton(sp => new HttpContext(sp.GetService<HttpRequestModel>()))
+                .AddSingleton<ILogger>(sp =>
+                    sp.GetRequiredService<ILoggerFactory>().CreateLogger(Constants.ApplicationName));
 
             // HttpHandlerMiddleware
             serviceCollection
@@ -147,7 +150,7 @@ namespace HTTPie.Utilities
             return serviceCollection;
         }
 
-        public static void InitRequestModel(HttpRequestModel requestModel, string[] args)
+        private static void InitRequestModel(HttpRequestModel requestModel, string[] args)
         {
             if (args[0].EndsWith("HTTPie.dll", StringComparison.OrdinalIgnoreCase)) args = args[1..];
             requestModel.RawInput = args;
@@ -174,6 +177,17 @@ namespace HTTPie.Utilities
                 requestModel.Url = $"{requestModel.Schema}://{requestModel.Url}";
             if (requestModel.Url.StartsWith("://"))
                 requestModel.Url = $"{requestModel.Schema}{requestModel.Url}";
+        }
+
+        public static async Task<string> GetOutput(IServiceProvider services, string[] args)
+        {
+            var httpContext = services.GetRequiredService<HttpContext>();
+            InitRequestModel(httpContext.Request, args);
+            await services.GetRequiredService<IRequestExecutor>()
+                .ExecuteAsync(httpContext);
+            var output = services.GetRequiredService<IOutputFormatter>()
+                .GetOutput(httpContext);
+            return output;
         }
     }
 }

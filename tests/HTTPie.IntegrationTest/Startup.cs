@@ -1,5 +1,8 @@
 using HTTPie.Utilities;
 using Microsoft.Extensions.DependencyInjection;
+using Xunit;
+
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace HTTPie.IntegrationTest
 {

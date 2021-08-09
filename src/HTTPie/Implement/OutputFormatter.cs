@@ -16,15 +16,15 @@ namespace HTTPie.Implement
 
         private readonly Dictionary<string, string> _supportedFormat = new()
         {
-            {"--headers, -h", "output response headers only"},
-            {"--body, -b", "output response headers and response body only"},
-            {"--verbose, -v", "output request/response, response headers and response body"},
-            {"--quiet, -q", "quiet mode, output nothing"},
+            { "--headers, -h", "output response headers only" },
+            { "--body, -b", "output response headers and response body only" },
+            { "--verbose, -v", "output request/response, response headers and response body" },
+            { "--quiet, -q", "quiet mode, output nothing" },
             {
                 "--print, -p",
                 "print mode, output specific info,H:request headers,B:request body,h:response headers,b:response body"
             },
-            {"--offline", "offline mode, would not send the request, print request info"}
+            { "--offline", "offline mode, would not send the request, print request info" }
         };
 
         public OutputFormatter(ILogger logger)
@@ -37,8 +37,9 @@ namespace HTTPie.Implement
             return _supportedFormat;
         }
 
-        public string GetOutput(HttpRequestModel requestModel, HttpResponseModel responseModel)
+        public string GetOutput(HttpContext httpContext)
         {
+            var requestModel = httpContext.Request;
             if (requestModel.RawInput.Contains("--quiet") || requestModel.RawInput.Contains("-q")) return string.Empty;
             var outputFormat = OutputFormat.ResponseInfo;
             if (requestModel.RawInput.Contains("--offline"))
@@ -90,6 +91,7 @@ namespace HTTPie.Implement
             output.AppendLineIf(string.Empty, output.Length > 0 && (outputFormat & OutputFormat.ResponseInfo) != 0);
 
             var requestLength = output.Length;
+            var responseModel = httpContext.Response;
             if (outputFormat.HasFlag(OutputFormat.ResponseHeaders))
             {
                 output.AppendLine(GetResponseVersionAndStatus(responseModel));
@@ -118,13 +120,13 @@ Schema: {uri.Scheme}";
         private static string GetResponseVersionAndStatus(HttpResponseModel responseModel)
         {
             return
-                $"HTTP/{responseModel.HttpVersion.ToString(2)} {(int) responseModel.StatusCode} {responseModel.StatusCode.ToString()}";
+                $"HTTP/{responseModel.HttpVersion.ToString(2)} {(int)responseModel.StatusCode} {responseModel.StatusCode}";
         }
 
         private static string GetHeadersString(IDictionary<string, StringValues> headers)
         {
             return
-                $"{headers.Select(h => $"{h.Key}: {h.Value.ToString()}").OrderBy(h => h).StringJoin(Environment.NewLine)}";
+                $"{headers.Select(h => $"{h.Key}: {h.Value}").OrderBy(h => h).StringJoin(Environment.NewLine)}";
         }
     }
 }

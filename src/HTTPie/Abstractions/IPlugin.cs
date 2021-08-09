@@ -6,7 +6,7 @@ namespace HTTPie.Abstractions
     {
         Dictionary<string, string> SupportedParameters()
         {
-            return new();
+            return new Dictionary<string, string>();
         }
     }
 }

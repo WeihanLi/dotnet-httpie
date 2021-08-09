@@ -20,10 +20,10 @@ namespace HTTPie.Middleware
 
         public Dictionary<string, string> SupportedParameters()
         {
-            return new()
+            return new Dictionary<string, string>
             {
-                {"--verify=no", "disable ssl cert check"},
-                {"--ssl", "specific the ssl protocols, ssl3, tls, tls1.1, tls1.2, tls1.3"}
+                { "--verify=no", "disable ssl cert check" },
+                { "--ssl", "specific the ssl protocols, ssl3, tls, tls1.1, tls1.2, tls1.3" }
             };
         }
 

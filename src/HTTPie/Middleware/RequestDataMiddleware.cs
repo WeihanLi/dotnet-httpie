@@ -13,11 +13,18 @@ namespace HTTPie.Middleware
 {
     public class RequestDataMiddleware : IRequestMiddleware
     {
+        private readonly HttpContext _httpContext;
+
         private readonly Dictionary<string, string> _supportedParameters = new()
         {
-            {"--form, -f", $"The request is form data, and content type is '{Constants.FormContentType}'"},
-            {"--json, -j", $"The request body is json by default, and content type is '{Constants.JsonContentType}'"}
+            { "--form, -f", $"The request is form data, and content type is '{Constants.FormContentType}'" },
+            { "--json, -j", $"The request body is json by default, and content type is '{Constants.JsonContentType}'" }
         };
+
+        public RequestDataMiddleware(HttpContext httpContext)
+        {
+            _httpContext = httpContext;
+        }
 
         public Dictionary<string, string> SupportedParameters()
         {
@@ -27,7 +34,7 @@ namespace HTTPie.Middleware
         public Task Invoke(HttpRequestModel requestModel, Func<Task> next)
         {
             var isFormData = requestModel.RawInput.Contains("-f") || requestModel.RawInput.Contains("--form");
-            requestModel.IsJsonContent = !isFormData;
+            _httpContext.UpdateFlag(Constants.FeatureFlagNames.IsFormContentType, isFormData);
             requestModel.Headers[Constants.ContentTypeHeaderName] = isFormData
                 ? new StringValues(Constants.FormContentType)
                 : new StringValues(Constants.JsonContentType);
@@ -51,7 +58,7 @@ namespace HTTPie.Middleware
                         if (input.IndexOf(":=", StringComparison.Ordinal) > 0)
                         {
                             var arr = input.Split(":=");
-                            if (arr is {Length: 2})
+                            if (arr is { Length: 2 })
                             {
                                 if (k > 0) jsonDataBuilder.Append(",");
                                 jsonDataBuilder.Append($@"""{arr[0]}"":{arr[1]}");

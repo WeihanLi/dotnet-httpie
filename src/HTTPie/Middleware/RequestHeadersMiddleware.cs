@@ -20,7 +20,7 @@ namespace HTTPie.Middleware
                 if (arr.Length == 2)
                 {
                     if (model.Headers.TryGetValue(arr[0], out var values))
-                        model.Headers[arr[0]] = new StringValues(new[] {arr[1]}.Union(values.ToArray()).ToArray());
+                        model.Headers[arr[0]] = new StringValues(new[] { arr[1] }.Union(values.ToArray()).ToArray());
                     else
                         model.Headers[arr[0]] = arr[1];
                 }

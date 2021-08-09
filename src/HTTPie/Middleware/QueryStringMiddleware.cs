@@ -18,7 +18,8 @@ namespace HTTPie.Middleware
                 if (arr.Length == 2)
                 {
                     if (requestModel.Query.TryGetValue(arr[0], out var values))
-                        requestModel.Query[arr[0]] = new StringValues(new[] {arr[1]}.Union(values.ToArray()).ToArray());
+                        requestModel.Query[arr[0]] =
+                            new StringValues(new[] { arr[1] }.Union(values.ToArray()).ToArray());
                     else
                         requestModel.Query[arr[0]] = arr[1];
                 }
