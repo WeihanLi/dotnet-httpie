@@ -40,8 +40,11 @@ namespace HTTPie.Middleware
                 : new StringValues(Constants.JsonContentType);
             var dataInput = requestModel.RawInput
                 .Where(x => x.IndexOf('=') > 0
-                            && x.IndexOf("==", StringComparison.OrdinalIgnoreCase) < 0
-                            && !x.StartsWith("-"))
+                            && x.IndexOf("==", StringComparison.Ordinal) < 0
+                            && x.IndexOf("://", StringComparison.Ordinal) < 0
+                            && !x.StartsWith("-")
+                            && x.Split('=')[0].IndexOf(':') < 0
+                            )
                 .ToArray();
             if (dataInput.Length > 0)
             {

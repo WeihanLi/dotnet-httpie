@@ -150,7 +150,7 @@ namespace HTTPie.Utilities
             return serviceCollection;
         }
 
-        private static void InitRequestModel(HttpRequestModel requestModel, string[] args)
+        public static void InitRequestModel(HttpRequestModel requestModel, string[] args)
         {
             if (args[0].EndsWith("HTTPie.dll", StringComparison.OrdinalIgnoreCase)) args = args[1..];
             requestModel.RawInput = args;
