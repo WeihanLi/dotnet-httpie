@@ -29,11 +29,11 @@ namespace HTTPie.Middleware
 
         public Task Invoke(HttpClientHandler httpClientHandler, Func<Task> next)
         {
-            if (_requestModel.RawInput.Contains("--verify=no"))
+            if (_requestModel.Options.Contains("--verify=no"))
                 // ignore server cert
                 httpClientHandler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
             // sslProtocols
-            var sslOption = _requestModel.RawInput.FirstOrDefault(x => x.StartsWith("--ssl="))?["--ssl=".Length..];
+            var sslOption = _requestModel.Options.FirstOrDefault(x => x.StartsWith("--ssl="))?["--ssl=".Length..];
             if (!string.IsNullOrEmpty(sslOption))
             {
                 sslOption = sslOption.Replace(".", string.Empty);

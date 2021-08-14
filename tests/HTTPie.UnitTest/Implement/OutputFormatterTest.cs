@@ -23,7 +23,7 @@ namespace HTTPie.UnitTest.Implement
         {
             var output = _outputFormatter.GetOutput(new HttpContext(new HttpRequestModel
             {
-                RawInput = new[] { printOption }
+                Options = new[] { printOption }
             }));
             Assert.Empty(output);
         }

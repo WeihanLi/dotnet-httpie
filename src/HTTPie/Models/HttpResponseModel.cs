@@ -5,7 +5,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace HTTPie.Models
 {
-    public class HttpResponseModel
+    public record HttpResponseModel
     {
         public Version HttpVersion { get; set; } = new(1, 1);
         public HttpStatusCode StatusCode { get; set; }

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace HTTPie.Models
 {
-    public class HttpRequestModel
+    public record HttpRequestModel
     {
         [Required] public string Schema { get; set; } = "http";
 
@@ -18,6 +18,8 @@ namespace HTTPie.Models
         public IDictionary<string, StringValues> Headers { get; } = new Dictionary<string, StringValues>();
         public IDictionary<string, StringValues> Query { get; set; } = new Dictionary<string, StringValues>();
         public string? Body { get; set; }
-        public string[] RawInput { get; set; } = Array.Empty<string>();
+
+        public string[] Options { get; set; } = Array.Empty<string>();
+        public string[] Arguments { get; set; } = Array.Empty<string>();
     }
 }

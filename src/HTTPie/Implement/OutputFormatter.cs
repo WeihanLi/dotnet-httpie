@@ -40,28 +40,28 @@ namespace HTTPie.Implement
         public string GetOutput(HttpContext httpContext)
         {
             var requestModel = httpContext.Request;
-            if (requestModel.RawInput.Contains("--quiet") || requestModel.RawInput.Contains("-q")) return string.Empty;
+            if (requestModel.Options.Contains("--quiet") || requestModel.Options.Contains("-q")) return string.Empty;
             var outputFormat = OutputFormat.ResponseInfo;
-            if (requestModel.RawInput.Contains("--offline"))
+            if (requestModel.Options.Contains("--offline"))
             {
                 outputFormat = OutputFormat.RequestInfo;
             }
-            else if (requestModel.RawInput.Contains("--verbose") || requestModel.RawInput.Contains("-v"))
+            else if (requestModel.Options.Contains("--verbose") || requestModel.Options.Contains("-v"))
             {
                 outputFormat = OutputFormat.All;
             }
-            else if (requestModel.RawInput.Contains("--body") || requestModel.RawInput.Contains("-b"))
+            else if (requestModel.Options.Contains("--body") || requestModel.Options.Contains("-b"))
             {
                 outputFormat = OutputFormat.ResponseBody;
             }
-            else if (requestModel.RawInput.Contains("--headers") || requestModel.RawInput.Contains("-h"))
+            else if (requestModel.Options.Contains("--headers") || requestModel.Options.Contains("-h"))
             {
                 outputFormat = OutputFormat.ResponseHeaders;
             }
-            else if (requestModel.RawInput.Any(x => x.StartsWith("--print=") || x.StartsWith("-p=")))
+            else if (requestModel.Options.Any(x => x.StartsWith("--print=") || x.StartsWith("-p=")))
             {
-                var mode = requestModel.RawInput.FirstOrDefault(x => x.StartsWith("--print="))?["--print=".Length..]
-                           ?? requestModel.RawInput.FirstOrDefault(x =>
+                var mode = requestModel.Options.FirstOrDefault(x => x.StartsWith("--print="))?["--print=".Length..]
+                           ?? requestModel.Options.FirstOrDefault(x =>
                                x.StartsWith("-p="))?["-p=".Length..];
                 if (!string.IsNullOrEmpty(mode))
                     outputFormat = mode.Select(m => m switch
@@ -81,7 +81,6 @@ namespace HTTPie.Implement
                 output.AppendLine(GetRequestVersionAndStatus(requestModel));
                 output.AppendLine(GetHeadersString(requestModel.Headers));
             }
-
             if (outputFormat.HasFlag(OutputFormat.RequestBody) && !string.IsNullOrEmpty(requestModel.Body))
             {
                 output.AppendLineIf(string.Empty, output.Length > 0);
@@ -97,7 +96,6 @@ namespace HTTPie.Implement
                 output.AppendLine(GetResponseVersionAndStatus(responseModel));
                 output.AppendLine(GetHeadersString(responseModel.Headers));
             }
-
             if (outputFormat.HasFlag(OutputFormat.ResponseBody) && !string.IsNullOrEmpty(responseModel.Body))
             {
                 output.AppendLineIf(string.Empty, output.Length > requestLength);
@@ -109,7 +107,6 @@ namespace HTTPie.Implement
 
         private string GetRequestVersionAndStatus(HttpRequestModel requestModel)
         {
-            _logger.LogDebug($"RequestUrl: {requestModel.Url}");
             var uri = new Uri(requestModel.Url);
             return
                 $@"{requestModel.Method.Method.ToUpper()} {uri.PathAndQuery} HTTP/{requestModel.HttpVersion.ToString(2)}

@@ -39,7 +39,7 @@ namespace HTTPie.Middleware
             requestModel.Url = url;
 
             var httpVersionOption =
-                requestModel.RawInput.FirstOrDefault(x => x.StartsWith("--httpVersion="))?["--httpVersion=".Length..];
+                requestModel.Options.FirstOrDefault(x => x.StartsWith("--httpVersion="))?["--httpVersion=".Length..];
             if (!string.IsNullOrEmpty(httpVersionOption))
             {
                 _logger.LogDebug($"httpVersion: {httpVersionOption}");

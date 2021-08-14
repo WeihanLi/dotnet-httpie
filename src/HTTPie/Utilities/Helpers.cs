@@ -153,17 +153,28 @@ namespace HTTPie.Utilities
         public static void InitRequestModel(HttpRequestModel requestModel, string[] args)
         {
             if (args[0].EndsWith("HTTPie.dll", StringComparison.OrdinalIgnoreCase)) args = args[1..];
-            requestModel.RawInput = args;
             var method = args.FirstOrDefault(x => HttpMethods.Contains(x));
-            if (!string.IsNullOrEmpty(method)) requestModel.Method = new HttpMethod(method);
+            if (!string.IsNullOrEmpty(method)) 
+            { 
+                requestModel.Method = new HttpMethod(method);
+            }
             // Url
-            requestModel.Url =
-                args.FirstOrDefault(x => !x.StartsWith("-", StringComparison.Ordinal) && !HttpMethods.Contains(x)) ??
-                string.Empty;
-            var schema = requestModel.RawInput.FirstOrDefault(x => x.StartsWith("--schema="))?["--schema=".Length..];
+            requestModel.Url = 
+                args.FirstOrDefault(x => 
+                  !x.StartsWith("-", StringComparison.Ordinal) 
+                  && !HttpMethods.Contains(x)) 
+                ?? "/";
+            //
+            requestModel.Options = args.Where(x => x.StartsWith('-')).ToArray();
+            requestModel.Arguments = args
+                    .Except(new[] { method, requestModel.Url })
+                    .Except(requestModel.Options)
+                    .ToArray();
+
+            var schema = requestModel.Options.FirstOrDefault(x => x.StartsWith("--schema="))?["--schema=".Length..];
             if (!string.IsNullOrEmpty(schema)) requestModel.Schema = schema;
 
-            if (requestModel.Url == ":")
+            if (requestModel.Url == ":" || requestModel.Url == "/")
             {
                 requestModel.Url = "localhost";
             }
@@ -172,10 +183,9 @@ namespace HTTPie.Utilities
                 if (requestModel.Url.StartsWith(":/")) requestModel.Url = $"localhost{requestModel.Url[1..]}";
                 if (requestModel.Url.StartsWith(':')) requestModel.Url = $"localhost{requestModel.Url}";
             }
-
             if (requestModel.Url.IndexOf("://", StringComparison.Ordinal) < 0)
                 requestModel.Url = $"{requestModel.Schema}://{requestModel.Url}";
-            if (requestModel.Url.StartsWith("://"))
+            if (requestModel.Url.StartsWith("://", StringComparison.Ordinal))
                 requestModel.Url = $"{requestModel.Schema}{requestModel.Url}";
         }
 

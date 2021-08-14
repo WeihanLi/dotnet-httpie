@@ -11,16 +11,15 @@ namespace HTTPie.Middleware
     {
         public Task Invoke(HttpRequestModel model, Func<Task> next)
         {
-            foreach (var input in model.RawInput
+            foreach (var input in model.Arguments
                 .Where(x => x.IndexOf(':') > 0
-                            && x.IndexOf("://", StringComparison.Ordinal) < 0
-                            && x.IndexOf(":=", StringComparison.OrdinalIgnoreCase) < 0))
+                  && x.IndexOf(":=", StringComparison.OrdinalIgnoreCase) < 0))
             {
                 var arr = input.Split(':');
                 if (arr.Length == 2)
                 {
                     if (model.Headers.TryGetValue(arr[0], out var values))
-                        model.Headers[arr[0]] = new StringValues(new[] { arr[1] }.Union(values.ToArray()).ToArray());
+                        model.Headers[arr[0]] = new StringValues(values.ToArray().Union(new[] { arr[1] }).ToArray());
                     else
                         model.Headers[arr[0]] = arr[1];
                 }

@@ -44,7 +44,7 @@ namespace HTTPie.Implement
             var requestModel = httpContext.Request;
             await _requestPipeline(requestModel);
             _logger.LogDebug("RequestModel info: {requestModel}", requestModel.ToJson());
-            if (requestModel.RawInput.Contains("--offline"))
+            if (requestModel.Options.Contains("--offline"))
             {
                 _logger.LogDebug("Request should be offline, wont send request");
                 return;
@@ -58,14 +58,12 @@ namespace HTTPie.Implement
             await _httpHandlerPipeline(httpClientHandler);
             using var httpClient = new HttpClient(httpClientHandler);
             var timeoutConfig =
-                requestModel.RawInput.FirstOrDefault(x => x.StartsWith("--timeout="))?["--timeout=".Length..];
+                requestModel.Options.FirstOrDefault(x => x.StartsWith("--timeout="))?["--timeout=".Length..];
             if (int.TryParse(timeoutConfig, out var timeout) && timeout > 0)
                 httpClient.Timeout = TimeSpan.FromSeconds(timeout);
-            _logger.LogDebug(
-                $"Request message: {requestMessage.Method.Method.ToUpper()} {requestMessage.RequestUri.AbsoluteUri} HTTP/{requestMessage.Version.ToString(2)}");
+            _logger.LogDebug($@"Request message: {requestMessage}");
             using var responseMessage = await httpClient.SendAsync(requestMessage);
-            _logger.LogDebug(
-                $"Response message: HTTP/{responseMessage.Version.ToString(2)} {(int)responseMessage.StatusCode} {responseMessage.StatusCode}");
+            _logger.LogDebug($"Response message: {responseMessage}");
             _httpContext.Response = await _responseMapper.ToResponseModel(responseMessage);
             await _responsePipeline(_httpContext);
         }

@@ -47,8 +47,6 @@ namespace HTTPie.Implement
                     else
                         request.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
                 }
-
-            _logger.LogDebug("Request message: {requestMessage}", request.ToString());
             return Task.FromResult(request);
         }
     }

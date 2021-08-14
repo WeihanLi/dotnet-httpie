@@ -33,17 +33,14 @@ namespace HTTPie.Middleware
 
         public Task Invoke(HttpRequestModel requestModel, Func<Task> next)
         {
-            var isFormData = requestModel.RawInput.Contains("-f") || requestModel.RawInput.Contains("--form");
+            var isFormData = requestModel.Options.Contains("-f") || requestModel.Options.Contains("--form");
             _httpContext.UpdateFlag(Constants.FeatureFlagNames.IsFormContentType, isFormData);
             requestModel.Headers[Constants.ContentTypeHeaderName] = isFormData
                 ? new StringValues(Constants.FormContentType)
                 : new StringValues(Constants.JsonContentType);
-            var dataInput = requestModel.RawInput
+            var dataInput = requestModel.Arguments
                 .Where(x => x.IndexOf('=') > 0
                             && x.IndexOf("==", StringComparison.Ordinal) < 0
-                            && x.IndexOf("://", StringComparison.Ordinal) < 0
-                            && !x.StartsWith("-")
-                            && x.Split('=')[0].IndexOf(':') < 0
                             )
                 .ToArray();
             if (dataInput.Length > 0)
@@ -60,11 +57,11 @@ namespace HTTPie.Middleware
                     foreach (var input in dataInput)
                         if (input.IndexOf(":=", StringComparison.Ordinal) > 0)
                         {
-                            var arr = input.Split(":=");
-                            if (arr is { Length: 2 })
+                            var index = input.IndexOf(":=");
+                            if (index > 0)
                             {
                                 if (k > 0) jsonDataBuilder.Append(",");
-                                jsonDataBuilder.Append($@"""{arr[0]}"":{arr[1]}");
+                                jsonDataBuilder.Append($@"""{input[..index]}"":{input[(index + 2)..]}");
                                 k++;
                             }
                         }

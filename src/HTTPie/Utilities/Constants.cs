@@ -1,3 +1,5 @@
+using System.Reflection;
+
 namespace HTTPie.Utilities
 {
     public static class Constants
