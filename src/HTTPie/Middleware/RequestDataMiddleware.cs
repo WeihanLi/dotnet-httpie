@@ -1,13 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using HTTPie.Abstractions;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using Microsoft.Extensions.Primitives;
+using System;
+using System.Collections.Generic;
+using System.CommandLine;
+using System.CommandLine.Parsing;
+using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace HTTPie.Middleware
 {
@@ -15,25 +17,19 @@ namespace HTTPie.Middleware
     {
         private readonly HttpContext _httpContext;
 
-        private readonly Dictionary<string, string> _supportedParameters = new()
-        {
-            { "--form, -f", $"The request is form data, and content type is '{Constants.FormContentType}'" },
-            { "--json, -j", $"The request body is json by default, and content type is '{Constants.JsonContentType}'" }
-        };
-
         public RequestDataMiddleware(HttpContext httpContext)
         {
             _httpContext = httpContext;
         }
 
-        public Dictionary<string, string> SupportedParameters()
-        {
-            return _supportedParameters;
-        }
+        public static readonly Option FormOption = new(new[] { "-f", "--form" }, $"The request is form data, and content type is '{Constants.FormContentType}'");
+        public static readonly Option JsonOption = new(new[]{"-j","--json"},$"The request body is json by default, and content type is '{Constants.JsonContentType}'");
+
+        public ICollection<Option> SupportedOptions() => new[]{ FormOption, JsonOption };
 
         public Task Invoke(HttpRequestModel requestModel, Func<Task> next)
         {
-            var isFormData = requestModel.Options.Contains("-f") || requestModel.Options.Contains("--form");
+            var isFormData = requestModel.ParseResult.HasOption(FormOption);
             _httpContext.UpdateFlag(Constants.FeatureFlagNames.IsFormContentType, isFormData);
             requestModel.Headers[Constants.ContentTypeHeaderName] = isFormData
                 ? new StringValues(Constants.FormContentType)

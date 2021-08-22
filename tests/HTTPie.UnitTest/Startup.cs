@@ -1,8 +1,9 @@
 using HTTPie.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using WeihanLi.Common;
+using Xunit;
 
-namespace HTTPie.IntegrationTest
+namespace HTTPie.UnitTest
 {
     public class Startup
     {

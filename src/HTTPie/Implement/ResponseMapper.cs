@@ -1,9 +1,9 @@
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
 using HTTPie.Abstractions;
 using HTTPie.Models;
 using Microsoft.Extensions.Primitives;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace HTTPie.Implement
 {

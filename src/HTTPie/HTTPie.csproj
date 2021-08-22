@@ -10,7 +10,8 @@
         <Description>dotnet httpie, a command-line HTTP client</Description>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="WeihanLi.Common" Version="1.0.46"/>
-        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.1.17"/>
+        <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21308.1" />
+        <PackageReference Include="WeihanLi.Common" Version="1.0.46" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.1.17" />
     </ItemGroup>
 </Project>

@@ -1,11 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using HTTPie.Abstractions;
+using HTTPie.Implement;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.CommandLine;
+using System.Linq;
+using System.Threading.Tasks;
 using WeihanLi.Extensions;
 
 namespace HTTPie.Middleware
@@ -14,20 +16,42 @@ namespace HTTPie.Middleware
     {
         private readonly ILogger _logger;
 
-        private readonly Dictionary<string, string> _supportedParameters = new()
-        {
-            { "--schema", "The request schema" },
-            { "--httpVersion", "The request http version" },
-            { "--timeout", "timeout for the request, in seconds" }
-        };
-
         public DefaultRequestMiddleware(ILogger logger)
         {
             _logger = logger;
         }
 
+        public static readonly Option DebugOption = new("--debug", "Enable debug mode, output debug log");
+        public static readonly Option<string> SchemaOption = new("--schema", "The HTTP request schema");
+        public static readonly Option<Version> HttpVersionOption = new("--httpVersion", "The HTTP request HTTP version");
+
+        public ICollection<Option> SupportedOptions() => new HashSet<Option>()
+        {
+            DebugOption,
+            SchemaOption,
+            HttpVersionOption,
+            RequestExecutor.TimeoutOption,
+        };
+
         public async Task Invoke(HttpRequestModel requestModel, Func<Task> next)
         {
+            var schema = requestModel.ParseResult.ValueForOption(SchemaOption);
+            if (!string.IsNullOrEmpty(schema)) requestModel.Schema = schema;
+
+            if (requestModel.Url == ":" || requestModel.Url == "/")
+            {
+                requestModel.Url = "localhost";
+            }
+            else
+            {
+                if (requestModel.Url.StartsWith(":/")) requestModel.Url = $"localhost{requestModel.Url[1..]}";
+                if (requestModel.Url.StartsWith(':')) requestModel.Url = $"localhost{requestModel.Url}";
+            }
+            if (requestModel.Url.IndexOf("://", StringComparison.Ordinal) < 0)
+                requestModel.Url = $"{requestModel.Schema}://{requestModel.Url}";
+            if (requestModel.Url.StartsWith("://", StringComparison.Ordinal))
+                requestModel.Url = $"{requestModel.Schema}{requestModel.Url}";
+
             var url = requestModel.Url;
             if (requestModel.Query.Count > 0)
             {
@@ -39,22 +63,15 @@ namespace HTTPie.Middleware
             requestModel.Url = url;
 
             var httpVersionOption =
-                requestModel.Options.FirstOrDefault(x => x.StartsWith("--httpVersion="))?["--httpVersion=".Length..];
-            if (!string.IsNullOrEmpty(httpVersionOption))
+                requestModel.ParseResult.ValueForOption(HttpVersionOption);
+            if (httpVersionOption != default)
             {
                 _logger.LogDebug($"httpVersion: {httpVersionOption}");
-                if (httpVersionOption.IndexOf('.') < 0) httpVersionOption = $"{httpVersionOption}.0";
-                if (Version.TryParse(httpVersionOption, out var version))
-                    requestModel.HttpVersion = version;
+                requestModel.HttpVersion = httpVersionOption;
             }
 
             requestModel.Headers.TryAdd("User-Agent", Constants.DefaultUserAgent);
             await next();
-        }
-
-        public Dictionary<string, string> SupportedParameters()
-        {
-            return _supportedParameters;
         }
     }
 }

@@ -1,12 +1,11 @@
+using System;
 using System.Collections.Generic;
+using System.CommandLine;
 
 namespace HTTPie.Abstractions
 {
     public interface IPlugin
     {
-        Dictionary<string, string> SupportedParameters()
-        {
-            return new Dictionary<string, string>();
-        }
+        ICollection<Option> SupportedOptions() => Array.Empty<Option>();
     }
 }

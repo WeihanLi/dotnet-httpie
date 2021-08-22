@@ -9,7 +9,7 @@ var apiKey = Argument("apiKey", "");
 
 var solutionPath = "./dotnet-httpie.sln";
 var srcProjects  = GetFiles("./src/**/*.csproj");
-var testProjects  = GetFiles("./tests/**/*.csproj");
+var testProjects  = GetFiles("./tests/*UnitTest/*.csproj");
 
 var artifacts = "./artifacts";
 var branchName = EnvironmentVariable("BUILD_SOURCEBRANCHNAME") ?? "local";
@@ -111,7 +111,7 @@ Task("pack")
          NoRestore = true,
          NoBuild = true
       };
-      if(branchName != "master" && stable != "true"){
+      if(branchName != "main" && stable != "true"){
          settings.VersionSuffix = $"preview-{DateTime.UtcNow:yyyyMMdd-HHmmss}";
       }
       foreach (var project in srcProjects)

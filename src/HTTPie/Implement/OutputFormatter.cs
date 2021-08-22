@@ -1,68 +1,60 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using HTTPie.Abstractions;
 using HTTPie.Models;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using System;
+using System.Collections.Generic;
+using System.CommandLine;
+using System.CommandLine.Parsing;
+using System.Linq;
+using System.Text;
 using WeihanLi.Extensions;
 
 namespace HTTPie.Implement
 {
     public class OutputFormatter : IOutputFormatter
     {
-        private readonly ILogger _logger;
+        public static readonly Option QuietOption = new(new[] { "--quiet", "-q"}, "quiet mode, output nothing");
+        public static readonly Option OfflineOption = new("--offline", "offline mode, would not send the request, just print request info");
+        public static readonly Option OutputHeadersOption = new(new[] { "-h", "--headers" }, "output response headers only");
+        public static readonly Option OutputBodyOption = new(new[] { "-b", "--body" }, "output response headers and response body only");
+        public static readonly Option OutputVerboseOption = new(new[] { "-v", "--verbose" }, "output request/response, response headers and response body");
+        public static readonly Option<string> OutputPrintModeOption = new(new[] { "-p", "--print" }, "print mode, output specific info,H:request headers,B:request body,h:response headers,b:response body");
 
-        private readonly Dictionary<string, string> _supportedFormat = new()
+        public ICollection<Option> SupportedOptions() => new HashSet<Option>()
         {
-            { "--headers, -h", "output response headers only" },
-            { "--body, -b", "output response headers and response body only" },
-            { "--verbose, -v", "output request/response, response headers and response body" },
-            { "--quiet, -q", "quiet mode, output nothing" },
-            {
-                "--print, -p",
-                "print mode, output specific info,H:request headers,B:request body,h:response headers,b:response body"
-            },
-            { "--offline", "offline mode, would not send the request, print request info" }
+            OfflineOption,
+            QuietOption,
+            OutputHeadersOption,
+            OutputBodyOption,
+            OutputVerboseOption,
+            OutputPrintModeOption,
         };
-
-        public OutputFormatter(ILogger logger)
-        {
-            _logger = logger;
-        }
-
-        public Dictionary<string, string> SupportedParameters()
-        {
-            return _supportedFormat;
-        }
 
         public string GetOutput(HttpContext httpContext)
         {
             var requestModel = httpContext.Request;
-            if (requestModel.Options.Contains("--quiet") || requestModel.Options.Contains("-q")) return string.Empty;
+            if (requestModel.ParseResult.HasOption(QuietOption)) return string.Empty;
+
             var outputFormat = OutputFormat.ResponseInfo;
-            if (requestModel.Options.Contains("--offline"))
+            if (requestModel.ParseResult.HasOption(OfflineOption))
             {
                 outputFormat = OutputFormat.RequestInfo;
             }
-            else if (requestModel.Options.Contains("--verbose") || requestModel.Options.Contains("-v"))
+            else if (requestModel.ParseResult.HasOption(OutputVerboseOption))
             {
                 outputFormat = OutputFormat.All;
             }
-            else if (requestModel.Options.Contains("--body") || requestModel.Options.Contains("-b"))
+            else if (requestModel.ParseResult.HasOption(OutputBodyOption))
             {
                 outputFormat = OutputFormat.ResponseBody;
             }
-            else if (requestModel.Options.Contains("--headers") || requestModel.Options.Contains("-h"))
+            else if (requestModel.ParseResult.HasOption(OutputHeadersOption))
             {
                 outputFormat = OutputFormat.ResponseHeaders;
             }
-            else if (requestModel.Options.Any(x => x.StartsWith("--print=") || x.StartsWith("-p=")))
+            else if (requestModel.ParseResult.HasOption(OutputPrintModeOption))
             {
-                var mode = requestModel.Options.FirstOrDefault(x => x.StartsWith("--print="))?["--print=".Length..]
-                           ?? requestModel.Options.FirstOrDefault(x =>
-                               x.StartsWith("-p="))?["-p=".Length..];
+                var mode = requestModel.ParseResult.ValueForOption(OutputPrintModeOption);
                 if (!string.IsNullOrEmpty(mode))
                     outputFormat = mode.Select(m => m switch
                         {

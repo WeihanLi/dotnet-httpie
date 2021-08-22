@@ -1,10 +1,11 @@
-using System;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
 using HTTPie.Abstractions;
 using HTTPie.Models;
 using Microsoft.Extensions.Logging;
+using System;
+using System.CommandLine;
+using System.CommandLine.Parsing;
+using System.Net.Http;
+using System.Threading.Tasks;
 using WeihanLi.Common.Http;
 using WeihanLi.Extensions;
 
@@ -19,6 +20,8 @@ namespace HTTPie.Implement
         private readonly Func<HttpRequestModel, Task> _requestPipeline;
         private readonly IResponseMapper _responseMapper;
         private readonly Func<HttpContext, Task> _responsePipeline;
+
+        public static readonly Option<double> TimeoutOption = new("--timeout", "Request timeout in seconds");
 
         public RequestExecutor(
             IRequestMapper requestMapper,
@@ -44,7 +47,7 @@ namespace HTTPie.Implement
             var requestModel = httpContext.Request;
             await _requestPipeline(requestModel);
             _logger.LogDebug("RequestModel info: {requestModel}", requestModel.ToJson());
-            if (requestModel.Options.Contains("--offline"))
+            if (requestModel.ParseResult.HasOption(OutputFormatter.OfflineOption))
             {
                 _logger.LogDebug("Request should be offline, wont send request");
                 return;
@@ -57,9 +60,8 @@ namespace HTTPie.Implement
             };
             await _httpHandlerPipeline(httpClientHandler);
             using var httpClient = new HttpClient(httpClientHandler);
-            var timeoutConfig =
-                requestModel.Options.FirstOrDefault(x => x.StartsWith("--timeout="))?["--timeout=".Length..];
-            if (int.TryParse(timeoutConfig, out var timeout) && timeout > 0)
+            var timeout = requestModel.ParseResult.ValueForOption(TimeoutOption);
+            if (timeout > 0)
                 httpClient.Timeout = TimeSpan.FromSeconds(timeout);
             _logger.LogDebug($@"Request message: {requestMessage}");
             using var responseMessage = await httpClient.SendAsync(requestMessage);

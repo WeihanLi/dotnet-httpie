@@ -1,11 +1,12 @@
+using HTTPie.Abstractions;
+using HTTPie.Models;
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Authentication;
 using System.Threading.Tasks;
-using HTTPie.Abstractions;
-using HTTPie.Models;
 
 namespace HTTPie.Middleware
 {
@@ -18,14 +19,14 @@ namespace HTTPie.Middleware
             _requestModel = requestModel;
         }
 
-        public Dictionary<string, string> SupportedParameters()
+        public static readonly Option DisableSslVerifyOption = new("--verify=no", "disable ssl cert check");
+        public static readonly Option<SslProtocols> SslProtocalOption = new("--ssl", "specific the ssl protocols, ssl3, tls, tls1.1, tls1.2, tls1.3");
+
+        public ICollection<Option> SupportedOptions() => new HashSet<Option>()
         {
-            return new Dictionary<string, string>
-            {
-                { "--verify=no", "disable ssl cert check" },
-                { "--ssl", "specific the ssl protocols, ssl3, tls, tls1.1, tls1.2, tls1.3" }
-            };
-        }
+            DisableSslVerifyOption,
+            SslProtocalOption,
+        };
 
         public Task Invoke(HttpClientHandler httpClientHandler, Func<Task> next)
         {

@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using HTTPie.Abstractions;
 using HTTPie.Implement;
 using HTTPie.Middleware;
@@ -11,6 +5,18 @@ using HTTPie.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.CommandLine;
+using System.CommandLine.Builder;
+using System.CommandLine.Help;
+using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
+using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+using WeihanLi.Common;
 using WeihanLi.Common.Helpers;
 using WeihanLi.Extensions;
 
@@ -37,32 +43,7 @@ namespace HTTPie.Utilities
             "http post /api/notice title=test body=test-body"
         };
 
-        public static string GetHelpText(IServiceProvider serviceProvider)
-        {
-            var helpTextBuilder = new StringBuilder();
-            helpTextBuilder.AppendLine("Supported parameters:");
-            helpTextBuilder.AppendLine("\tParameter Name\t\tParameter Description");
-            helpTextBuilder.AppendLine($"\t{new[] { "--debug", "debug mode, output debug log" }.StringJoin("\t\t\t")}");
-            foreach (var parameter in serviceProvider.GetServices<IHttpHandlerMiddleware>()
-                .SelectMany(x => x.SupportedParameters())
-            )
-                helpTextBuilder.AppendLine($"\t{parameter.Key}\t\t{parameter.Value}");
-            foreach (var parameter in serviceProvider.GetServices<IRequestMiddleware>()
-                .SelectMany(x => x.SupportedParameters())
-            )
-                helpTextBuilder.AppendLine($"\t{parameter.Key}\t\t{parameter.Value}");
-            foreach (var parameter in serviceProvider.GetServices<IResponseMiddleware>()
-                .SelectMany(x => x.SupportedParameters())
-            )
-                helpTextBuilder.AppendLine($"\t{parameter.Key}\t\t{parameter.Value}");
-            foreach (var parameter in serviceProvider.GetRequiredService<IOutputFormatter>().SupportedParameters())
-                helpTextBuilder.AppendLine($"\t{parameter.Key}\t\t{parameter.Value}");
-
-            helpTextBuilder.AppendLine("Usage examples:");
-            foreach (var example in UsageExamples) helpTextBuilder.AppendLine($"\t{example}");
-
-            return helpTextBuilder.ToString();
-        }
+        public static readonly HashSet<Option> SupportedOptions = new();
 
         private static IServiceCollection AddHttpHandlerMiddleware<THttpHandlerMiddleware>(
             this IServiceCollection serviceCollection)
@@ -91,6 +72,83 @@ namespace HTTPie.Utilities
             serviceCollection.TryAddEnumerable(new ServiceDescriptor(typeof(IResponseMiddleware),
                 typeof(TResponseMiddleware), ServiceLifetime.Singleton));
             return serviceCollection;
+        }
+
+        public static void InitializeSupportOptions(IServiceProvider serviceProvider)
+        {
+            if (SupportedOptions.Count == 0)
+            {
+                foreach (var option in
+                    serviceProvider.GetServices<IHttpHandlerMiddleware>()
+                       .SelectMany(x => x.SupportedOptions())
+                       .Union(serviceProvider.GetServices<IRequestMiddleware>()
+                        .SelectMany(x => x.SupportedOptions())
+                        .Union(serviceProvider.GetServices<IResponseMiddleware>()
+                .SelectMany(x => x.SupportedOptions()))
+                        .Union(serviceProvider.GetRequiredService<IOutputFormatter>().SupportedOptions())
+                   ))
+                {
+                    SupportedOptions.Add(option);
+                }
+            }
+            _command = InitializeCommand();
+        }
+
+        private static Command _command = null!;
+        private static Command InitializeCommand()
+        {
+            var command = new RootCommand()
+            {
+                Name = "http",
+            };
+            //var methodArgument = new Argument<HttpMethod>("method")
+            //{
+            //    Description = "Request method",
+            //    Arity = ArgumentArity.ZeroOrOne,
+            //}; 
+            //methodArgument.SetDefaultValue(HttpMethod.Get.Method);
+            //var allowedMethods = HttpMethods.ToArray();
+            //methodArgument.AddSuggestions(allowedMethods);
+
+            //command.AddArgument(methodArgument);
+            //var urlArgument = new Argument<string>("url")
+            //{
+            //    Description = "Request url",
+            //    Arity = ArgumentArity.ExactlyOne
+            //};
+            //command.AddArgument(urlArgument);
+            
+            foreach (var option in SupportedOptions)
+            {
+                command.AddOption(option);
+            }
+            command.Handler = CommandHandler.Create(async (ParseResult parseResult, IConsole console) =>
+            {
+                var context = DependencyResolver.ResolveService<HttpContext>();
+                await DependencyResolver.ResolveService<IRequestExecutor>()
+                  .ExecuteAsync(context);
+                var output = DependencyResolver.ResolveService<IOutputFormatter>()
+                  .GetOutput(context);
+                console.Out.Write(output);
+            });
+            command.TreatUnmatchedTokensAsErrors = false;
+            return command;
+        }
+        public static string GetHelpText()
+        {
+            var helpTextBuilder = new StringBuilder();
+            helpTextBuilder.AppendLine("Supported parameters:");
+            helpTextBuilder.AppendLine("\tParameter Name\t\tParameter Description");
+            helpTextBuilder.AppendLine($"\t{new[] { "--debug", "debug mode, output debug log" }.StringJoin("\t\t\t")}");
+
+            foreach (var option in SupportedOptions)
+            {
+                helpTextBuilder.AppendLine($"\t{option.Name}\t{option.Aliases.StringJoin(",")}\t{option.Description}");
+            }
+
+            helpTextBuilder.AppendLine("Usage examples:");
+            foreach (var example in UsageExamples) helpTextBuilder.AppendLine($"\t{example}");
+            return helpTextBuilder.ToString();
         }
 
         // ReSharper disable once InconsistentNaming
@@ -150,54 +208,44 @@ namespace HTTPie.Utilities
             return serviceCollection;
         }
 
+        public static void InitRequestModel(HttpRequestModel requestModel, string commandLine)
+            => InitRequestModel(requestModel, CommandLineStringSplitter.Instance.Split(commandLine).ToArray());
+
         public static void InitRequestModel(HttpRequestModel requestModel, string[] args)
         {
-            if (args[0].EndsWith("HTTPie.dll", StringComparison.OrdinalIgnoreCase)) args = args[1..];
+            requestModel.ParseResult = _command.Parse(args);
+
             var method = args.FirstOrDefault(x => HttpMethods.Contains(x));
-            if (!string.IsNullOrEmpty(method)) 
-            { 
+            if (!string.IsNullOrEmpty(method))
+            {
                 requestModel.Method = new HttpMethod(method);
             }
             // Url
-            requestModel.Url = 
-                args.FirstOrDefault(x => 
-                  !x.StartsWith("-", StringComparison.Ordinal) 
-                  && !HttpMethods.Contains(x)) 
-                ?? "/";
-            //
-            requestModel.Options = args.Where(x => x.StartsWith('-')).ToArray();
+            requestModel.Url = args.FirstOrDefault(x =>
+                  !x.StartsWith("-", StringComparison.Ordinal)
+                  && !HttpMethods.Contains(x))
+                ?? string.Empty;
+
+            requestModel.Options = args
+                .Where(x => x.StartsWith('-'))
+                .ToArray();
             requestModel.Arguments = args
-                    .Except(new[] { method, requestModel.Url })
-                    .Except(requestModel.Options)
-                    .ToArray();
-
-            var schema = requestModel.Options.FirstOrDefault(x => x.StartsWith("--schema="))?["--schema=".Length..];
-            if (!string.IsNullOrEmpty(schema)) requestModel.Schema = schema;
-
-            if (requestModel.Url == ":" || requestModel.Url == "/")
-            {
-                requestModel.Url = "localhost";
-            }
-            else
-            {
-                if (requestModel.Url.StartsWith(":/")) requestModel.Url = $"localhost{requestModel.Url[1..]}";
-                if (requestModel.Url.StartsWith(':')) requestModel.Url = $"localhost{requestModel.Url}";
-            }
-            if (requestModel.Url.IndexOf("://", StringComparison.Ordinal) < 0)
-                requestModel.Url = $"{requestModel.Schema}://{requestModel.Url}";
-            if (requestModel.Url.StartsWith("://", StringComparison.Ordinal))
-                requestModel.Url = $"{requestModel.Schema}{requestModel.Url}";
+                .Except(new[] { method, requestModel.Url })
+                .Except(requestModel.Options)
+                .Select(x=> x.GetValueOrDefault(string.Empty))
+                .ToArray();
         }
 
-        public static async Task<string> GetOutput(IServiceProvider services, string[] args)
+        public static async Task<int> Handle(this IServiceProvider services, string[] args)
         {
-            var httpContext = services.GetRequiredService<HttpContext>();
-            InitRequestModel(httpContext.Request, args);
-            await services.GetRequiredService<IRequestExecutor>()
-                .ExecuteAsync(httpContext);
-            var output = services.GetRequiredService<IOutputFormatter>()
-                .GetOutput(httpContext);
-            return output;
+            InitRequestModel(services.GetRequiredService<HttpRequestModel>(), args);
+            return await _command.InvokeAsync(args);
         }
+
+        public static async Task<int> Handle(this IServiceProvider services, string commandLine)
+        {
+            InitRequestModel(services.GetRequiredService<HttpRequestModel>(), commandLine);
+            return await _command.InvokeAsync(commandLine);
+        }        
     }
 }

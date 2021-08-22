@@ -1,30 +1,33 @@
 using HTTPie.Implement;
 using HTTPie.Models;
+using HTTPie.Utilities;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System.CommandLine.Parsing;
 using Xunit;
 
 namespace HTTPie.UnitTest.Implement
 {
     public class OutputFormatterTest
     {
-        private readonly Mock<ILogger> _loggerMock = new();
         private readonly OutputFormatter _outputFormatter;
 
-        public OutputFormatterTest()
+        public OutputFormatterTest(IServiceProvider services)
         {
-            _outputFormatter = new OutputFormatter(_loggerMock.Object);
+            _outputFormatter = new OutputFormatter();
+            Services = services;
         }
 
+        public IServiceProvider Services { get; }
+
         [Theory]
-        [InlineData("-q")]
-        [InlineData("--quiet")]
-        public void QuietTest(string printOption)
+        [InlineData(":5000/api/values -q")]
+        [InlineData(":5000/api/values --quiet")]
+        public void QuietTest(string input)
         {
-            var output = _outputFormatter.GetOutput(new HttpContext(new HttpRequestModel
-            {
-                Options = new[] { printOption }
-            }));
+            var httpContext = new HttpContext(new HttpRequestModel());
+            Helpers.InitRequestModel(httpContext.Request, input);
+            var output = _outputFormatter.GetOutput(httpContext);
             Assert.Empty(output);
         }
     }

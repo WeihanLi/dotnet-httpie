@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "HTTPie": {
+      "commandName": "Project",
+      "commandLineArgs": "--schema=https reservation.weihanli.xyz/health test==hello Api-Version:1.2"
+    }
+  }
+}
