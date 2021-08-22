@@ -14,7 +14,7 @@ namespace HTTPie.Middleware
     {
         private readonly HttpRequestModel _requestModel;
         
-        public static readonly Option FollowOption = new("--follow", "The HTTP request should follow redirects");
+        public static readonly Option FollowOption = new(new[]{ "--follow","-F" }, "The HTTP request should follow redirects");
         public static readonly Option<int> MaxRedirectsOption = new("--max-redirects", "Allowed max HTTP request redirect times");
 
         public FollowRedirectMiddleware(HttpRequestModel requestModel)
