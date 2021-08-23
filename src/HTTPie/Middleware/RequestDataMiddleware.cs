@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using WeihanLi.Extensions;
 
 namespace HTTPie.Middleware
 {
@@ -21,63 +22,82 @@ namespace HTTPie.Middleware
         {
             _httpContext = httpContext;
         }
-
         public static readonly Option FormOption = new(new[] { "-f", "--form" }, $"The request is form data, and content type is '{Constants.FormContentType}'");
-        public static readonly Option JsonOption = new(new[]{"-j","--json"},$"The request body is json by default, and content type is '{Constants.JsonContentType}'");
+        public static readonly Option JsonOption = new(new[]{ "-j","--json"},$"The request body is json by default, and content type is '{Constants.JsonContentType}'");
+        public static readonly Option<string> RawDataOption = new("--raw", $"The raw request body");
 
-        public ICollection<Option> SupportedOptions() => new[]{ FormOption, JsonOption };
+        public ICollection<Option> SupportedOptions() => new[]
+        { 
+            FormOption, JsonOption, RawDataOption
+        };
 
         public Task Invoke(HttpRequestModel requestModel, Func<Task> next)
         {
             var isFormData = requestModel.ParseResult.HasOption(FormOption);
             _httpContext.UpdateFlag(Constants.FeatureFlagNames.IsFormContentType, isFormData);
-            requestModel.Headers[Constants.ContentTypeHeaderName] = isFormData
-                ? new StringValues(Constants.FormContentType)
-                : new StringValues(Constants.JsonContentType);
-            var dataInput = requestModel.Arguments
+
+            if (requestModel.ParseResult.HasOption(RawDataOption))
+            {
+                var rawData = requestModel.ParseResult.ValueForOption(RawDataOption);
+                requestModel.Body = rawData;
+            }
+            else
+            {
+                var dataInput = requestModel.Arguments
                 .Where(x => x.IndexOf('=') > 0
                             && x.IndexOf("==", StringComparison.Ordinal) < 0
                             )
                 .ToArray();
-            if (dataInput.Length > 0)
-            {
-                if (requestModel.Method == HttpMethod.Get) requestModel.Method = HttpMethod.Post;
-                if (isFormData)
+                if (dataInput.Length > 0)
                 {
-                    requestModel.Body = string.Join("&", dataInput);
-                }
-                else
-                {
-                    var jsonDataBuilder = new StringBuilder("{");
-                    var k = 0;
-                    foreach (var input in dataInput)
-                        if (input.IndexOf(":=", StringComparison.Ordinal) > 0)
-                        {
-                            var index = input.IndexOf(":=");
-                            if (index > 0)
+                    if (requestModel.Method == HttpMethod.Get) requestModel.Method = HttpMethod.Post;
+                    if (isFormData)
+                    {
+                        requestModel.Body = string.Join("&", dataInput);
+                    }
+                    else
+                    {
+                        var jsonDataBuilder = new StringBuilder("{");
+                        var k = 0;
+                        foreach (var input in dataInput)
+                            if (input.IndexOf(":=", StringComparison.Ordinal) > 0)
                             {
-                                if (k > 0) jsonDataBuilder.Append(",");
-                                jsonDataBuilder.Append($@"""{input[..index]}"":{input[(index + 2)..]}");
-                                k++;
+                                var index = input.IndexOf(":=");
+                                if (index > 0)
+                                {
+                                    if (k > 0) jsonDataBuilder.Append(",");
+                                    jsonDataBuilder.Append($@"""{input[..index]}"":{input[(index + 2)..]}");
+                                    k++;
+                                }
                             }
-                        }
-                        else
-                        {
-                            var index = input.IndexOf('=');
-                            if (index > 0)
+                            else
                             {
-                                if (k > 0) jsonDataBuilder.Append(",");
-                                jsonDataBuilder.Append(
-                                    $@"""{input[..index]}"":""{input[(index + 1)..].Replace("\"", "\\\"")}""");
-                                k++;
+                                var index = input.IndexOf('=');
+                                if (index > 0)
+                                {
+                                    if (k > 0) jsonDataBuilder.Append(",");
+                                    jsonDataBuilder.Append(
+                                        $@"""{input[..index]}"":""{input[(index + 1)..].Replace("\"", "\\\"")}""");
+                                    k++;
+                                }
                             }
-                        }
 
-                    jsonDataBuilder.Append("}");
-                    requestModel.Body = jsonDataBuilder.ToString();
+                        jsonDataBuilder.Append("}");
+                        requestModel.Body = jsonDataBuilder.ToString();
+                    }
                 }
             }
-
+           
+            if(requestModel.Body.IsNotNullOrEmpty())
+            {
+                requestModel.Headers[Constants.ContentTypeHeaderName] = isFormData
+                     ? new StringValues(Constants.FormContentType)
+                     : new StringValues(Constants.JsonContentType);
+                if(requestModel.Method == HttpMethod.Get)
+                {
+                    requestModel.Method = HttpMethod.Post;
+                }
+            }
             return next();
         }
     }

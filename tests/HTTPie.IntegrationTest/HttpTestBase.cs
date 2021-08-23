@@ -36,6 +36,11 @@ namespace HTTPie.IntegrationTest
             return await Helpers.Handle(Services, input);
         }
 
+        protected async Task<int> Handle(string[] args)
+        {
+            return await Helpers.Handle(Services, args);
+        }
+
         protected async Task<string> GetOutput(string input)
         {
             await Handle(input);

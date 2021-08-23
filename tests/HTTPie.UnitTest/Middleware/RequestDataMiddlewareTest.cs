@@ -66,5 +66,17 @@ namespace HTTPie.UnitTest.Middleware
             middleware.Invoke(httpContext.Request, () => Task.CompletedTask);
             Assert.Null(httpContext.Request.Body);
         }
+
+        [Theory]
+        [InlineData(@"POST --raw={""Id"":1,""Name"":""Alice""} --offline :5000/api/values")]
+        public void RawDataJsonTest(string input)
+        {
+            var httpContext = new HttpContext(new HttpRequestModel());
+            Helpers.InitRequestModel(httpContext.Request, input.Split(' '));
+            var middleware = new RequestDataMiddleware(httpContext);
+            middleware.Invoke(httpContext.Request, () => Task.CompletedTask);
+            Assert.NotNull(httpContext.Request.Body);
+            Assert.Equal(@"{""Id"":1,""Name"":""Alice""}", httpContext.Request.Body);
+        }
     }
 }
