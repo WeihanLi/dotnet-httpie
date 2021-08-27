@@ -56,9 +56,10 @@ namespace HTTPie.IntegrationTest.Implement
 
             var response = GetResponse();
             Assert.NotEmpty(response.Headers);
+            Assert.NotNull(response.Body);
             Assert.NotEmpty(response.Body);
 
-            Assert.Equal(response.Body.Trim(), output.Trim());
+            Assert.Equal(response.Body!.Trim(), output.Trim());
         }
     }
 }

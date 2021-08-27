@@ -186,7 +186,7 @@ namespace HTTPie.Utilities
                     return pipelineBuilder.Build();
                 })
                 .AddSingleton<HttpRequestModel>()
-                .AddSingleton(sp => new HttpContext(sp.GetService<HttpRequestModel>()))
+                .AddSingleton(sp => new HttpContext(sp.GetRequiredService<HttpRequestModel>()))
                 .AddSingleton<ILogger>(sp =>
                     sp.GetRequiredService<ILoggerFactory>().CreateLogger(Constants.ApplicationName));
 
