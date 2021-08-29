@@ -1,15 +1,13 @@
-using FluentAssertions.Common;
 using HTTPie.Abstractions;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using WeihanLi.Common;
-using Xunit;
 
 namespace HTTPie.IntegrationTest
 {
     [Collection("HttpTests")]
-    public abstract class HttpTestBase:IDisposable
+    public abstract class HttpTestBase : IDisposable
     {
         private bool disposedValue;
 
@@ -66,13 +64,13 @@ namespace HTTPie.IntegrationTest
                     // TODO: dispose managed state (managed objects)
                 }
 
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
+                // free unmanaged resources (unmanaged objects) and override finalizer
+                // set large fields to null
                 disposedValue = true;
             }
         }
 
-        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        // // override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
         // ~HttpTestBase()
         // {
         //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method

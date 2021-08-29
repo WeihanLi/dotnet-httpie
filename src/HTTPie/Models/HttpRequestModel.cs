@@ -18,7 +18,7 @@ namespace HTTPie.Models
         public string? Body { get; set; }
 
         public string[] Options { get; set; } = Array.Empty<string>();
-        public string[] Arguments { get; set; } = Array.Empty<string>();
+        public string[] RequestItems { get; set; } = Array.Empty<string>();
 
         [JsonIgnore]
         public ParseResult ParseResult { get; set; } = null!;

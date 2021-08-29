@@ -1,8 +1,3 @@
-using HTTPie.Middleware;
-using HTTPie.Models;
-using HTTPie.Utilities;
-using Xunit;
-
 namespace HTTPie.UnitTest.Middleware
 {
     public class RequestDataMiddlewareTest
@@ -23,7 +18,7 @@ namespace HTTPie.UnitTest.Middleware
             {
                 Url = url
             });
-            Helpers.InitRequestModel(httpContext.Request, url);
+            Helpers.InitRequestModel(httpContext, url);
             var middleware = new RequestDataMiddleware(httpContext);
             middleware.Invoke(httpContext.Request, () => Task.CompletedTask);
             Assert.Null(httpContext.Request.Body);
@@ -35,7 +30,7 @@ namespace HTTPie.UnitTest.Middleware
         public void QueryShouldNotBeTreatAsRequestData(string input)
         {
             var httpContext = new HttpContext(new HttpRequestModel());
-            Helpers.InitRequestModel(httpContext.Request, input);
+            Helpers.InitRequestModel(httpContext, input);
             var middleware = new RequestDataMiddleware(httpContext);
             middleware.Invoke(httpContext.Request, () => Task.CompletedTask);
             Assert.Null(httpContext.Request.Body);
@@ -48,7 +43,7 @@ namespace HTTPie.UnitTest.Middleware
         public void HeadersShouldNotBeTreatAsRequestData(string input)
         {
             var httpContext = new HttpContext(new HttpRequestModel());
-            Helpers.InitRequestModel(httpContext.Request, input);
+            Helpers.InitRequestModel(httpContext, input);
             var middleware = new RequestDataMiddleware(httpContext);
             middleware.Invoke(httpContext.Request, () => Task.CompletedTask);
             Assert.Null(httpContext.Request.Body);
@@ -61,7 +56,7 @@ namespace HTTPie.UnitTest.Middleware
         public void FlagsShouldNotBeTreatAsRequestData(string input)
         {
             var httpContext = new HttpContext(new HttpRequestModel());
-            Helpers.InitRequestModel(httpContext.Request, input);
+            Helpers.InitRequestModel(httpContext, input);
             var middleware = new RequestDataMiddleware(httpContext);
             middleware.Invoke(httpContext.Request, () => Task.CompletedTask);
             Assert.Null(httpContext.Request.Body);
@@ -72,7 +67,7 @@ namespace HTTPie.UnitTest.Middleware
         public void RawDataJsonTest(string input)
         {
             var httpContext = new HttpContext(new HttpRequestModel());
-            Helpers.InitRequestModel(httpContext.Request, input.Split(' '));
+            Helpers.InitRequestModel(httpContext, input.Split(' '));
             var middleware = new RequestDataMiddleware(httpContext);
             middleware.Invoke(httpContext.Request, () => Task.CompletedTask);
             Assert.NotNull(httpContext.Request.Body);

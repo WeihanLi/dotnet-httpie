@@ -35,7 +35,7 @@ namespace HTTPie.Middleware
             }
             else
             {
-                var dataInput = requestModel.Arguments
+                var dataInput = requestModel.RequestItems
                 .Where(x => x.IndexOf('=') > 0
                             && x.IndexOf("==", StringComparison.Ordinal) < 0
                             )

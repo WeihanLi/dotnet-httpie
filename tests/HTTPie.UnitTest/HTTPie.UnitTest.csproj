@@ -1,10 +1,18 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <IsPackable>false</IsPackable>
     </PropertyGroup>
-
+	<ItemGroup>
+		<Import Include="FluentAssertions"/>
+		<Import Include="Xunit"/>
+		<Import Include="HTTPie"/>
+		<Import Include="HTTPie.Implement"/>
+		<Import Include="HTTPie.Middleware"/>
+		<Import Include="HTTPie.Models"/>
+		<Import Include="HTTPie.Utilities"/>
+	</ItemGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
 		<PackageReference Include="FluentAssertions" Version="6.1.0" />

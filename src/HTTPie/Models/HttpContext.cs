@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace HTTPie.Models
 {
     public class HttpContext
@@ -24,6 +26,25 @@ namespace HTTPie.Models
             return _featureFlags.TryGetValue(flagName, out var enabled)
                 ? enabled
                 : defaultValue;
+        }
+    }
+
+    public static class HttpContextExtensions
+    {
+        public static bool TryGetProperty<T>(this HttpContext httpContext, string propertyName, [NotNullWhen(true)] out T? propertyValue) where T : notnull
+        {
+            if (httpContext.Properties.TryGetValue(propertyName, out var value))
+            {
+                propertyValue = (T)value;
+                return true;
+            }
+            propertyValue = default;
+            return default;
+        }
+
+        public static void SetProperty<T>(this HttpContext httpContext, string propertyName, T propertyValue) where T : notnull
+        {
+            httpContext.Properties[propertyName] = propertyValue;
         }
     }
 }

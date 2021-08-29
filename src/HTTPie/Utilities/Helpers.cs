@@ -198,11 +198,12 @@ namespace HTTPie.Utilities
             return serviceCollection;
         }
 
-        public static void InitRequestModel(HttpRequestModel requestModel, string commandLine)
-            => InitRequestModel(requestModel, CommandLineStringSplitter.Instance.Split(commandLine).ToArray());
+        public static void InitRequestModel(HttpContext httpContext, string commandLine)
+            => InitRequestModel(httpContext, CommandLineStringSplitter.Instance.Split(commandLine).ToArray());
 
-        public static void InitRequestModel(HttpRequestModel requestModel, string[] args)
+        public static void InitRequestModel(HttpContext httpContext, string[] args)
         {
+            var requestModel = httpContext.Request;
             requestModel.ParseResult = _command.Parse(args);
 
             var method = args.FirstOrDefault(x => HttpMethods.Contains(x));
@@ -215,26 +216,46 @@ namespace HTTPie.Utilities
                   !x.StartsWith("-", StringComparison.Ordinal)
                   && !HttpMethods.Contains(x))
                 ?? string.Empty;
+            if (string.IsNullOrEmpty(requestModel.Url))
+            {
+                throw new InvalidOperationException("The request url can not be null");
+            }
+            var urlIndex = Array.IndexOf(args, requestModel.Url);
 
             requestModel.Options = args
                 .Where(x => x.StartsWith('-'))
                 .ToArray();
-            requestModel.Arguments = args
+            var argsExceptArguments = args
                 .Except(new[] { method, requestModel.Url })
-                .Except(requestModel.Options)
-                .Select(x => x.GetValueOrDefault(string.Empty))
                 .ToArray();
+#nullable disable
+            requestModel.RequestItems = argsExceptArguments
+                .Where((x, idx) =>
+                {
+                    if (idx <= urlIndex)
+                    {
+                        return false;
+                    }
+                    if (string.IsNullOrEmpty(x) || x.StartsWith('-'))
+                    {
+                        return false;
+                    }
+                    var before = args[idx - 1];
+                    return !(before.StartsWith('-') && before.IndexOf('=') > 0);
+                })
+                .ToArray();
+#nullable restore
         }
 
         public static async Task<int> Handle(this IServiceProvider services, string[] args)
         {
-            InitRequestModel(services.GetRequiredService<HttpRequestModel>(), args);
+            InitRequestModel(services.GetRequiredService<HttpContext>(), args);
             return await _command.InvokeAsync(args);
         }
 
         public static async Task<int> Handle(this IServiceProvider services, string commandLine)
         {
-            InitRequestModel(services.GetRequiredService<HttpRequestModel>(), commandLine);
+            InitRequestModel(services.GetRequiredService<HttpContext>(), commandLine);
             return await _command.InvokeAsync(commandLine);
         }
     }

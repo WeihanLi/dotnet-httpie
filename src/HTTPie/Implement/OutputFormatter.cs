@@ -1,5 +1,6 @@
 using HTTPie.Abstractions;
 using HTTPie.Models;
+using HTTPie.Utilities;
 using Microsoft.Extensions.Primitives;
 using System.Text;
 
@@ -24,13 +25,20 @@ namespace HTTPie.Implement
             OutputPrintModeOption,
         };
 
-        public string GetOutput(HttpContext httpContext)
+        public static OutputFormat GetOutputFormat(HttpContext httpContext)
         {
-            var requestModel = httpContext.Request;
-            if (requestModel.ParseResult.HasOption(QuietOption)) return string.Empty;
+            if (httpContext.TryGetProperty<OutputFormat>(Constants.ResponseOutputFormatPropertyName, out var outputFormat))
+            {
+                return outputFormat;
+            }
+            outputFormat = OutputFormat.ResponseInfo;
 
-            var outputFormat = OutputFormat.ResponseInfo;
-            if (requestModel.ParseResult.HasOption(OfflineOption))
+            var requestModel = httpContext.Request;
+            if (requestModel.ParseResult.HasOption(QuietOption))
+            {
+                outputFormat = OutputFormat.None;
+            }
+            else if (requestModel.ParseResult.HasOption(OfflineOption))
             {
                 outputFormat = OutputFormat.RequestInfo;
             }
@@ -51,16 +59,24 @@ namespace HTTPie.Implement
                 var mode = requestModel.ParseResult.ValueForOption(OutputPrintModeOption);
                 if (!string.IsNullOrEmpty(mode))
                     outputFormat = mode.Select(m => m switch
-                        {
-                            'H' => OutputFormat.RequestHeaders,
-                            'B' => OutputFormat.RequestBody,
-                            'h' => OutputFormat.ResponseHeaders,
-                            'b' => OutputFormat.ResponseBody,
-                            _ => OutputFormat.None
-                        })
+                    {
+                        'H' => OutputFormat.RequestHeaders,
+                        'B' => OutputFormat.RequestBody,
+                        'h' => OutputFormat.ResponseHeaders,
+                        'b' => OutputFormat.ResponseBody,
+                        _ => OutputFormat.None
+                    })
                         .Aggregate(OutputFormat.None, (current, format) => current | format);
             }
+            httpContext.SetProperty(Constants.ResponseOutputFormatPropertyName, outputFormat);
+            return outputFormat;
+        }
 
+
+        public string GetOutput(HttpContext httpContext)
+        {
+            var outputFormat = GetOutputFormat(httpContext);
+            var requestModel = httpContext.Request;
             var output = new StringBuilder();
             if (outputFormat.HasFlag(OutputFormat.RequestHeaders))
             {

@@ -8,7 +8,7 @@ namespace HTTPie.Middleware
     {
         public Task Invoke(HttpRequestModel model, Func<Task> next)
         {
-            foreach (var input in model.Arguments
+            foreach (var input in model.RequestItems
                 .Where(x => x.IndexOf(':') > 0
                   && x.IndexOf(":=", StringComparison.OrdinalIgnoreCase) < 0))
             {

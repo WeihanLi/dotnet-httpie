@@ -9,7 +9,7 @@ var apiKey = Argument("apiKey", "");
 
 var solutionPath = "./dotnet-httpie.sln";
 var srcProjects  = GetFiles("./src/**/*.csproj");
-var testProjects  = GetFiles("./tests/*UnitTest/*.csproj");
+var testProjects  = GetFiles("./tests/*/*.csproj");
 
 var artifacts = "./artifacts";
 var branchName = EnvironmentVariable("BUILD_SOURCEBRANCHNAME") ?? "local";

@@ -1,7 +1,4 @@
-﻿using FluentAssertions;
-using Xunit;
-
-namespace HTTPie.IntegrationTest.Middleware
+﻿namespace HTTPie.IntegrationTest.Middleware
 {
     public class RequestDataMiddlewareTest : HttpTestBase
     {

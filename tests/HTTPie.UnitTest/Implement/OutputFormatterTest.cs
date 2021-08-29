@@ -1,8 +1,3 @@
-using HTTPie.Implement;
-using HTTPie.Models;
-using HTTPie.Utilities;
-using Xunit;
-
 namespace HTTPie.UnitTest.Implement
 {
     public class OutputFormatterTest
@@ -23,7 +18,7 @@ namespace HTTPie.UnitTest.Implement
         public void QuietTest(string input)
         {
             var httpContext = new HttpContext(new HttpRequestModel());
-            Helpers.InitRequestModel(httpContext.Request, input);
+            Helpers.InitRequestModel(httpContext, input);
             var output = _outputFormatter.GetOutput(httpContext);
             Assert.Empty(output);
         }

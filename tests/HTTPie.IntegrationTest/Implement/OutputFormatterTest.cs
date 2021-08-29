@@ -1,5 +1,3 @@
-using Xunit;
-
 namespace HTTPie.IntegrationTest.Implement
 {
     public class OutputFormatterTest : HttpTestBase
@@ -14,6 +12,7 @@ namespace HTTPie.IntegrationTest.Implement
 
             var response = GetResponse();
             Assert.Empty(response.Headers);
+            Assert.Empty(response.Body);
         }
 
         [Theory]
@@ -25,7 +24,8 @@ namespace HTTPie.IntegrationTest.Implement
             Assert.Empty(output);
 
             var response = GetResponse();
-            Assert.NotEmpty(response.Headers);
+            Assert.Empty(response.Headers);
+            Assert.Empty(response.Body);
         }
 
         [Theory]
@@ -37,9 +37,7 @@ namespace HTTPie.IntegrationTest.Implement
 
             var response = GetResponse();
             Assert.NotEmpty(response.Headers);
-            Assert.NotEmpty(response.Body);
-
-            Assert.DoesNotContain(response.Body, output);
+            Assert.Empty(response.Body);
         }
 
         [Theory]
@@ -51,11 +49,10 @@ namespace HTTPie.IntegrationTest.Implement
             Assert.NotEmpty(output);
 
             var response = GetResponse();
-            Assert.NotEmpty(response.Headers);
+            Assert.Empty(response.Headers);
             Assert.NotNull(response.Body);
             Assert.NotEmpty(response.Body);
-
-            Assert.Equal(response.Body!.Trim(), output.Trim());
+            Assert.Equal(response.Body.Trim(), output.Trim());
         }
     }
 }

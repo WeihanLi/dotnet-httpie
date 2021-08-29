@@ -9,7 +9,7 @@ namespace HTTPie.Middleware
         public Task Invoke(HttpRequestModel requestModel, Func<Task> next)
         {
             foreach (var query in
-                requestModel.Arguments.Where(x => x.IndexOf("==", StringComparison.Ordinal) > 0))
+                requestModel.RequestItems.Where(x => x.IndexOf("==", StringComparison.Ordinal) > 0))
             {
                 var arr = query.Split("==");
                 if (arr.Length == 2)
