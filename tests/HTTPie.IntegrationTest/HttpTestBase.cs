@@ -1,17 +1,25 @@
+using FluentAssertions.Common;
 using HTTPie.Abstractions;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using Microsoft.Extensions.DependencyInjection;
+using WeihanLi.Common;
 using Xunit;
 
 namespace HTTPie.IntegrationTest
 {
     [Collection("HttpTests")]
-    public abstract class HttpTestBase
+    public abstract class HttpTestBase:IDisposable
     {
-        protected HttpTestBase(IServiceProvider serviceProvider)
+        private bool disposedValue;
+
+        protected HttpTestBase()
         {
-            Services = serviceProvider;
+            Services = new ServiceCollection()
+                .RegisterHTTPieServices()
+                .BuildServiceProvider();
+            DependencyResolver.SetDependencyResolver(Services);
+            Helpers.InitializeSupportOptions(Services);
         }
 
         protected IServiceProvider Services { get; }
@@ -48,6 +56,34 @@ namespace HTTPie.IntegrationTest
                 .GetOutput(GetHttpContext());
         }
 
-        
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    (Services as IDisposable)?.Dispose();
+                    // TODO: dispose managed state (managed objects)
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                disposedValue = true;
+            }
+        }
+
+        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        // ~HttpTestBase()
+        // {
+        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
     }
 }

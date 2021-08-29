@@ -2,15 +2,7 @@ using HTTPie.Abstractions;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using Microsoft.Extensions.Primitives;
-using System;
-using System.Collections.Generic;
-using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.Linq;
-using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
-using WeihanLi.Extensions;
 
 namespace HTTPie.Middleware
 {
@@ -23,11 +15,11 @@ namespace HTTPie.Middleware
             _httpContext = httpContext;
         }
         public static readonly Option FormOption = new(new[] { "-f", "--form" }, $"The request is form data, and content type is '{Constants.FormContentType}'");
-        public static readonly Option JsonOption = new(new[]{ "-j","--json"},$"The request body is json by default, and content type is '{Constants.JsonContentType}'");
+        public static readonly Option JsonOption = new(new[] { "-j", "--json" }, $"The request body is json by default, and content type is '{Constants.JsonContentType}'");
         public static readonly Option<string> RawDataOption = new("--raw", $"The raw request body");
 
         public ICollection<Option> SupportedOptions() => new[]
-        { 
+        {
             FormOption, JsonOption, RawDataOption
         };
 
@@ -87,13 +79,13 @@ namespace HTTPie.Middleware
                     }
                 }
             }
-           
-            if(requestModel.Body.IsNotNullOrEmpty())
+
+            if (requestModel.Body.IsNotNullOrEmpty())
             {
                 requestModel.Headers[Constants.ContentTypeHeaderName] = isFormData
                      ? new StringValues(Constants.FormContentType)
                      : new StringValues(Constants.JsonContentType);
-                if(requestModel.Method == HttpMethod.Get)
+                if (requestModel.Method == HttpMethod.Get)
                 {
                     requestModel.Method = HttpMethod.Post;
                 }

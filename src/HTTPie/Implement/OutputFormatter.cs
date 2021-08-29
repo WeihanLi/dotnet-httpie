@@ -1,19 +1,13 @@
 using HTTPie.Abstractions;
 using HTTPie.Models;
 using Microsoft.Extensions.Primitives;
-using System;
-using System.Collections.Generic;
-using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.Linq;
 using System.Text;
-using WeihanLi.Extensions;
 
 namespace HTTPie.Implement
 {
     public class OutputFormatter : IOutputFormatter
     {
-        public static readonly Option QuietOption = new(new[] { "--quiet", "-q"}, "quiet mode, output nothing");
+        public static readonly Option QuietOption = new(new[] { "--quiet", "-q" }, "quiet mode, output nothing");
         public static readonly Option OfflineOption = new("--offline", "offline mode, would not send the request, just print request info");
         public static readonly Option OutputHeadersOption = new(new[] { "-h", "--headers" }, "output response headers only");
         public static readonly Option OutputBodyOption = new(new[] { "-b", "--body" }, "output response headers and response body only");

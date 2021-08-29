@@ -5,20 +5,10 @@ using HTTPie.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.CommandLine;
-using System.CommandLine.Builder;
-using System.CommandLine.Help;
 using System.CommandLine.Invocation;
-using System.CommandLine.Parsing;
-using System.Linq;
-using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 using WeihanLi.Common;
 using WeihanLi.Common.Helpers;
-using WeihanLi.Extensions;
 
 namespace HTTPie.Utilities
 {
@@ -117,7 +107,7 @@ namespace HTTPie.Utilities
             //    Arity = ArgumentArity.ExactlyOne
             //};
             //command.AddArgument(urlArgument);
-            
+
             foreach (var option in SupportedOptions)
             {
                 command.AddOption(option);
@@ -232,7 +222,7 @@ namespace HTTPie.Utilities
             requestModel.Arguments = args
                 .Except(new[] { method, requestModel.Url })
                 .Except(requestModel.Options)
-                .Select(x=> x.GetValueOrDefault(string.Empty))
+                .Select(x => x.GetValueOrDefault(string.Empty))
                 .ToArray();
         }
 
@@ -246,6 +236,6 @@ namespace HTTPie.Utilities
         {
             InitRequestModel(services.GetRequiredService<HttpRequestModel>(), commandLine);
             return await _command.InvokeAsync(commandLine);
-        }        
+        }
     }
 }

@@ -1,5 +1,4 @@
 using HTTPie.Models;
-using System.Threading.Tasks;
 
 namespace HTTPie.Abstractions
 {

@@ -2,12 +2,9 @@ using HTTPie.Abstractions;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using Microsoft.Extensions.Logging;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Threading.Tasks;
 using WeihanLi.Common.Helpers;
-using WeihanLi.Extensions;
 
 namespace HTTPie.Implement
 {

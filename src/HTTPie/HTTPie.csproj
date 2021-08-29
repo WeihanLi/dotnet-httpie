@@ -9,6 +9,11 @@
         <Title>dotnet-HTTPie</Title>
         <Description>dotnet httpie, a command-line HTTP client</Description>
     </PropertyGroup>
+	<ItemGroup>
+		<Import Include="System.CommandLine"/>
+		<Import Include="System.CommandLine.Parsing"/>
+		<Import Include="WeihanLi.Extensions"/>
+	</ItemGroup>
     <ItemGroup>
         <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21308.1" />
         <PackageReference Include="WeihanLi.Common" Version="1.0.46" />

@@ -3,12 +3,6 @@ using HTTPie.Implement;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.CommandLine;
-using System.Linq;
-using System.Threading.Tasks;
-using WeihanLi.Extensions;
 
 namespace HTTPie.Middleware
 {

@@ -4,10 +4,6 @@ namespace HTTPie.IntegrationTest.Implement
 {
     public class OutputFormatterTest : HttpTestBase
     {
-        public OutputFormatterTest(IServiceProvider serviceProvider) : base(serviceProvider)
-        {
-        }
-
         [Theory]
         [InlineData("https://reservation.weihanli.xyz/health --offline")]
         [InlineData("get https://reservation.weihanli.xyz/health --offline")]

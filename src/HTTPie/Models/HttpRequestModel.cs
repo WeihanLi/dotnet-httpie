@@ -1,10 +1,6 @@
 using Microsoft.Extensions.Primitives;
-using System;
-using System.Collections.Generic;
-using System.CommandLine.Parsing;
-using System.ComponentModel.DataAnnotations;
-using System.Net.Http;
 using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 
 namespace HTTPie.Models
 {
@@ -23,7 +19,7 @@ namespace HTTPie.Models
 
         public string[] Options { get; set; } = Array.Empty<string>();
         public string[] Arguments { get; set; } = Array.Empty<string>();
-        
+
         [JsonIgnore]
         public ParseResult ParseResult { get; set; } = null!;
     }

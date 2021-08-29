@@ -1,13 +1,7 @@
 using HTTPie.Abstractions;
 using HTTPie.Models;
 using Microsoft.Extensions.Logging;
-using System;
-using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.Net.Http;
-using System.Threading.Tasks;
 using WeihanLi.Common.Http;
-using WeihanLi.Extensions;
 
 namespace HTTPie.Implement
 {

@@ -1,10 +1,7 @@
 ﻿using HTTPie.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Linq;
 using WeihanLi.Common;
-using WeihanLi.Extensions;
 
 var debugEnabled = args.Contains("--debug", StringComparer.OrdinalIgnoreCase);
 var serviceCollection = new ServiceCollection()

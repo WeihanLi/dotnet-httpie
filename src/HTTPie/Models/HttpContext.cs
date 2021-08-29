@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace HTTPie.Models
 {
     public class HttpContext

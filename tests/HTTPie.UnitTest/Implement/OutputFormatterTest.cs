@@ -1,9 +1,6 @@
 using HTTPie.Implement;
 using HTTPie.Models;
 using HTTPie.Utilities;
-using Microsoft.Extensions.Logging;
-using Moq;
-using System.CommandLine.Parsing;
 using Xunit;
 
 namespace HTTPie.UnitTest.Implement

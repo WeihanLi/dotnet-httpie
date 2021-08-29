@@ -1,12 +1,6 @@
 using HTTPie.Abstractions;
 using HTTPie.Models;
-using System;
-using System.Collections.Generic;
-using System.CommandLine;
-using System.Linq;
-using System.Net.Http;
 using System.Security.Authentication;
-using System.Threading.Tasks;
 
 namespace HTTPie.Middleware
 {

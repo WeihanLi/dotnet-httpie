@@ -1,7 +1,6 @@
 using HTTPie.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using WeihanLi.Common;
-using Xunit;
 
 namespace HTTPie.UnitTest
 {
