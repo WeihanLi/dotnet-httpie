@@ -6,6 +6,10 @@ namespace HTTPie.Models
     {
         private readonly Dictionary<string, bool> _featureFlags = new();
 
+        public HttpContext():this(new HttpRequestModel())
+        {
+        }
+
         public HttpContext(HttpRequestModel request, HttpResponseModel? response = null)
         {
             Request = request;

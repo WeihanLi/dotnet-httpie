@@ -191,6 +191,7 @@ namespace HTTPie.Utilities
                 .AddRequestMiddleware<RequestHeadersMiddleware>()
                 .AddRequestMiddleware<RequestDataMiddleware>()
                 .AddRequestMiddleware<DefaultRequestMiddleware>()
+                .AddRequestMiddleware<AuthenticationMiddleware>()
                 ;
             // ResponseMiddleware
             serviceCollection.AddResponseMiddleware<DefaultResponseMiddleware>();
