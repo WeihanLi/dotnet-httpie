@@ -51,13 +51,13 @@ Here's a sample: ![sample](./images/sample.png)
 There's a docker image(weihanli/dotnet-httpie) that you could use directly without installing the tool, use sample:
 
 ``` bash
-docker run --rm --pull=always weihanli/dotnet-httpie http -v github.com
+docker run --rm --pull=always weihanli/dotnet-httpie:latest http -v github.com
 
-docker run --rm --pull=always weihanli/dotnet-httpie http reservation.weihanli.xyz/health job:='{"id":1,"name":"tester"}' --offline
+docker run --rm --pull=always weihanli/dotnet-httpie:latest http reservation.weihanli.xyz/health job:='{"id":1,"name":"tester"}' --offline
 
-docker run --rm --pull=always weihanli/dotnet-httpie http PUT httpbin.org hello=world
+docker run --rm --pull=always weihanli/dotnet-httpie:latest http PUT httpbin.org hello=world
 
-docker run --rm --pull=always weihanli/dotnet-httpie http get httpbin.org/status/400
+docker run --rm --pull=always weihanli/dotnet-httpie:latest http get httpbin.org/status/400
 ```
 
 ## More
