@@ -204,6 +204,10 @@ namespace HTTPie.Utilities
 
         public static void InitRequestModel(HttpContext httpContext, string[] args)
         {
+            if(args.Contains("--help"))
+            {
+                return;
+            }
             var requestModel = httpContext.Request;
             requestModel.ParseResult = _command.Parse(args);
 
