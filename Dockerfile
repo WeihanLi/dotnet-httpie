@@ -5,6 +5,7 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS build-env
 
 WORKDIR /app
 COPY ./src ./
+COPY ./build/version.props ./Directory.Build.props
 RUN dotnet publish ./HTTPie/HTTPie.csproj -c Release --self-contained --use-current-runtime -p:AssemblyName=http -o ./artifacts
 
 FROM base AS final
