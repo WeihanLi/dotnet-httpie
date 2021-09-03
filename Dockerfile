@@ -1,11 +1,11 @@
-FROM mcr.microsoft.com/dotnet/runtime:6.0-alpine AS base
+FROM mcr.microsoft.com/dotnet/runtime-deps:6.0-alpine AS base
 LABEL Maintainer="WeihanLi"
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS build-env
-# dotnet-httpie version, docker build --build-arg TOOL_VERSION=0.1.0 -t weihanli/dotnet-httpie:0.1.0 .
-ARG TOOL_VERSION
-RUN dotnet tool install --global dotnet-httpie --version ${TOOL_VERSION}
+
+WORKDIR /app
+RUN dotnet publish ./src/HTTPie/HTTPie.csproj -c Release --self-contained --use-current-runtime -p:AssemblyName=http -o ./artifacts
 
 FROM base AS final
-COPY --from=build-env /root/.dotnet/tools /root/.dotnet/tools
+COPY --from=build-env /app/artifacts /root/.dotnet/tools
 ENV PATH="/root/.dotnet/tools:${PATH}"

@@ -8,6 +8,9 @@
         <PackageId>dotnet-httpie</PackageId>
         <Title>dotnet-HTTPie</Title>
         <Description>dotnet httpie, a command-line HTTP client</Description>
+        <PublishSingleFile>true</PublishSingleFile>
+        <PublishTrimmed>true</PublishTrimmed>
+        <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     </PropertyGroup>
 	<ItemGroup>
 		<Import Include="System.CommandLine"/>
