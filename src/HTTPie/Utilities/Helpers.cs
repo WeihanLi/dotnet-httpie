@@ -124,22 +124,6 @@ namespace HTTPie.Utilities
             command.TreatUnmatchedTokensAsErrors = false;
             return command;
         }
-        public static string GetHelpText()
-        {
-            var helpTextBuilder = new StringBuilder();
-            helpTextBuilder.AppendLine("Supported parameters:");
-            helpTextBuilder.AppendLine("\tParameter Name\t\tParameter Description");
-            helpTextBuilder.AppendLine($"\t{new[] { "--debug", "debug mode, output debug log" }.StringJoin("\t\t\t")}");
-
-            foreach (var option in SupportedOptions)
-            {
-                helpTextBuilder.AppendLine($"\t{option.Name}\t{option.Aliases.StringJoin(",")}\t{option.Description}");
-            }
-
-            helpTextBuilder.AppendLine("Usage examples:");
-            foreach (var example in UsageExamples) helpTextBuilder.AppendLine($"\t{example}");
-            return helpTextBuilder.ToString();
-        }
 
         // ReSharper disable once InconsistentNaming
         public static IServiceCollection RegisterHTTPieServices(this IServiceCollection serviceCollection,
@@ -211,13 +195,13 @@ namespace HTTPie.Utilities
             var requestModel = httpContext.Request;
             requestModel.ParseResult = _command.Parse(args);
 
-            var method = args.FirstOrDefault(x => HttpMethods.Contains(x));
+            var method = requestModel.ParseResult.UnmatchedTokens.FirstOrDefault(x => HttpMethods.Contains(x));
             if (!string.IsNullOrEmpty(method))
             {
                 requestModel.Method = new HttpMethod(method);
             }
             // Url
-            requestModel.Url = args.FirstOrDefault(x =>
+            requestModel.Url = requestModel.ParseResult.UnmatchedTokens.FirstOrDefault(x =>
                   !x.StartsWith("-", StringComparison.Ordinal)
                   && !HttpMethods.Contains(x))
                 ?? string.Empty;
@@ -230,11 +214,8 @@ namespace HTTPie.Utilities
             requestModel.Options = args
                 .Where(x => x.StartsWith('-'))
                 .ToArray();
-            var argsExceptArguments = args
-                .Except(new[] { method, requestModel.Url })
-                .ToArray();
 #nullable disable
-            requestModel.RequestItems = argsExceptArguments
+            requestModel.RequestItems = args
                 .Where((x, idx) =>
                 {
                     if (idx <= urlIndex)
@@ -248,6 +229,7 @@ namespace HTTPie.Utilities
                     var before = args[idx - 1];
                     return !(before.StartsWith('-') && before.IndexOf('=') > 0);
                 })
+                .Except(new[] { method, requestModel.Url })
                 .ToArray();
 #nullable restore
         }

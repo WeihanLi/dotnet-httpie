@@ -8,7 +8,8 @@ namespace HTTPie.UnitTest.Utilities
             var input = "GET -a uid:pwd reservation.weihanli.xyz/health";
             var httpContext = new HttpContext(new HttpRequestModel());
             Helpers.InitRequestModel(httpContext, input);
-            httpContext.Request.RequestItems.Should().BeNullOrEmpty();
+            httpContext.Request.Url.Should().Be("reservation.weihanli.xyz/health");
+            httpContext.Request.RequestItems.Should().BeEmpty();
             httpContext.Request.Headers.Should().NotContainKey("uid");
         }
     }
