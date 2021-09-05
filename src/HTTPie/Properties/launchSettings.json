@@ -2,7 +2,7 @@
   "profiles": {
     "HTTPie": {
       "commandName": "Project",
-      "commandLineArgs": "--schema=https httpbin.org/post test==hello Api-Version:1.2 --raw={\\\"Id\\\":1,\\\"Name\\\":\\\"Alice\\\"} --debug"
+      "commandLineArgs": "-v --schema=https httpbin.org/post test==hello Api-Version:1.2 --raw={\\\"Id\\\":1,\\\"Name\\\":\\\"Alice\\\"} --debug"
     }
   }
 }
