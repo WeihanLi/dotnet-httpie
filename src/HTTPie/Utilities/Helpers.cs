@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using System.CommandLine.Invocation;
-using System.Text;
 using WeihanLi.Common;
 using WeihanLi.Common.Helpers;
 
@@ -215,20 +214,7 @@ namespace HTTPie.Utilities
                 .Where(x => x.StartsWith('-'))
                 .ToArray();
 #nullable disable
-            requestModel.RequestItems = args
-                .Where((x, idx) =>
-                {
-                    if (idx <= urlIndex)
-                    {
-                        return false;
-                    }
-                    if (string.IsNullOrEmpty(x) || x.StartsWith('-'))
-                    {
-                        return false;
-                    }
-                    var before = args[idx - 1];
-                    return !(before.StartsWith('-') && before.IndexOf('=') > 0);
-                })
+            requestModel.RequestItems = requestModel.ParseResult.UnmatchedTokens
                 .Except(new[] { method, requestModel.Url })
                 .ToArray();
 #nullable restore

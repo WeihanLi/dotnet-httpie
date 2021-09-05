@@ -51,7 +51,7 @@ namespace HTTPie.UnitTest.Middleware
 
         [Theory]
         [InlineData("GET :5000/api/values --print=Hh")]
-        [InlineData("GET :5000/api/values --p=HB")]
+        [InlineData("GET :5000/api/values -p=HB")]
         [InlineData("reservation.weihanli.xyz/health --verbose --schema=https")]
         public void FlagsShouldNotBeTreatAsRequestData(string input)
         {
