@@ -4,6 +4,7 @@
     <PropertyGroup>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
         <PackageIcon>icon.png</PackageIcon>
         <PackageTags>HTTPie http https curl rest</PackageTags>
         <PackageIconUrl>https://avatars3.githubusercontent.com/u/7604648</PackageIconUrl>
@@ -20,4 +21,9 @@
     <ItemGroup>
         <None Include="$(MSBuildThisFileDirectory)icon.png" Pack="true" Visible="false" PackagePath=""/>
     </ItemGroup>
+    <ItemGroup>
+        <Using Include="WeihanLi.Common"/>
+        <Using Include="WeihanLi.Common.Helpers"/>
+        <Using Include="WeihanLi.Extensions"/>
+	</ItemGroup>
 </Project>

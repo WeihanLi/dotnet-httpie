@@ -5,13 +5,16 @@
         <IsPackable>false</IsPackable>
     </PropertyGroup>
 	<ItemGroup>
-		<Import Include="FluentAssertions"/>
-		<Import Include="Xunit"/>
-		<Import Include="HTTPie"/>
-		<Import Include="HTTPie.Implement"/>
-		<Import Include="HTTPie.Middleware"/>
-		<Import Include="HTTPie.Models"/>
-		<Import Include="HTTPie.Utilities"/>
+
+	</ItemGroup>
+    <ItemGroup>
+        <Using Include="FluentAssertions"/>
+        <Using Include="Xunit"/>
+        <Using Include="HTTPie"/>
+        <Using Include="HTTPie.Implement"/>
+        <Using Include="HTTPie.Middleware"/>
+        <Using Include="HTTPie.Models"/>
+        <Using Include="HTTPie.Utilities"/>
 	</ItemGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
