@@ -4,12 +4,7 @@
         <TargetFramework>net6.0</TargetFramework>
         <IsPackable>false</IsPackable>
     </PropertyGroup>
-	<ItemGroup>
-
-	</ItemGroup>
     <ItemGroup>
-        <Using Include="FluentAssertions"/>
-        <Using Include="Xunit"/>
         <Using Include="HTTPie"/>
         <Using Include="HTTPie.Implement"/>
         <Using Include="HTTPie.Middleware"/>

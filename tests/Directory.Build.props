@@ -1,0 +1,6 @@
+<Project>
+    <ItemGroup>
+        <Using Include="FluentAssertions"/>
+        <Using Include="Xunit"/>
+	</ItemGroup>
+</Project>
