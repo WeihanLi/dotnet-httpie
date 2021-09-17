@@ -5,8 +5,6 @@
         <IsPackable>false</IsPackable>
     </PropertyGroup>
     <ItemGroup>
-        <Using Include="FluentAssertions"/>
-        <Using Include="Xunit"/>
         <Using Include="HTTPie"/>
         <Using Include="HTTPie.Implement"/>
         <Using Include="HTTPie.Middleware"/>
