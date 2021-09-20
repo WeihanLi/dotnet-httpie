@@ -57,7 +57,7 @@ namespace HTTPie.Middleware
                                 var index = input.IndexOf(":=");
                                 if (index > 0)
                                 {
-                                    if (k > 0) jsonDataBuilder.Append(",");
+                                    if (k > 0) jsonDataBuilder.Append(',');
                                     jsonDataBuilder.Append($@"""{input[..index]}"":{input[(index + 2)..]}");
                                     k++;
                                 }
@@ -67,14 +67,14 @@ namespace HTTPie.Middleware
                                 var index = input.IndexOf('=');
                                 if (index > 0)
                                 {
-                                    if (k > 0) jsonDataBuilder.Append(",");
+                                    if (k > 0) jsonDataBuilder.Append(',');
                                     jsonDataBuilder.Append(
                                         $@"""{input[..index]}"":""{input[(index + 1)..].Replace("\"", "\\\"")}""");
                                     k++;
                                 }
                             }
 
-                        jsonDataBuilder.Append("}");
+                        jsonDataBuilder.Append('}');
                         requestModel.Body = jsonDataBuilder.ToString();
                     }
                 }
