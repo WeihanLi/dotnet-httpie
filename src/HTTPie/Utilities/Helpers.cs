@@ -5,6 +5,8 @@ using HTTPie.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using System;
+using System.CommandLine.Builder;
 using System.CommandLine.Invocation;
 using WeihanLi.Common;
 using WeihanLi.Common.Helpers;
@@ -80,10 +82,13 @@ namespace HTTPie.Utilities
                     SupportedOptions.Add(option);
                 }
             }
-            _command = InitializeCommand();
+            var command = InitializeCommand();
+            var builder = new CommandLineBuilder(command);
+            builder.UseDefaults();
+            _commandParser = builder.Build();
         }
 
-        private static Command _command = null!;
+        private static Parser _commandParser = null!;
         private static Command InitializeCommand()
         {
             var command = new RootCommand()
@@ -192,7 +197,7 @@ namespace HTTPie.Utilities
                 return;
             }
             var requestModel = httpContext.Request;
-            requestModel.ParseResult = _command.Parse(args);
+            requestModel.ParseResult = _commandParser.Parse(args);
 
             var method = requestModel.ParseResult.UnmatchedTokens.FirstOrDefault(x => HttpMethods.Contains(x));
             if (!string.IsNullOrEmpty(method))
@@ -223,13 +228,13 @@ namespace HTTPie.Utilities
         public static async Task<int> Handle(this IServiceProvider services, string[] args)
         {
             InitRequestModel(services.GetRequiredService<HttpContext>(), args);
-            return await _command.InvokeAsync(args);
+            return await _commandParser.InvokeAsync(args);
         }
 
         public static async Task<int> Handle(this IServiceProvider services, string commandLine)
         {
             InitRequestModel(services.GetRequiredService<HttpContext>(), commandLine);
-            return await _command.InvokeAsync(commandLine);
+            return await _commandParser.InvokeAsync(commandLine);
         }
     }
 }

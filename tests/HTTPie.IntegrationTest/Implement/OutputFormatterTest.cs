@@ -29,7 +29,7 @@ namespace HTTPie.IntegrationTest.Implement
         }
 
         [Theory]
-        [InlineData("GET https://reservation.weihanli.xyz/health --print=Hh")]
+        [InlineData("GET https://httpbin.org/get --print=Hh")]
         public async Task PrintTest(string input)
         {
             var output = await GetOutput(input);
