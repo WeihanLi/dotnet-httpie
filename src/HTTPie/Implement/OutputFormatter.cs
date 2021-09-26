@@ -2,12 +2,24 @@ using HTTPie.Abstractions;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json.Linq;
 using System.Text;
 
 namespace HTTPie.Implement
 {
+    [Flags]
+    public enum PrettyOptions
+    {
+        None = 0,
+        Format = 1,
+        Style = 2,
+        All = 3
+    }
+
     public class OutputFormatter : IOutputFormatter
     {
+        public static readonly Option<PrettyOptions> PrettyOption = new("--pretty", () => PrettyOptions.All, "pretty output");
+
         public static readonly Option QuietOption = new(new[] { "--quiet", "-q" }, "quiet mode, output nothing");
         public static readonly Option OfflineOption = new("--offline", "offline mode, would not send the request, just print request info");
         public static readonly Option OutputHeadersOption = new(new[] { "-h", "--headers" }, "output response headers only");
@@ -23,6 +35,8 @@ namespace HTTPie.Implement
             OutputBodyOption,
             OutputVerboseOption,
             OutputPrintModeOption,
+
+            PrettyOption,
         };
 
         public static OutputFormat GetOutputFormat(HttpContext httpContext)
@@ -75,8 +89,10 @@ namespace HTTPie.Implement
 
         public string GetOutput(HttpContext httpContext)
         {
-            var outputFormat = GetOutputFormat(httpContext);
             var requestModel = httpContext.Request;
+
+            var outputFormat = GetOutputFormat(httpContext);
+            var prettyOption = requestModel.ParseResult.ValueForOption(PrettyOption);
             var output = new StringBuilder();
             if (outputFormat.HasFlag(OutputFormat.RequestHeaders))
             {
@@ -86,7 +102,7 @@ namespace HTTPie.Implement
             if (outputFormat.HasFlag(OutputFormat.RequestBody) && !string.IsNullOrEmpty(requestModel.Body))
             {
                 output.AppendLineIf(string.Empty, output.Length > 0);
-                output.AppendLine(requestModel.Body);
+                output.AppendLine(Prettify(requestModel.Body, prettyOption));
             }
 
             output.AppendLineIf(string.Empty, output.Length > 0 && (outputFormat & OutputFormat.ResponseInfo) != 0);
@@ -101,10 +117,26 @@ namespace HTTPie.Implement
             if (outputFormat.HasFlag(OutputFormat.ResponseBody) && !string.IsNullOrEmpty(responseModel.Body))
             {
                 output.AppendLineIf(string.Empty, output.Length > requestLength);
-                output.AppendLine(responseModel.Body);
+                
+                output.AppendLine(Prettify(responseModel.Body, prettyOption));
             }
 
             return output.ToString();
+        }
+
+        private static string Prettify(string body, PrettyOptions prettyOption)
+        {
+            if (prettyOption == PrettyOptions.None || string.IsNullOrWhiteSpace(body))
+                return body;
+            try
+            {
+                var formattedJson = JToken.Parse(body).ToString(Newtonsoft.Json.Formatting.Indented);
+                return formattedJson;
+            }
+            catch (Exception)
+            {
+                return body;
+            }
         }
 
         private string GetRequestVersionAndStatus(HttpRequestModel requestModel)

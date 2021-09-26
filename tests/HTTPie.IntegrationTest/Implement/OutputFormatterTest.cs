@@ -41,8 +41,8 @@ namespace HTTPie.IntegrationTest.Implement
         }
 
         [Theory]
-        [InlineData("https://httpbin.org/get -p=b")]
-        [InlineData("GET https://httpbin.org/get --print=b")]
+        [InlineData("https://httpbin.org/get -p=b --pretty=none")]
+        [InlineData("GET https://httpbin.org/get --print=b --pretty=none")]
         public async Task PrintResponseBodyTest(string input)
         {
             var output = await GetOutput(input);

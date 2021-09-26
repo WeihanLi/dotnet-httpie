@@ -221,6 +221,7 @@ namespace HTTPie.Utilities
 #nullable disable
             requestModel.RequestItems = requestModel.ParseResult.UnmatchedTokens
                 .Except(new[] { method, requestModel.Url })
+                .Where(x => !x.StartsWith('-'))
                 .ToArray();
 #nullable restore
         }
