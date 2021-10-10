@@ -4,7 +4,6 @@
     // Install needed extensions
     "extensions": [
         "ms-dotnettools.csharp",
-        "davidanson.vscode-markdownlint",
-        "github.vscode-pull-request-github"
+        "davidanson.vscode-markdownlint"
     ]
 }
