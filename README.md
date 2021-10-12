@@ -10,7 +10,7 @@
 
 dotnet tool version of HTTPie, Modern, user-friendly command-line HTTP client for the API era.
 
-![httpie](https://raw.githubusercontent.com/httpie/httpie/master/httpie.gif)
+![httpie](https://raw.githubusercontent.com/httpie/httpie/master/docs/httpie-animation.gif)
 
 HTTPie (pronounced aitch-tee-tee-pie) is a command-line HTTP client. Its goal is to make CLI interaction with web services as human-friendly as possible. HTTPie is designed for testing, debugging, and generally interacting with APIs & HTTP servers.
 
