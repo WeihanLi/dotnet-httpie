@@ -25,7 +25,7 @@ dotnet tool install --global dotnet-httpie
 For latest preview version, run the following command instead:
 
 ``` bash
-dotnet tool install --global dotnet-httpie --version '*-*'
+dotnet tool install --global dotnet-httpie --prerelease
 ```
 
 ## GetStarted
