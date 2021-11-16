@@ -11,12 +11,12 @@
         <Description>dotnet httpie, a command-line HTTP client</Description>
     </PropertyGroup>
     <ItemGroup>
-        <Using Include="System.CommandLine"/>
-        <Using Include="System.CommandLine.Parsing"/>
+        <Using Include="System.CommandLine" />
+        <Using Include="System.CommandLine.Parsing" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21308.1" />
-        <PackageReference Include="WeihanLi.Common" Version="1.0.46" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0-rc.1.21451.13" />
+        <PackageReference Include="WeihanLi.Common" Version="1.0.47-preview-20211009-134935" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
     </ItemGroup>
 </Project>

@@ -5,18 +5,18 @@
         <IsPackable>false</IsPackable>
     </PropertyGroup>
     <ItemGroup>
-        <Using Include="HTTPie"/>
-        <Using Include="HTTPie.Implement"/>
-        <Using Include="HTTPie.Middleware"/>
-        <Using Include="HTTPie.Models"/>
-        <Using Include="HTTPie.Utilities"/>
+        <Using Include="HTTPie" />
+        <Using Include="HTTPie.Implement" />
+        <Using Include="HTTPie.Middleware" />
+        <Using Include="HTTPie.Models" />
+        <Using Include="HTTPie.Utilities" />
 	</ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
-		<PackageReference Include="FluentAssertions" Version="6.1.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
+		<PackageReference Include="FluentAssertions" Version="6.2.0" />
 		<PackageReference Include="Moq" Version="4.16.1" />
         <PackageReference Include="xunit" Version="2.4.1" />
-        <PackageReference Include="Xunit.DependencyInjection" Version="7.4.0" />
+        <PackageReference Include="Xunit.DependencyInjection" Version="8.2.0" />
         <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
