@@ -1,14 +1,22 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <PackAsTool>true</PackAsTool>
-    <ToolCommandName>http</ToolCommandName>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="3.1.0" />
-    <PackageReference Include="WeihanLi.Common" Version="1.0.46" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.1.0" />
-  </ItemGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net6.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+        <PackAsTool>true</PackAsTool>
+        <ToolCommandName>http</ToolCommandName>
+        <PackageId>dotnet-httpie</PackageId>
+        <Title>dotnet-HTTPie</Title>
+        <Description>dotnet httpie, a command-line HTTP client</Description>
+    </PropertyGroup>
+    <ItemGroup>
+        <Using Include="System.CommandLine" />
+        <Using Include="System.CommandLine.Parsing" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21308.1" />
+        <PackageReference Include="WeihanLi.Common" Version="1.0.47" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
+    </ItemGroup>
 </Project>

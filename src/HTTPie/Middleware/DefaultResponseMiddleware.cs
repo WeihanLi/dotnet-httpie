@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using HTTPie.Abstractions;
 using HTTPie.Models;
 

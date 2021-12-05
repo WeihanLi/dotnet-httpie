@@ -1,67 +1,29 @@
-﻿using System;
-using System.Linq;
-using System.Net.Http;
-using System.Reflection;
-using HTTPie.Abstractions;
-using HTTPie.Models;
-using HTTPie.Utilities;
+﻿using HTTPie.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using WeihanLi.Common.Helpers;
-using WeihanLi.Extensions;
+using WeihanLi.Common;
 
 var debugEnabled = args.Contains("--debug", StringComparer.OrdinalIgnoreCase);
-await using var services = new ServiceCollection()
-    .AddLogging(builder => builder.AddConsole().SetMinimumLevel(debugEnabled ? LogLevel.Debug : LogLevel.Warning))
-    .RegisterAssemblyTypesAsImplementedInterfaces(Assembly.GetExecutingAssembly())
-    .AddSingleton(sp =>
-    {
-        var pipelineBuilder = PipelineBuilder.CreateAsync<HttpRequestModel>();
-        foreach (var middleware in
-            sp.GetServices<IRequestMiddleware>())
-            pipelineBuilder.Use(middleware.Invoke);
-        return pipelineBuilder.Build();
-    })
-    .AddSingleton(sp =>
-    {
-        var pipelineBuilder = PipelineBuilder.CreateAsync<HttpContext>();
-        foreach (var middleware in
-            sp.GetServices<IResponseMiddleware>())
-            pipelineBuilder.Use(middleware.Invoke);
-        return pipelineBuilder.Build();
-    })
-    .AddSingleton(sp =>
-    {
-        var pipelineBuilder = PipelineBuilder.CreateAsync<HttpClientHandler>();
-        foreach (var middleware in
-            sp.GetServices<IHttpHandlerMiddleware>())
-            pipelineBuilder.Use(middleware.Invoke);
-        return pipelineBuilder.Build();
-    })
-    .AddSingleton<HttpRequestModel>()
-    .BuildServiceProvider();
-if (args is not {Length: > 0} || args.Contains("-h") || args.Contains("--help"))
+var serviceCollection = new ServiceCollection()
+    .RegisterHTTPieServices(debugEnabled);
+await using var services = serviceCollection.BuildServiceProvider();
+DependencyResolver.SetDependencyResolver(services);
+Helpers.InitializeSupportOptions(services);
+if (args is not { Length: > 0 })
 {
-    // Print Help
-    var helpText = Helpers.GetHelpText(services);
-    Console.WriteLine(helpText);
+    args = new[] { "--help" };
+}
+if (args.Contains("--version"))
+{
+    Console.WriteLine(Constants.DefaultUserAgent);
     return 0;
 }
 
-var logger = services.GetRequiredService<ILoggerFactory>()
-    .CreateLogger("dotnet-HTTPie");
+var logger = services.GetRequiredService<ILogger>();
 logger.LogDebug($"Input parameters: {args.StringJoin(";")}");
 try
 {
-    var requestModel = services.GetRequiredService<HttpRequestModel>();
-    Helpers.InitRequestModel(requestModel, args);
-    logger.LogDebug("requestModel:{requestModel}", requestModel.ToJson());
-    var responseModel = await services.GetRequiredService<IRequestExecutor>()
-        .ExecuteAsync(requestModel);
-    var output = services.GetRequiredService<IOutputFormatter>()
-        .GetOutput(requestModel, responseModel);
-    Console.WriteLine(output);
-    return 0;
+    return await Helpers.Handle(services, args);
 }
 catch (Exception e)
 {

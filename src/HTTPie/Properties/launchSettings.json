@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "HTTPie": {
+      "commandName": "Project",
+      "commandLineArgs": "-v --schema=https httpbin.org/post test==hello Api-Version:1.2 --raw={\\\"Id\\\":1,\\\"Name\\\":\\\"Alice\\\"} --debug"
+    },
+    "HTTPie-pretty-test": {
+      "commandName": "Project",
+      "commandLineArgs": "-v --schema=https reservation.weihanli.xyz/api/notice --pretty=none --debug"
+    }
+  }
+}

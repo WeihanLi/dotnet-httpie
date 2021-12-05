@@ -1,15 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Net;
 using Microsoft.Extensions.Primitives;
+using System.Net;
 
 namespace HTTPie.Models
 {
-    public class HttpResponseModel
+    public record HttpResponseModel
     {
-        public Version HttpVersion { get; set; } = null!;
+        public Version HttpVersion { get; set; } = new(1, 1);
         public HttpStatusCode StatusCode { get; set; }
-        public Dictionary<string, StringValues> Headers { get; set; } = null!;
-        public string? Body { get; set; }
+        public Dictionary<string, StringValues> Headers { get; set; } = new();
+        public string Body { get; set; } = string.Empty;
     }
 }

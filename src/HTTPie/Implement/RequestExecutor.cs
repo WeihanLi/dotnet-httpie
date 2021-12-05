@@ -1,60 +1,67 @@
-using System;
-using System.Net.Http;
-using System.Threading.Tasks;
 using HTTPie.Abstractions;
 using HTTPie.Models;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using WeihanLi.Common.Http;
 
 namespace HTTPie.Implement
 {
     public class RequestExecutor : IRequestExecutor
     {
+        private readonly HttpContext _httpContext;
         private readonly Func<HttpClientHandler, Task> _httpHandlerPipeline;
+        private readonly ILogger _logger;
         private readonly IRequestMapper _requestMapper;
         private readonly Func<HttpRequestModel, Task> _requestPipeline;
         private readonly IResponseMapper _responseMapper;
         private readonly Func<HttpContext, Task> _responsePipeline;
-        private readonly IServiceProvider _serviceProvider;
-        private readonly ILogger<RequestExecutor> _logger;
+
+        public static readonly Option<double> TimeoutOption = new("--timeout", "Request timeout in seconds");
 
         public RequestExecutor(
             IRequestMapper requestMapper,
             IResponseMapper responseMapper,
+            HttpContext httpContext,
             Func<HttpClientHandler, Task> httpHandlerPipeline,
             Func<HttpRequestModel, Task> requestPipeline,
             Func<HttpContext, Task> responsePipeline,
-            IServiceProvider serviceProvider,
-            ILogger<RequestExecutor> logger
+            ILogger logger
         )
         {
             _requestMapper = requestMapper;
             _responseMapper = responseMapper;
+            _httpContext = httpContext;
             _httpHandlerPipeline = httpHandlerPipeline;
             _requestPipeline = requestPipeline;
             _responsePipeline = responsePipeline;
-            _serviceProvider = serviceProvider;
             _logger = logger;
         }
 
-        public async Task<HttpResponseModel> ExecuteAsync(HttpRequestModel requestModel)
+        public async ValueTask ExecuteAsync(HttpContext httpContext)
         {
-            using var httpClientHandler = new HttpClientHandler()
+            var requestModel = httpContext.Request;
+            await _requestPipeline(requestModel);
+            _logger.LogDebug("RequestModel info: {requestModel}", requestModel.ToJson());
+            if (requestModel.ParseResult.HasOption(OutputFormatter.OfflineOption))
+            {
+                _logger.LogDebug("Request should be offline, wont send request");
+                return;
+            }
+
+            using var requestMessage = await _requestMapper.ToRequestMessage(httpContext);
+            using var httpClientHandler = new NoProxyHttpClientHandler
             {
                 AllowAutoRedirect = false
             };
             await _httpHandlerPipeline(httpClientHandler);
-            await _requestPipeline(requestModel);
-            using var requestMessage = await _requestMapper.ToRequestMessage(requestModel);
-            _logger.LogDebug($"Request message: {requestMessage.Method.Method.ToUpper()} {requestMessage.RequestUri.AbsoluteUri} HTTP/{requestMessage.Version.ToString(2)}");
             using var httpClient = new HttpClient(httpClientHandler);
+            var timeout = requestModel.ParseResult.ValueForOption(TimeoutOption);
+            if (timeout > 0)
+                httpClient.Timeout = TimeSpan.FromSeconds(timeout);
+            _logger.LogDebug($@"Request message: {requestMessage}");
             using var responseMessage = await httpClient.SendAsync(requestMessage);
-            _logger.LogDebug($"Response message: HTTP/{responseMessage.Version.ToString(2)} {(int)responseMessage.StatusCode} {responseMessage.StatusCode}");
-            var responseModel = await _responseMapper.ToResponseModel(responseMessage);
-            using var scope = _serviceProvider.CreateScope();
-            var context = new HttpContext(requestModel, responseModel, scope.ServiceProvider);
-            await _responsePipeline(context);
-            return responseModel;
+            _logger.LogDebug($"Response message: {responseMessage}");
+            _httpContext.Response = await _responseMapper.ToResponseModel(responseMessage);
+            await _responsePipeline(_httpContext);
         }
     }
 }

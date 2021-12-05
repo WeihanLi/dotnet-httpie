@@ -1,0 +1,10 @@
+.github
+docs
+images
+tests
+build.cake
+build.ps1
+build.sh
+dotnet-httpie.sln
+LICENSE
+README.md

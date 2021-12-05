@@ -1,5 +1,3 @@
-using System.Net.Http;
-using System.Threading.Tasks;
 using HTTPie.Models;
 
 namespace HTTPie.Abstractions

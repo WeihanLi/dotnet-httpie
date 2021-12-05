@@ -1,6 +1,3 @@
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
 using HTTPie.Abstractions;
 using HTTPie.Models;
 using Microsoft.Extensions.Primitives;
@@ -9,16 +6,30 @@ namespace HTTPie.Implement
 {
     public class ResponseMapper : IResponseMapper
     {
+        private readonly HttpContext _httpContext;
+
+        public ResponseMapper(HttpContext httpContext)
+        {
+            _httpContext = httpContext;
+        }
         public async Task<HttpResponseModel> ToResponseModel(HttpResponseMessage responseMessage)
         {
             var responseModel = new HttpResponseModel
             {
                 HttpVersion = responseMessage.Version,
                 StatusCode = responseMessage.StatusCode,
-                Headers =
-                    responseMessage.Headers.ToDictionary(x => x.Key, x => new StringValues(x.Value.ToArray())),
-                Body = await responseMessage.Content.ReadAsStringAsync()
             };
+            var outputFormat = OutputFormatter.GetOutputFormat(_httpContext);
+            if (outputFormat.HasFlag(OutputFormat.ResponseHeaders))
+            {
+                responseModel.Headers = responseMessage.Headers
+                  .Union(responseMessage.Content.Headers)
+                  .ToDictionary(x => x.Key, x => new StringValues(x.Value.ToArray()));
+            }
+            if (outputFormat.HasFlag(OutputFormat.ResponseBody))
+            {
+                responseModel.Body = await responseMessage.Content.ReadAsStringAsync();
+            }
             return responseModel;
         }
     }

@@ -1,12 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
 using HTTPie.Abstractions;
+using HTTPie.Implement;
+using HTTPie.Middleware;
 using HTTPie.Models;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using System;
+using System.CommandLine.Builder;
+using System.CommandLine.Invocation;
+using WeihanLi.Common;
+using WeihanLi.Common.Helpers;
 
 namespace HTTPie.Utilities
 {
@@ -31,52 +34,208 @@ namespace HTTPie.Utilities
             "http post /api/notice title=test body=test-body"
         };
 
-        public static string GetHelpText(IServiceProvider serviceProvider)
+        public static readonly HashSet<Option> SupportedOptions = new();
+
+        private static IServiceCollection AddHttpHandlerMiddleware<THttpHandlerMiddleware>(
+            this IServiceCollection serviceCollection)
+            where THttpHandlerMiddleware : IHttpHandlerMiddleware
         {
-            var helpTextBuilder = new StringBuilder();
-            helpTextBuilder.AppendLine("Supported parameters:");
-            helpTextBuilder.AppendLine("Parameter Name\t\tParameter Description");
-            foreach (var parameter in serviceProvider.GetServices<IHttpHandlerMiddleware>()
-                .SelectMany(x => x.SupportedParameters())
-            )
-                helpTextBuilder.AppendLine($"{parameter.Key}\t\t{parameter.Value}");
-            foreach (var parameter in serviceProvider.GetServices<IRequestMiddleware>()
-                .SelectMany(x => x.SupportedParameters())
-            )
-                helpTextBuilder.AppendLine($"{parameter.Key}\t\t{parameter.Value}");
-            foreach (var parameter in serviceProvider.GetServices<IResponseMiddleware>()
-                .SelectMany(x => x.SupportedParameters())
-            )
-                helpTextBuilder.AppendLine($"{parameter.Key}\t\t{parameter.Value}");
-            foreach (var parameter in serviceProvider.GetRequiredService<IOutputFormatter>().SupportedParameters())
-                helpTextBuilder.AppendLine($"{parameter.Key}\t\t{parameter.Value}");
-            return helpTextBuilder.ToString();
+            serviceCollection.TryAddEnumerable(new ServiceDescriptor(typeof(IHttpHandlerMiddleware),
+                typeof(THttpHandlerMiddleware), ServiceLifetime.Singleton));
+            return serviceCollection;
         }
 
-        public static void InitRequestModel(HttpRequestModel requestModel, string[] args)
-        {
-            requestModel.RawInput = args;
-            try
-            {
-                requestModel.RawConfiguration = new ConfigurationBuilder()
-                    .AddCommandLine(args)
-                    .Build();
-            }
-            catch (Exception e)
-            {
-                Console.Error.WriteLine(e);
-                requestModel.RawConfiguration = new ConfigurationBuilder().Build();
-            }
 
-            var method = args.FirstOrDefault(x => HttpMethods.Contains(x));
-            if (!string.IsNullOrEmpty(method)) requestModel.Method = new HttpMethod(method);
+        private static IServiceCollection AddRequestMiddleware<TRequestMiddleware>(
+            this IServiceCollection serviceCollection)
+            where TRequestMiddleware : IRequestMiddleware
+        {
+            serviceCollection.TryAddEnumerable(new ServiceDescriptor(typeof(IRequestMiddleware),
+                typeof(TRequestMiddleware), ServiceLifetime.Singleton));
+            return serviceCollection;
+        }
+
+
+        private static IServiceCollection AddResponseMiddleware<TResponseMiddleware>(
+            this IServiceCollection serviceCollection)
+            where TResponseMiddleware : IResponseMiddleware
+        {
+            serviceCollection.TryAddEnumerable(new ServiceDescriptor(typeof(IResponseMiddleware),
+                typeof(TResponseMiddleware), ServiceLifetime.Singleton));
+            return serviceCollection;
+        }
+
+        public static void InitializeSupportOptions(IServiceProvider serviceProvider)
+        {
+            if (SupportedOptions.Count == 0)
+            {
+                foreach (var option in
+                    serviceProvider.GetServices<IHttpHandlerMiddleware>()
+                       .SelectMany(x => x.SupportedOptions())
+                       .Union(serviceProvider.GetServices<IRequestMiddleware>()
+                        .SelectMany(x => x.SupportedOptions())
+                        .Union(serviceProvider.GetServices<IResponseMiddleware>()
+                .SelectMany(x => x.SupportedOptions()))
+                        .Union(serviceProvider.GetRequiredService<IOutputFormatter>().SupportedOptions())
+                   ))
+                {
+                    SupportedOptions.Add(option);
+                }
+            }
+            var command = InitializeCommand();
+            var builder = new CommandLineBuilder(command);
+            builder.UseDefaults();
+            _commandParser = builder.Build();
+        }
+
+        private static Parser _commandParser = null!;
+        private static Command InitializeCommand()
+        {
+            var command = new RootCommand()
+            {
+                Name = "http",
+            };
+            //var methodArgument = new Argument<HttpMethod>("method")
+            //{
+            //    Description = "Request method",
+            //    Arity = ArgumentArity.ZeroOrOne,
+            //}; 
+            //methodArgument.SetDefaultValue(HttpMethod.Get.Method);
+            //var allowedMethods = HttpMethods.ToArray();
+            //methodArgument.AddSuggestions(allowedMethods);
+
+            //command.AddArgument(methodArgument);
+            //var urlArgument = new Argument<string>("url")
+            //{
+            //    Description = "Request url",
+            //    Arity = ArgumentArity.ExactlyOne
+            //};
+            //command.AddArgument(urlArgument);
+
+            foreach (var option in SupportedOptions)
+            {
+                command.AddOption(option);
+            }
+            command.Handler = CommandHandler.Create(async (ParseResult parseResult, IConsole console) =>
+            {
+                var context = DependencyResolver.ResolveService<HttpContext>();
+                await DependencyResolver.ResolveService<IRequestExecutor>()
+                  .ExecuteAsync(context);
+                var output = DependencyResolver.ResolveService<IOutputFormatter>()
+                  .GetOutput(context);
+                console.Out.Write(output);
+            });
+            command.TreatUnmatchedTokensAsErrors = false;
+            return command;
+        }
+
+        // ReSharper disable once InconsistentNaming
+        public static IServiceCollection RegisterHTTPieServices(this IServiceCollection serviceCollection,
+            bool debugEnabled = false)
+        {
+            serviceCollection.AddLogging(builder =>
+                    builder.AddConsole().SetMinimumLevel(debugEnabled ? LogLevel.Debug : LogLevel.Warning))
+                .AddSingleton<IRequestExecutor, RequestExecutor>()
+                .AddSingleton<IRequestMapper, RequestMapper>()
+                .AddSingleton<IResponseMapper, ResponseMapper>()
+                .AddSingleton<IOutputFormatter, OutputFormatter>()
+                .AddSingleton(sp =>
+                {
+                    var pipelineBuilder = PipelineBuilder.CreateAsync<HttpRequestModel>();
+                    foreach (var middleware in
+                        sp.GetServices<IRequestMiddleware>())
+                        pipelineBuilder.Use(middleware.Invoke);
+                    return pipelineBuilder.Build();
+                })
+                .AddSingleton(sp =>
+                {
+                    var pipelineBuilder = PipelineBuilder.CreateAsync<HttpContext>();
+                    foreach (var middleware in
+                        sp.GetServices<IResponseMiddleware>())
+                        pipelineBuilder.Use(middleware.Invoke);
+                    return pipelineBuilder.Build();
+                })
+                .AddSingleton(sp =>
+                {
+                    var pipelineBuilder = PipelineBuilder.CreateAsync<HttpClientHandler>();
+                    foreach (var middleware in
+                        sp.GetServices<IHttpHandlerMiddleware>())
+                        pipelineBuilder.Use(middleware.Invoke);
+                    return pipelineBuilder.Build();
+                })
+                .AddSingleton<HttpRequestModel>()
+                .AddSingleton(sp => new HttpContext(sp.GetRequiredService<HttpRequestModel>()))
+                .AddSingleton<ILogger>(sp =>
+                    sp.GetRequiredService<ILoggerFactory>().CreateLogger(Constants.ApplicationName));
+
+            // HttpHandlerMiddleware
+            serviceCollection
+                .AddHttpHandlerMiddleware<FollowRedirectMiddleware>()
+                .AddHttpHandlerMiddleware<HttpSslMiddleware>()
+                ;
+            // RequestMiddleware
+            serviceCollection
+                .AddRequestMiddleware<QueryStringMiddleware>()
+                .AddRequestMiddleware<RequestHeadersMiddleware>()
+                .AddRequestMiddleware<RequestDataMiddleware>()
+                .AddRequestMiddleware<DefaultRequestMiddleware>()
+                .AddRequestMiddleware<AuthenticationMiddleware>()
+                ;
+            // ResponseMiddleware
+            serviceCollection.AddResponseMiddleware<DefaultResponseMiddleware>();
+
+            return serviceCollection;
+        }
+
+        public static void InitRequestModel(HttpContext httpContext, string commandLine)
+            => InitRequestModel(httpContext, CommandLineStringSplitter.Instance.Split(commandLine).ToArray());
+
+        public static void InitRequestModel(HttpContext httpContext, string[] args)
+        {
+            if(args.Contains("--help"))
+            {
+                return;
+            }
+            var requestModel = httpContext.Request;
+            requestModel.ParseResult = _commandParser.Parse(args);
+
+            var method = requestModel.ParseResult.UnmatchedTokens.FirstOrDefault(x => HttpMethods.Contains(x));
+            if (!string.IsNullOrEmpty(method))
+            {
+                requestModel.Method = new HttpMethod(method);
+            }
             // Url
-            requestModel.Url =
-                args.FirstOrDefault(x => !x.StartsWith("-", StringComparison.Ordinal) && !HttpMethods.Contains(x)) ??
-                string.Empty;
-#if DEBUG
-            if (string.IsNullOrEmpty(requestModel.Url)) requestModel.Url = "https://reservation.weihanli.xyz/health";
-#endif
+            requestModel.Url = requestModel.ParseResult.UnmatchedTokens.FirstOrDefault(x =>
+                  !x.StartsWith("-", StringComparison.Ordinal)
+                  && !HttpMethods.Contains(x))
+                ?? string.Empty;
+            if (string.IsNullOrEmpty(requestModel.Url))
+            {
+                throw new InvalidOperationException("The request url can not be null");
+            }
+            var urlIndex = Array.IndexOf(args, requestModel.Url);
+
+            requestModel.Options = args
+                .Where(x => x.StartsWith('-'))
+                .ToArray();
+#nullable disable
+            requestModel.RequestItems = requestModel.ParseResult.UnmatchedTokens
+                .Except(new[] { method, requestModel.Url })
+                .Where(x => !x.StartsWith('-'))
+                .ToArray();
+#nullable restore
+        }
+
+        public static async Task<int> Handle(this IServiceProvider services, string[] args)
+        {
+            InitRequestModel(services.GetRequiredService<HttpContext>(), args);
+            return await _commandParser.InvokeAsync(args);
+        }
+
+        public static async Task<int> Handle(this IServiceProvider services, string commandLine)
+        {
+            InitRequestModel(services.GetRequiredService<HttpContext>(), commandLine);
+            return await _commandParser.InvokeAsync(commandLine);
         }
     }
 }

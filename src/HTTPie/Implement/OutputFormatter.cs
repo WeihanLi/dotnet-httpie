@@ -1,87 +1,163 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using HTTPie.Abstractions;
 using HTTPie.Models;
+using HTTPie.Utilities;
 using Microsoft.Extensions.Primitives;
-using WeihanLi.Extensions;
+using Newtonsoft.Json.Linq;
+using System.Text;
 
 namespace HTTPie.Implement
 {
+    [Flags]
+    public enum PrettyOptions
+    {
+        None = 0,
+        Format = 1,
+        Style = 2,
+        All = 3
+    }
+
     public class OutputFormatter : IOutputFormatter
     {
-        private readonly Dictionary<string, string> _supportedFormat = new()
+        public static readonly Option<PrettyOptions> PrettyOption = new("--pretty", () => PrettyOptions.All, "pretty output");
+
+        public static readonly Option QuietOption = new(new[] { "--quiet", "-q" }, "quiet mode, output nothing");
+        public static readonly Option OfflineOption = new("--offline", "offline mode, would not send the request, just print request info");
+        public static readonly Option OutputHeadersOption = new(new[] { "-h", "--headers" }, "output response headers only");
+        public static readonly Option OutputBodyOption = new(new[] { "-b", "--body" }, "output response headers and response body only");
+        public static readonly Option OutputVerboseOption = new(new[] { "-v", "--verbose" }, "output request/response, response headers and response body");
+        public static readonly Option<string> OutputPrintModeOption = new(new[] { "-p", "--print" }, "print mode, output specific info,H:request headers,B:request body,h:response headers,b:response body");
+
+        public ICollection<Option> SupportedOptions() => new HashSet<Option>()
         {
-            {"--headers", "output response headers only"},
-            {"--body", "output response headers and response body"},
-            {"--bodyOnly", "output response body only"},
-            {"--full", "output request/response, response headers and response body"}
+            OfflineOption,
+            QuietOption,
+            OutputHeadersOption,
+            OutputBodyOption,
+            OutputVerboseOption,
+            OutputPrintModeOption,
+
+            PrettyOption,
         };
 
-        public Dictionary<string, string> SupportedParameters() => _supportedFormat;
-
-        public string GetOutput(HttpRequestModel requestModel, HttpResponseModel responseModel)
+        public static OutputFormat GetOutputFormat(HttpContext httpContext)
         {
-            var outputFormat = OutputFormat.ResponseStatus | OutputFormat.ResponseHeaders | OutputFormat.ResponseBody;
-            if (requestModel.RawInput.Contains("--full"))
+            if (httpContext.TryGetProperty<OutputFormat>(Constants.ResponseOutputFormatPropertyName, out var outputFormat))
             {
-                outputFormat = Enum.GetValues(typeof(OutputFormat)).Cast<OutputFormat>().Aggregate(outputFormat, (current, format) => current | format);
+                return outputFormat;
             }
-            else if (requestModel.RawInput.Contains("--bodyOnly"))
+            outputFormat = OutputFormat.ResponseInfo;
+
+            var requestModel = httpContext.Request;
+            if (requestModel.ParseResult.HasOption(QuietOption))
+            {
+                outputFormat = OutputFormat.None;
+            }
+            else if (requestModel.ParseResult.HasOption(OfflineOption))
+            {
+                outputFormat = OutputFormat.RequestInfo;
+            }
+            else if (requestModel.ParseResult.HasOption(OutputVerboseOption))
+            {
+                outputFormat = OutputFormat.All;
+            }
+            else if (requestModel.ParseResult.HasOption(OutputBodyOption))
             {
                 outputFormat = OutputFormat.ResponseBody;
             }
-            else if (requestModel.RawInput.Contains("--headers"))
+            else if (requestModel.ParseResult.HasOption(OutputHeadersOption))
             {
-                outputFormat = OutputFormat.ResponseStatus | OutputFormat.ResponseHeaders;
+                outputFormat = OutputFormat.ResponseHeaders;
             }
+            else if (requestModel.ParseResult.HasOption(OutputPrintModeOption))
+            {
+                var mode = requestModel.ParseResult.ValueForOption(OutputPrintModeOption);
+                if (!string.IsNullOrEmpty(mode))
+                    outputFormat = mode.Select(m => m switch
+                    {
+                        'H' => OutputFormat.RequestHeaders,
+                        'B' => OutputFormat.RequestBody,
+                        'h' => OutputFormat.ResponseHeaders,
+                        'b' => OutputFormat.ResponseBody,
+                        _ => OutputFormat.None
+                    })
+                        .Aggregate(OutputFormat.None, (current, format) => current | format);
+            }
+            httpContext.SetProperty(Constants.ResponseOutputFormatPropertyName, outputFormat);
+            return outputFormat;
+        }
 
+
+        public string GetOutput(HttpContext httpContext)
+        {
+            var requestModel = httpContext.Request;
+
+            var outputFormat = GetOutputFormat(httpContext);
+            var prettyOption = requestModel.ParseResult.ValueForOption(PrettyOption);
             var output = new StringBuilder();
-            output.AppendLineIf(GetRequestVersionAndStatus(requestModel),
-                outputFormat.HasFlag(OutputFormat.RequestStatus));
-            output.AppendLineIf(GetHeadersString(requestModel.Headers),
-                outputFormat.HasFlag(OutputFormat.RequestHeaders));
+            if (outputFormat.HasFlag(OutputFormat.RequestHeaders))
+            {
+                output.AppendLine(GetRequestVersionAndStatus(requestModel));
+                output.AppendLine(GetHeadersString(requestModel.Headers));
+            }
             if (outputFormat.HasFlag(OutputFormat.RequestBody) && !string.IsNullOrEmpty(requestModel.Body))
             {
                 output.AppendLineIf(string.Empty, output.Length > 0);
-                output.AppendLine(requestModel.Body);
+                output.AppendLine(Prettify(requestModel.Body, prettyOption));
             }
-            output.AppendLineIf(string.Empty, output.Length > 0);
+
+            output.AppendLineIf(string.Empty, output.Length > 0 && (outputFormat & OutputFormat.ResponseInfo) != 0);
 
             var requestLength = output.Length;
-            output.AppendLineIf(GetResponseVersionAndStatus(responseModel),
-                outputFormat.HasFlag(OutputFormat.ResponseStatus));
-            output.AppendLineIf(GetHeadersString(responseModel.Headers),
-                outputFormat.HasFlag(OutputFormat.ResponseHeaders));
+            var responseModel = httpContext.Response;
+            if (outputFormat.HasFlag(OutputFormat.ResponseHeaders))
+            {
+                output.AppendLine(GetResponseVersionAndStatus(responseModel));
+                output.AppendLine(GetHeadersString(responseModel.Headers));
+            }
             if (outputFormat.HasFlag(OutputFormat.ResponseBody) && !string.IsNullOrEmpty(responseModel.Body))
             {
                 output.AppendLineIf(string.Empty, output.Length > requestLength);
-                output.AppendLine(responseModel.Body);
+                
+                output.AppendLine(Prettify(responseModel.Body, prettyOption));
             }
 
             return output.ToString();
         }
 
-        private static string GetRequestVersionAndStatus(HttpRequestModel requestModel)
+        private static string Prettify(string body, PrettyOptions prettyOption)
+        {
+            if (prettyOption == PrettyOptions.None || string.IsNullOrWhiteSpace(body))
+                return body;
+            try
+            {
+                var formattedJson = JToken.Parse(body).ToString(Newtonsoft.Json.Formatting.Indented);
+                return formattedJson;
+            }
+            catch (Exception)
+            {
+                return body;
+            }
+        }
+
+        private string GetRequestVersionAndStatus(HttpRequestModel requestModel)
         {
             var uri = new Uri(requestModel.Url);
             return
-                $@"{requestModel.Method.Method.ToUpper()} {requestModel.Url} HTTP/{requestModel.HttpVersion.ToString(2)}
-Host: {uri.Host}
+                $@"{requestModel.Method.Method.ToUpper()} {uri.PathAndQuery} HTTP/{requestModel.HttpVersion.ToString(2)}
+Host: {uri.Host}{(uri.IsDefaultPort ? "" : $":{uri.Port}")}
 Schema: {uri.Scheme}";
         }
 
         private static string GetResponseVersionAndStatus(HttpResponseModel responseModel)
         {
             return
-                $"HTTP/{responseModel.HttpVersion.ToString(2)} {(int) responseModel.StatusCode} {responseModel.StatusCode.ToString()}";
+                $"HTTP/{responseModel.HttpVersion.ToString(2)} {(int)responseModel.StatusCode} {responseModel.StatusCode}";
         }
 
         private static string GetHeadersString(IDictionary<string, StringValues> headers)
         {
             return
-                $"{headers.Select(h => $"{h.Key}: {h.Value.ToString()}").OrderBy(h => h).StringJoin(Environment.NewLine)}";
+                $"{headers.Select(h => $"{h.Key}: {h.Value}").OrderBy(h => h).StringJoin(Environment.NewLine)}";
         }
     }
 }
