@@ -118,10 +118,10 @@ namespace HTTPie.Utilities
             }
             command.Handler = CommandHandler.Create(async (ParseResult parseResult, IConsole console) =>
             {
-                var context = DependencyResolver.ResolveService<HttpContext>();
-                await DependencyResolver.ResolveService<IRequestExecutor>()
+                var context = DependencyResolver.ResolveRequiredService<HttpContext>();
+                await DependencyResolver.ResolveRequiredService<IRequestExecutor>()
                   .ExecuteAsync(context);
-                var output = DependencyResolver.ResolveService<IOutputFormatter>()
+                var output = DependencyResolver.ResolveRequiredService<IOutputFormatter>()
                   .GetOutput(context);
                 console.Out.Write(output);
             });
