@@ -1,4 +1,4 @@
-namespace HTTPie.UnitTest.Middleware
+﻿namespace HTTPie.UnitTest.Middleware
 {
     public class RequestDataMiddlewareTest
     {

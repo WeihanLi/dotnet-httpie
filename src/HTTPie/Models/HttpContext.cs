@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace HTTPie.Models
 {
@@ -6,7 +6,7 @@ namespace HTTPie.Models
     {
         private readonly Dictionary<string, bool> _featureFlags = new();
 
-        public HttpContext():this(new HttpRequestModel())
+        public HttpContext() : this(new HttpRequestModel())
         {
         }
 

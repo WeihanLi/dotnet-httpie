@@ -1,4 +1,4 @@
-namespace HTTPie.Utilities
+﻿namespace HTTPie.Utilities
 {
     public static class Constants
     {
