@@ -1,9 +1,8 @@
 ﻿using HTTPie.Models;
 
-namespace HTTPie.Abstractions
+namespace HTTPie.Abstractions;
+
+public interface IRequestMapper
 {
-    public interface IRequestMapper
-    {
-        Task<HttpRequestMessage> ToRequestMessage(HttpContext httpContext);
-    }
+    Task<HttpRequestMessage> ToRequestMessage(HttpContext httpContext);
 }

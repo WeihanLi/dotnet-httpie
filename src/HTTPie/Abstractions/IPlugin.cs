@@ -1,7 +1,6 @@
-﻿namespace HTTPie.Abstractions
+﻿namespace HTTPie.Abstractions;
+
+public interface IPlugin
 {
-    public interface IPlugin
-    {
-        ICollection<Option> SupportedOptions() => Array.Empty<Option>();
-    }
+    ICollection<Option> SupportedOptions() => Array.Empty<Option>();
 }
