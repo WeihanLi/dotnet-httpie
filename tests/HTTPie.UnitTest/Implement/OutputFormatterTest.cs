@@ -1,4 +1,4 @@
-namespace HTTPie.UnitTest.Implement
+﻿namespace HTTPie.UnitTest.Implement
 {
     public class OutputFormatterTest
     {

@@ -1,4 +1,4 @@
-using HTTPie.Abstractions;
+﻿using HTTPie.Abstractions;
 using HTTPie.Implement;
 using HTTPie.Middleware;
 using HTTPie.Models;
@@ -192,7 +192,7 @@ namespace HTTPie.Utilities
 
         public static void InitRequestModel(HttpContext httpContext, string[] args)
         {
-            if(args.Contains("--help"))
+            if (args.Contains("--help"))
             {
                 return;
             }

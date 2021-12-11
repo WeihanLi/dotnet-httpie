@@ -1,4 +1,4 @@
-namespace HTTPie.Abstractions
+﻿namespace HTTPie.Abstractions
 {
     public interface IHttpHandlerMiddleware : IPlugin
     {

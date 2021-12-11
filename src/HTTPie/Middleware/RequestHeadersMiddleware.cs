@@ -1,4 +1,4 @@
-using HTTPie.Abstractions;
+﻿using HTTPie.Abstractions;
 using HTTPie.Models;
 using Microsoft.Extensions.Primitives;
 

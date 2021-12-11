@@ -1,4 +1,4 @@
-using HTTPie.Abstractions;
+﻿using HTTPie.Abstractions;
 using HTTPie.Implement;
 using HTTPie.Models;
 using HTTPie.Utilities;

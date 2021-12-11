@@ -12,7 +12,7 @@ namespace HTTPie.Middleware
 
         static AuthenticationMiddleware()
         {
-            AuthenticationTypeOption.AddSuggestions(new[] 
+            AuthenticationTypeOption.AddSuggestions(new[]
             {
                 "Basic",
                 "Bearer"
@@ -23,7 +23,7 @@ namespace HTTPie.Middleware
 
         public Task Invoke(HttpRequestModel requestModel, Func<Task> next)
         {
-            if(requestModel.ParseResult.HasOption(AuthenticationValueOption))
+            if (requestModel.ParseResult.HasOption(AuthenticationValueOption))
             {
                 var authValue = requestModel.ParseResult.ValueForOption(AuthenticationValueOption);
                 if (!requestModel.Headers.ContainsKey(Constants.AuthenticationHeaderName) && !string.IsNullOrEmpty(authValue))
@@ -35,7 +35,7 @@ namespace HTTPie.Middleware
             }
             return next();
         }
-        
+
         private static string GetAuthHeader(string? authType, string authValue)
         {
             var authSchema = GetAuthSchema(authType);

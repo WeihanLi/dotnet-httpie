@@ -1,4 +1,4 @@
-using HTTPie.Models;
+﻿using HTTPie.Models;
 
 namespace HTTPie.Abstractions
 {
