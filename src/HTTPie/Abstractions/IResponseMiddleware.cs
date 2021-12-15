@@ -1,9 +1,8 @@
 ﻿using HTTPie.Models;
 
-namespace HTTPie.Abstractions
+namespace HTTPie.Abstractions;
+
+public interface IResponseMiddleware : IPlugin
 {
-    public interface IResponseMiddleware : IPlugin
-    {
-        Task Invoke(HttpContext context, Func<Task> next);
-    }
+    Task Invoke(HttpContext context, Func<Task> next);
 }

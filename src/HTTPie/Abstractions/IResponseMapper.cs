@@ -1,9 +1,8 @@
 ﻿using HTTPie.Models;
 
-namespace HTTPie.Abstractions
+namespace HTTPie.Abstractions;
+
+public interface IResponseMapper
 {
-    public interface IResponseMapper
-    {
-        Task<HttpResponseModel> ToResponseModel(HttpResponseMessage responseMessage);
-    }
+    Task<HttpResponseModel> ToResponseModel(HttpResponseMessage responseMessage);
 }

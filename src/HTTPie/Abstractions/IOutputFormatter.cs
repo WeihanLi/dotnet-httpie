@@ -1,9 +1,8 @@
 ﻿using HTTPie.Models;
 
-namespace HTTPie.Abstractions
+namespace HTTPie.Abstractions;
+
+public interface IOutputFormatter : IPlugin
 {
-    public interface IOutputFormatter : IPlugin
-    {
-        string GetOutput(HttpContext httpContext);
-    }
+    string GetOutput(HttpContext httpContext);
 }

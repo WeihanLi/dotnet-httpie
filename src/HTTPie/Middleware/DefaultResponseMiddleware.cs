@@ -1,13 +1,12 @@
 ﻿using HTTPie.Abstractions;
 using HTTPie.Models;
 
-namespace HTTPie.Middleware
+namespace HTTPie.Middleware;
+
+public class DefaultResponseMiddleware : IResponseMiddleware
 {
-    public class DefaultResponseMiddleware : IResponseMiddleware
+    public Task Invoke(HttpContext context, Func<Task> next)
     {
-        public Task Invoke(HttpContext context, Func<Task> next)
-        {
-            return next();
-        }
+        return next();
     }
 }

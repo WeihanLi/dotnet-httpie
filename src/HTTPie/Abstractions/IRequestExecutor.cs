@@ -1,9 +1,8 @@
 ﻿using HTTPie.Models;
 
-namespace HTTPie.Abstractions
+namespace HTTPie.Abstractions;
+
+public interface IRequestExecutor
 {
-    public interface IRequestExecutor
-    {
-        ValueTask ExecuteAsync(HttpContext httpContext);
-    }
+    ValueTask ExecuteAsync(HttpContext httpContext);
 }

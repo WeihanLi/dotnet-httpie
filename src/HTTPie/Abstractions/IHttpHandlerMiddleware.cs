@@ -1,7 +1,6 @@
-﻿namespace HTTPie.Abstractions
+﻿namespace HTTPie.Abstractions;
+
+public interface IHttpHandlerMiddleware : IPlugin
 {
-    public interface IHttpHandlerMiddleware : IPlugin
-    {
-        Task Invoke(HttpClientHandler httpClientHandler, Func<Task> next);
-    }
+    Task Invoke(HttpClientHandler httpClientHandler, Func<Task> next);
 }
