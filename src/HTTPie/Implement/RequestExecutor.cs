@@ -5,7 +5,7 @@ using WeihanLi.Common.Http;
 
 namespace HTTPie.Implement;
 
-public class RequestExecutor : IRequestExecutor
+public partial class RequestExecutor : IRequestExecutor
 {
     private readonly HttpContext _httpContext;
     private readonly Func<HttpClientHandler, Task> _httpHandlerPipeline;
@@ -40,10 +40,10 @@ public class RequestExecutor : IRequestExecutor
     {
         var requestModel = httpContext.Request;
         await _requestPipeline(requestModel);
-        _logger.LogDebug("RequestModel info: {requestModel}", requestModel.ToJson());
+        LogRequestModel(requestModel);
         if (requestModel.ParseResult.HasOption(OutputFormatter.OfflineOption))
         {
-            _logger.LogDebug("Request should be offline, wont send request");
+            RequestShouldBeOffline();
             return;
         }
 
@@ -57,10 +57,23 @@ public class RequestExecutor : IRequestExecutor
         var timeout = requestModel.ParseResult.GetValueForOption(TimeoutOption);
         if (timeout > 0)
             httpClient.Timeout = TimeSpan.FromSeconds(timeout);
-        _logger.LogDebug($@"Request message: {requestMessage}");
+        LogRequestMessage(requestMessage);
         using var responseMessage = await httpClient.SendAsync(requestMessage);
-        _logger.LogDebug($"Response message: {responseMessage}");
+        LogResponseMessage(responseMessage);
         _httpContext.Response = await _responseMapper.ToResponseModel(responseMessage);
         await _responsePipeline(_httpContext);
     }
+
+    [LoggerMessage(EventId = 0, Level = LogLevel.Debug, Message = "Request should be offline, wont send request")]
+    private partial void RequestShouldBeOffline();
+    
+    [LoggerMessage(Level= LogLevel.Debug, EventName = "RequestModel", Message = "RequestModel info: {requestModel}")]
+    private partial void LogRequestModel(HttpRequestModel requestModel);
+        
+
+    [LoggerMessage(Level= LogLevel.Debug, EventName = "RequestMessage", Message = "Request message: {requestMessage}")]
+    private partial void LogRequestMessage(HttpRequestMessage requestMessage);
+    
+    [LoggerMessage(Level= LogLevel.Debug, EventName = "ResponseMessage", Message = "Response message: {responseMessage}")]
+    private partial void LogResponseMessage(HttpResponseMessage responseMessage);
 }

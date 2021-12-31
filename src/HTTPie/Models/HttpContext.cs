@@ -43,7 +43,7 @@ public static class HttpContextExtensions
             return true;
         }
         propertyValue = default;
-        return default;
+        return false;
     }
 
     public static void SetProperty<T>(this HttpContext httpContext, string propertyName, T propertyValue) where T : notnull

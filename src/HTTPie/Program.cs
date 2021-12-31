@@ -42,13 +42,14 @@ if (args.Contains("--version"))
 }
 
 var logger = services.GetRequiredService<ILogger>();
-logger.LogDebug($"Input parameters: {args.StringJoin(";")}");
+logger.PrintInputParameters(args.StringJoin(";"));
 try
 {
     return await services.Handle(args);
 }
 catch (Exception e)
 {
-    logger.LogError(e, "Invoke Request Exception");
+    logger.InvokeRequestException(e);
     return -1;
 }
+
