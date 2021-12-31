@@ -66,14 +66,14 @@ public partial class RequestExecutor : IRequestExecutor
 
     [LoggerMessage(EventId = 0, Level = LogLevel.Debug, Message = "Request should be offline, wont send request")]
     private partial void RequestShouldBeOffline();
-    
-    [LoggerMessage(Level= LogLevel.Debug, EventName = "RequestModel", Message = "RequestModel info: {requestModel}")]
-    private partial void LogRequestModel(HttpRequestModel requestModel);
-        
 
-    [LoggerMessage(Level= LogLevel.Debug, EventName = "RequestMessage", Message = "Request message: {requestMessage}")]
+    [LoggerMessage(Level = LogLevel.Debug, EventName = "RequestModel", Message = "RequestModel info: {requestModel}")]
+    private partial void LogRequestModel(HttpRequestModel requestModel);
+
+
+    [LoggerMessage(Level = LogLevel.Debug, EventName = "RequestMessage", Message = "Request message: {requestMessage}")]
     private partial void LogRequestMessage(HttpRequestMessage requestMessage);
-    
-    [LoggerMessage(Level= LogLevel.Debug, EventName = "ResponseMessage", Message = "Response message: {responseMessage}")]
+
+    [LoggerMessage(Level = LogLevel.Debug, EventName = "ResponseMessage", Message = "Response message: {responseMessage}")]
     private partial void LogResponseMessage(HttpResponseMessage responseMessage);
 }
