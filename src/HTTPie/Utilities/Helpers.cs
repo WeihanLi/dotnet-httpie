@@ -8,6 +8,8 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.CommandLine.Builder;
 using System.CommandLine.Invocation;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using WeihanLi.Common;
 using WeihanLi.Common.Helpers;
 
@@ -28,12 +30,17 @@ public static class Helpers
 
     private static readonly string[] UsageExamples =
     {
-            "http :5000/api/values",
-            "http localhost:5000/api/values",
-            "http https://reservation.weihanli.xyz/api/notice",
-            "http post /api/notice title=test body=test-body"
-        };
-
+        "http :5000/api/values",
+        "http localhost:5000/api/values",
+        "http https://reservation.weihanli.xyz/api/notice",
+        "http post /api/notice title=test body=test-body"
+    };
+    
+    public static readonly JsonSerializerOptions JsonSerializerOptions = new()
+    {
+        WriteIndented = true,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
     public static readonly HashSet<Option> SupportedOptions = new();
 
     private static IServiceCollection AddHttpHandlerMiddleware<THttpHandlerMiddleware>(

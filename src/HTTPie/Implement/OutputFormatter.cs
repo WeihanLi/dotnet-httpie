@@ -4,6 +4,8 @@ using HTTPie.Utilities;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace HTTPie.Implement;
 
@@ -130,7 +132,8 @@ public class OutputFormatter : IOutputFormatter
             return body;
         try
         {
-            var formattedJson = JToken.Parse(body).ToString(Newtonsoft.Json.Formatting.Indented);
+            var formattedJson = JsonNode.Parse(body)?.ToJsonString(Helpers.JsonSerializerOptions) 
+                                ?? string.Empty;
             return formattedJson;
         }
         catch (Exception)
