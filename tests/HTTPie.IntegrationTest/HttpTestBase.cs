@@ -9,11 +9,12 @@ namespace HTTPie.IntegrationTest;
 [Collection("HttpTests")]
 public abstract class HttpTestBase : IDisposable
 {
-    private bool disposedValue;
+    private bool _disposed;
 
     protected HttpTestBase()
     {
         Services = new ServiceCollection()
+            .AddLogging()
             .RegisterHTTPieServices()
             .BuildServiceProvider();
         DependencyResolver.SetDependencyResolver(Services);
@@ -56,7 +57,7 @@ public abstract class HttpTestBase : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (!disposedValue)
+        if (!_disposed)
         {
             if (disposing)
             {
@@ -66,7 +67,7 @@ public abstract class HttpTestBase : IDisposable
 
             // free unmanaged resources (unmanaged objects) and override finalizer
             // set large fields to null
-            disposedValue = true;
+            _disposed = true;
         }
     }
 

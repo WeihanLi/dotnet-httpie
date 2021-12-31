@@ -7,6 +7,7 @@ public class Startup
 {
     public void ConfigureServices(IServiceCollection serviceCollection)
     {
+        serviceCollection.AddLogging();
         serviceCollection.RegisterHTTPieServices();
     }
 
