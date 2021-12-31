@@ -132,7 +132,7 @@ public class OutputFormatter : IOutputFormatter
             return body;
         try
         {
-            var formattedJson = JsonNode.Parse(body)?.ToJsonString(Helpers.JsonSerializerOptions) 
+            var formattedJson = JsonNode.Parse(body)?.ToJsonString(Helpers.JsonSerializerOptions)
                                 ?? string.Empty;
             return formattedJson;
         }

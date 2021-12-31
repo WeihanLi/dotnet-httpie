@@ -35,7 +35,7 @@ public static class Helpers
         "http https://reservation.weihanli.xyz/api/notice",
         "http post /api/notice title=test body=test-body"
     };
-    
+
     public static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
         WriteIndented = true,
