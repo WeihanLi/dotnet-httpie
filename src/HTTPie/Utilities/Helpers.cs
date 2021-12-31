@@ -130,12 +130,9 @@ public static class Helpers
     }
 
     // ReSharper disable once InconsistentNaming
-    public static IServiceCollection RegisterHTTPieServices(this IServiceCollection serviceCollection,
-        bool debugEnabled = false)
+    public static IServiceCollection RegisterHTTPieServices(this IServiceCollection serviceCollection)
     {
-        serviceCollection.AddLogging(builder =>
-                builder.AddConsole().SetMinimumLevel(debugEnabled ? LogLevel.Debug : LogLevel.Warning))
-            .AddSingleton<IRequestExecutor, RequestExecutor>()
+            serviceCollection.AddSingleton<IRequestExecutor, RequestExecutor>()
             .AddSingleton<IRequestMapper, RequestMapper>()
             .AddSingleton<IResponseMapper, ResponseMapper>()
             .AddSingleton<IOutputFormatter, OutputFormatter>()
