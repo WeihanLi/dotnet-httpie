@@ -132,38 +132,38 @@ public static class Helpers
     // ReSharper disable once InconsistentNaming
     public static IServiceCollection RegisterHTTPieServices(this IServiceCollection serviceCollection)
     {
-            serviceCollection.AddSingleton<IRequestExecutor, RequestExecutor>()
-            .AddSingleton<IRequestMapper, RequestMapper>()
-            .AddSingleton<IResponseMapper, ResponseMapper>()
-            .AddSingleton<IOutputFormatter, OutputFormatter>()
-            .AddSingleton(sp =>
-            {
-                var pipelineBuilder = PipelineBuilder.CreateAsync<HttpRequestModel>();
-                foreach (var middleware in
-                    sp.GetServices<IRequestMiddleware>())
-                    pipelineBuilder.Use(middleware.Invoke);
-                return pipelineBuilder.Build();
-            })
-            .AddSingleton(sp =>
-            {
-                var pipelineBuilder = PipelineBuilder.CreateAsync<HttpContext>();
-                foreach (var middleware in
-                    sp.GetServices<IResponseMiddleware>())
-                    pipelineBuilder.Use(middleware.Invoke);
-                return pipelineBuilder.Build();
-            })
-            .AddSingleton(sp =>
-            {
-                var pipelineBuilder = PipelineBuilder.CreateAsync<HttpClientHandler>();
-                foreach (var middleware in
-                    sp.GetServices<IHttpHandlerMiddleware>())
-                    pipelineBuilder.Use(middleware.Invoke);
-                return pipelineBuilder.Build();
-            })
-            .AddSingleton<HttpRequestModel>()
-            .AddSingleton(sp => new HttpContext(sp.GetRequiredService<HttpRequestModel>()))
-            .AddSingleton<ILogger>(sp =>
-                sp.GetRequiredService<ILoggerFactory>().CreateLogger(Constants.ApplicationName));
+        serviceCollection.AddSingleton<IRequestExecutor, RequestExecutor>()
+        .AddSingleton<IRequestMapper, RequestMapper>()
+        .AddSingleton<IResponseMapper, ResponseMapper>()
+        .AddSingleton<IOutputFormatter, OutputFormatter>()
+        .AddSingleton(sp =>
+        {
+            var pipelineBuilder = PipelineBuilder.CreateAsync<HttpRequestModel>();
+            foreach (var middleware in
+                sp.GetServices<IRequestMiddleware>())
+                pipelineBuilder.Use(middleware.Invoke);
+            return pipelineBuilder.Build();
+        })
+        .AddSingleton(sp =>
+        {
+            var pipelineBuilder = PipelineBuilder.CreateAsync<HttpContext>();
+            foreach (var middleware in
+                sp.GetServices<IResponseMiddleware>())
+                pipelineBuilder.Use(middleware.Invoke);
+            return pipelineBuilder.Build();
+        })
+        .AddSingleton(sp =>
+        {
+            var pipelineBuilder = PipelineBuilder.CreateAsync<HttpClientHandler>();
+            foreach (var middleware in
+                sp.GetServices<IHttpHandlerMiddleware>())
+                pipelineBuilder.Use(middleware.Invoke);
+            return pipelineBuilder.Build();
+        })
+        .AddSingleton<HttpRequestModel>()
+        .AddSingleton(sp => new HttpContext(sp.GetRequiredService<HttpRequestModel>()))
+        .AddSingleton<ILogger>(sp =>
+            sp.GetRequiredService<ILoggerFactory>().CreateLogger(Constants.ApplicationName));
 
         // HttpHandlerMiddleware
         serviceCollection
