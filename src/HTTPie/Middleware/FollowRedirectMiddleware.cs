@@ -18,7 +18,7 @@ public class FollowRedirectMiddleware : IHttpHandlerMiddleware
     public Task Invoke(HttpClientHandler httpClientHandler, Func<Task> next)
     {
         if (_requestModel.ParseResult.HasOption(FollowOption)) httpClientHandler.AllowAutoRedirect = true;
-        var maxRedirects = _requestModel.ParseResult.ValueForOption(MaxRedirectsOption);
+        var maxRedirects = _requestModel.ParseResult.GetValueForOption(MaxRedirectsOption);
         if (maxRedirects > 0)
             httpClientHandler.MaxAutomaticRedirections = maxRedirects;
         return next();

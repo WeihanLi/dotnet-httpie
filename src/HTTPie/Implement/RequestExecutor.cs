@@ -54,7 +54,7 @@ public class RequestExecutor : IRequestExecutor
         };
         await _httpHandlerPipeline(httpClientHandler);
         using var httpClient = new HttpClient(httpClientHandler);
-        var timeout = requestModel.ParseResult.ValueForOption(TimeoutOption);
+        var timeout = requestModel.ParseResult.GetValueForOption(TimeoutOption);
         if (timeout > 0)
             httpClient.Timeout = TimeSpan.FromSeconds(timeout);
         _logger.LogDebug($@"Request message: {requestMessage}");

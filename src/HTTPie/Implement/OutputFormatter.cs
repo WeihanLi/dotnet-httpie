@@ -70,7 +70,7 @@ public class OutputFormatter : IOutputFormatter
         }
         else if (requestModel.ParseResult.HasOption(OutputPrintModeOption))
         {
-            var mode = requestModel.ParseResult.ValueForOption(OutputPrintModeOption);
+            var mode = requestModel.ParseResult.GetValueForOption(OutputPrintModeOption);
             if (!string.IsNullOrEmpty(mode))
                 outputFormat = mode.Select(m => m switch
                 {
@@ -92,7 +92,7 @@ public class OutputFormatter : IOutputFormatter
         var requestModel = httpContext.Request;
 
         var outputFormat = GetOutputFormat(httpContext);
-        var prettyOption = requestModel.ParseResult.ValueForOption(PrettyOption);
+        var prettyOption = requestModel.ParseResult.GetValueForOption(PrettyOption);
         var output = new StringBuilder();
         if (outputFormat.HasFlag(OutputFormat.RequestHeaders))
         {

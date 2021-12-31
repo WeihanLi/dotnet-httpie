@@ -116,7 +116,7 @@ public static class Helpers
         {
             command.AddOption(option);
         }
-        command.Handler = CommandHandler.Create(async (ParseResult parseResult, IConsole console) =>
+        command.SetHandler(async (ParseResult parseResult, IConsole console) =>
         {
             var context = DependencyResolver.ResolveRequiredService<HttpContext>();
             await DependencyResolver.ResolveRequiredService<IRequestExecutor>()

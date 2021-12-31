@@ -12,11 +12,11 @@ public class AuthenticationMiddleware : IRequestMiddleware
 
     static AuthenticationMiddleware()
     {
-        AuthenticationTypeOption.AddSuggestions(new[]
+        AuthenticationTypeOption.AddCompletions(new[]
         {
                 "Basic",
                 "Bearer"
-            });
+        });
     }
 
     public ICollection<Option> SupportedOptions() => new Option[] { AuthenticationTypeOption, AuthenticationValueOption };
@@ -25,10 +25,10 @@ public class AuthenticationMiddleware : IRequestMiddleware
     {
         if (requestModel.ParseResult.HasOption(AuthenticationValueOption))
         {
-            var authValue = requestModel.ParseResult.ValueForOption(AuthenticationValueOption);
+            var authValue = requestModel.ParseResult.GetValueForOption(AuthenticationValueOption);
             if (!requestModel.Headers.ContainsKey(Constants.AuthenticationHeaderName) && !string.IsNullOrEmpty(authValue))
             {
-                var authType = requestModel.ParseResult.ValueForOption(AuthenticationTypeOption);
+                var authType = requestModel.ParseResult.GetValueForOption(AuthenticationTypeOption);
                 var authHeaderValue = GetAuthHeader(authType, authValue);
                 requestModel.Headers.TryAdd(Constants.AuthenticationHeaderName, authHeaderValue);
             }

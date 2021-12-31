@@ -29,10 +29,10 @@ public class DefaultRequestMiddleware : IRequestMiddleware
 
     public async Task Invoke(HttpRequestModel requestModel, Func<Task> next)
     {
-        var schema = requestModel.ParseResult.ValueForOption(SchemaOption);
+        var schema = requestModel.ParseResult.GetValueForOption(SchemaOption);
         if (!string.IsNullOrEmpty(schema)) requestModel.Schema = schema;
 
-        if (requestModel.Url == ":" || requestModel.Url == "/")
+        if (requestModel.Url is ":" or "/")
         {
             requestModel.Url = "localhost";
         }
@@ -57,7 +57,7 @@ public class DefaultRequestMiddleware : IRequestMiddleware
         requestModel.Url = url;
 
         var httpVersionOption =
-            requestModel.ParseResult.ValueForOption(HttpVersionOption);
+            requestModel.ParseResult.GetValueForOption(HttpVersionOption);
         if (httpVersionOption != default)
         {
             _logger.LogDebug($"httpVersion: {httpVersionOption}");

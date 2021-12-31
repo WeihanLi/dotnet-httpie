@@ -30,7 +30,7 @@ public class RequestDataMiddleware : IRequestMiddleware
 
         if (requestModel.ParseResult.HasOption(RawDataOption))
         {
-            var rawData = requestModel.ParseResult.ValueForOption(RawDataOption);
+            var rawData = requestModel.ParseResult.GetValueForOption(RawDataOption);
             requestModel.Body = rawData;
         }
         else
@@ -54,7 +54,7 @@ public class RequestDataMiddleware : IRequestMiddleware
                     foreach (var input in dataInput)
                         if (input.IndexOf(":=", StringComparison.Ordinal) > 0)
                         {
-                            var index = input.IndexOf(":=");
+                            var index = input.IndexOf(":=", StringComparison.Ordinal);
                             if (index > 0)
                             {
                                 if (k > 0) jsonDataBuilder.Append(',');
