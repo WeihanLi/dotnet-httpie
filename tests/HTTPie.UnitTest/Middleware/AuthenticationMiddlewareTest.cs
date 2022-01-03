@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 
 namespace HTTPie.UnitTest.Middleware;
 
@@ -34,7 +30,7 @@ public class AuthenticationMiddlewareTest
         var value = httpContext.Request.Headers[Constants.AuthenticationHeaderName].ToString();
         value.Should().NotBeNullOrEmpty();
         value.Should().StartWith("Basic ");
-        value["Basic ".Length..].Should().Equals(Convert.ToBase64String(Encoding.UTF8.GetBytes("uid:pwd")));
+        value["Basic ".Length..].Should().Be(Convert.ToBase64String(Encoding.UTF8.GetBytes("uid:pwd")));
     }
 
     [Theory]
@@ -51,6 +47,6 @@ public class AuthenticationMiddlewareTest
         var value = httpContext.Request.Headers[Constants.AuthenticationHeaderName].ToString();
         value.Should().NotBeNullOrEmpty();
         value.Should().StartWith("Bearer ");
-        value["Bearer ".Length..].Should().Equals("TestToken");
+        value["Bearer ".Length..].Should().Be("TestToken");
     }
 }

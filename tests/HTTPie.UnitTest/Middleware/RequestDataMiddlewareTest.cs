@@ -2,13 +2,6 @@
 
 public class RequestDataMiddlewareTest
 {
-    public IServiceProvider Services { get; }
-
-    public RequestDataMiddlewareTest(IServiceProvider services)
-    {
-        Services = services;
-    }
-
     [Theory]
     [InlineData("http://localhost:5000/api/values?name=test&hello=world")]
     [InlineData("https://reservation.weihanli.xyz/health?name=test&hello=world")]

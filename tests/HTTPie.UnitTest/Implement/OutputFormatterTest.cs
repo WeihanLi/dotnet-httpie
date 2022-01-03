@@ -4,13 +4,11 @@ public class OutputFormatterTest
 {
     private readonly OutputFormatter _outputFormatter;
 
-    public OutputFormatterTest(IServiceProvider services)
+    public OutputFormatterTest()
     {
         _outputFormatter = new OutputFormatter();
-        Services = services;
     }
 
-    public IServiceProvider Services { get; }
 
     [Theory]
     [InlineData(":5000/api/values -q")]
