@@ -5,13 +5,9 @@ using HTTPie.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using System;
 using System.CommandLine.Builder;
-using System.CommandLine.Invocation;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using WeihanLi.Common;
-using WeihanLi.Common.Helpers;
 
 namespace HTTPie.Utilities;
 

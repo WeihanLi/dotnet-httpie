@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using WeihanLi.Common;
 
 var debugEnabled = args.Contains("--debug", StringComparer.OrdinalIgnoreCase);
 var logAsJson = args.Contains("--logAsJson", StringComparer.OrdinalIgnoreCase);

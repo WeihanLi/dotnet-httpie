@@ -4,7 +4,6 @@ using HTTPie.Utilities;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Headers;
 using System.Text;
-using WeihanLi.Common.Helpers;
 
 namespace HTTPie.Implement;
 
