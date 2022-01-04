@@ -87,7 +87,7 @@ csharp_new_line_before_members_in_anonymous_types = true
 
 # Fix formatting, https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/formatting-rules#rule-id-ide0055-fix-formatting
 dotnet_diagnostic.IDE00055.severity = warning
-# Remove unnecessary usings
+# Remove unnecessary usings, https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/ide0005
 dotnet_diagnostic.IDE0005.severity = warning
 # File header template
 dotnet_diagnostic.IDE0073.severity = warning
