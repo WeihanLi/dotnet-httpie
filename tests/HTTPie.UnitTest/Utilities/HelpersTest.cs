@@ -1,4 +1,7 @@
-﻿namespace HTTPie.UnitTest.Utilities;
+﻿// Copyright (c) Weihan Li. All rights reserved.
+// Licensed under the MIT license.
+
+namespace HTTPie.UnitTest.Utilities;
 
 public class HelpersTest
 {

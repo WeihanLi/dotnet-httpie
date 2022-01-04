@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Primitives;
+﻿// Copyright (c) Weihan Li. All rights reserved.
+// Licensed under the MIT license.
+
+using Microsoft.Extensions.Primitives;
 using System.Net;
 
 namespace HTTPie.Models;

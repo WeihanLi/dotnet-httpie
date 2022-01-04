@@ -1,4 +1,7 @@
-﻿namespace HTTPie.UnitTest.Middleware;
+﻿// Copyright (c) Weihan Li. All rights reserved.
+// Licensed under the MIT license.
+
+namespace HTTPie.UnitTest.Middleware;
 
 public class RequestDataMiddlewareTest
 {

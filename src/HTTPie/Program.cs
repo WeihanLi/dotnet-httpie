@@ -1,4 +1,7 @@
-﻿using HTTPie.Utilities;
+﻿// Copyright (c) Weihan Li. All rights reserved.
+// Licensed under the MIT license.
+
+using HTTPie.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Text.Encodings.Web;

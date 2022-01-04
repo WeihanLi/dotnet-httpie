@@ -1,4 +1,7 @@
-﻿using HTTPie.Abstractions;
+﻿// Copyright (c) Weihan Li. All rights reserved.
+// Licensed under the MIT license.
+
+using HTTPie.Abstractions;
 using HTTPie.Models;
 using Microsoft.Extensions.Primitives;
 
