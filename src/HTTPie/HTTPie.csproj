@@ -16,7 +16,7 @@
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="System.CommandLine" Version="2.0.0-beta2.21617.1" />
-        <PackageReference Include="WeihanLi.Common" Version="1.0.48-preview-*" />
+        <PackageReference Include="WeihanLi.Common" Version="1.0.48" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
     </ItemGroup>
 </Project>
