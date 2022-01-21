@@ -62,7 +62,7 @@ Task("restore")
     {
       foreach(var project in srcProjects)
       {
-         DotNetCoreRestore(project.FullPath);
+         DotNetRestore(project.FullPath);
       }
     });
 
@@ -72,13 +72,13 @@ Task("build")
     .IsDependentOn("restore")
     .Does(() =>
     {
-      var buildSetting = new DotNetCoreBuildSettings{
+      var buildSetting = new DotNetBuildSettings{
          NoRestore = true,
          Configuration = configuration
       };
       foreach(var project in srcProjects)
       {
-         DotNetCoreBuild(project.FullPath, buildSetting);
+         DotNetBuild(project.FullPath, buildSetting);
       }
     });
 
@@ -87,13 +87,13 @@ Task("test")
     .IsDependentOn("build")
     .Does(() =>
     {
-      var testSettings = new DotNetCoreTestSettings
+      var testSettings = new DotNetTestSettings
       {
         NoRestore = false
       };
       foreach(var project in testProjects)
       {
-        DotNetCoreTest(project.FullPath, testSettings);
+        DotNetTest(project.FullPath, testSettings);
       }
     });
 
@@ -103,7 +103,7 @@ Task("pack")
     .IsDependentOn("test")
     .Does((context) =>
     {
-      var settings = new DotNetCorePackSettings
+      var settings = new DotNetPackSettings
       {
          Configuration = configuration,
          OutputDirectory = artifacts,
@@ -116,7 +116,7 @@ Task("pack")
       }
       foreach (var project in srcProjects)
       {
-         DotNetCorePack(project.FullPath, settings);
+         DotNetPack(project.FullPath, settings);
       }
       PublishArtifacts(context);
     });
@@ -129,7 +129,7 @@ bool PublishArtifacts(ICakeContext context)
    }
    if(branchName == "main" || branchName == "preview" || !string.IsNullOrEmpty(apiKey))
    {
-      var pushSetting =new DotNetCoreNuGetPushSettings
+      var pushSetting =new DotNetNuGetPushSettings
       {
          Source = EnvironmentVariable("Nuget__SourceUrl") ?? "https://api.nuget.org/v3/index.json",
          ApiKey = EnvironmentVariable("Nuget__ApiKey") ?? apiKey,
@@ -138,7 +138,7 @@ bool PublishArtifacts(ICakeContext context)
       var packages = GetFiles($"{artifacts}/*.nupkg");
       foreach(var package in packages)
       {
-         DotNetCoreNuGetPush(package.FullPath, pushSetting);
+         DotNetNuGetPush(package.FullPath, pushSetting);
       }
       return true;
    }

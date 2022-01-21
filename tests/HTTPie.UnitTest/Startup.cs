@@ -1,19 +1,21 @@
+﻿// Copyright (c) Weihan Li. All rights reserved.
+// Licensed under the MIT license.
+
 using Microsoft.Extensions.DependencyInjection;
-using WeihanLi.Common;
 
-namespace HTTPie.UnitTest
+namespace HTTPie.UnitTest;
+
+public class Startup
 {
-    public class Startup
+    public void ConfigureServices(IServiceCollection serviceCollection)
     {
-        public void ConfigureServices(IServiceCollection serviceCollection)
-        {
-            serviceCollection.RegisterHTTPieServices();
-        }
+        serviceCollection.AddLogging();
+        serviceCollection.RegisterHTTPieServices();
+    }
 
-        public void Configure(IServiceProvider services)
-        {
-            DependencyResolver.SetDependencyResolver(services);
-            Helpers.InitializeSupportOptions(services);
-        }
+    public void Configure(IServiceProvider services)
+    {
+        DependencyResolver.SetDependencyResolver(services);
+        Helpers.InitializeSupportOptions(services);
     }
 }

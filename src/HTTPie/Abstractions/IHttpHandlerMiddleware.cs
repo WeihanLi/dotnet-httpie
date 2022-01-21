@@ -1,7 +1,9 @@
-namespace HTTPie.Abstractions
+﻿// Copyright (c) Weihan Li. All rights reserved.
+// Licensed under the MIT license.
+
+namespace HTTPie.Abstractions;
+
+public interface IHttpHandlerMiddleware : IPlugin
 {
-    public interface IHttpHandlerMiddleware : IPlugin
-    {
-        Task Invoke(HttpClientHandler httpClientHandler, Func<Task> next);
-    }
+    Task Invoke(HttpClientHandler httpClientHandler, Func<Task> next);
 }

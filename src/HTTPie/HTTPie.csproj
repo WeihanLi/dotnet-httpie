@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
         <NoWarn>$(NoWarn);CS1591</NoWarn>
         <PackAsTool>true</PackAsTool>
-        <ToolCommandName>http</ToolCommandName>
+        <ToolCommandName>dotnet-http</ToolCommandName>
         <PackageId>dotnet-httpie</PackageId>
         <Title>dotnet-HTTPie</Title>
         <Description>dotnet httpie, a command-line HTTP client</Description>
@@ -15,8 +15,8 @@
         <Using Include="System.CommandLine.Parsing" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21308.1" />
-        <PackageReference Include="WeihanLi.Common" Version="1.0.47" />
+        <PackageReference Include="System.CommandLine" Version="2.0.0-beta2.21617.1" />
+        <PackageReference Include="WeihanLi.Common" Version="1.0.48" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
     </ItemGroup>
 </Project>
