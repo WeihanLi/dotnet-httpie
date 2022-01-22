@@ -46,6 +46,17 @@ Request-Data | name`=`test, raw data field example(Only effective for JSON): age
 
 Here's a sample: ![sample](./images/sample.png)
 
+
+More examples you may wanna have a look
+
+``` bash
+dotnet http :5000/api/values
+dotnet http localhost:5000/api/values
+dotnet http get https://reservation.weihanli.xyz/api/notice --body
+dotnet http post /api/notice title=test body=test-body
+```
+
+
 ## Docker
 
 There's a docker image(weihanli/dotnet-httpie) that you could use directly without installing the tool, use sample:
@@ -61,15 +72,6 @@ docker run --rm --pull=always weihanli/dotnet-httpie:latest http get httpbin.org
 ```
 
 ## More
-
-There're some examples you may wanna have a look
-
-``` bash
-http :5000/api/values
-http localhost:5000/api/values
-http get https://reservation.weihanli.xyz/api/notice --body
-http post /api/notice title=test body=test-body
-```
 
 For detailed document: have a look at HTTPie documents <https://httpie.io/docs#examples>
 
