@@ -34,7 +34,7 @@ Now you can use the tool to call your API you want
 
 Usages:
 
-> http [flags] [METHOD] URL [ITEM [ITEM]]
+> dotnet http [flags] [METHOD] URL [ITEM [ITEM]]
 
 There're three types of item
 
