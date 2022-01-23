@@ -6,6 +6,8 @@
 
 [![Github Actions Build Status](https://github.com/WeihanLi/dotnet-HTTPie/workflows/default/badge.svg?branch=dev)](https://github.com/WeihanLi/dotnet-HTTPie/actions?query=workflow%default+branch%3Adev)
 
+[![Docker Pulls](https://img.shields.io/docker/pulls/weihanli/dotnet-httpie)](https://hub.docker.com/repository/docker/weihanli/dotnet-httpie)
+
 ## Intro
 
 dotnet tool version of HTTPie, Modern, user-friendly command-line HTTP client for the API era.
@@ -38,14 +40,13 @@ Usages:
 
 There're three types of item
 
-Type | Grammer
+Type | Grammar
 -----|-------
 Query| name`==`test
 Header| X-Api-Key`:`test
 Request-Data | name`=`test, raw data field example(Only effective for JSON): age`:=`10, job`:=`'{"Id":1,"Name":"test"}'(Escape needed for Windows)
 
 Here's a sample: ![sample](./images/sample.png)
-
 
 More examples you may wanna have a look
 
