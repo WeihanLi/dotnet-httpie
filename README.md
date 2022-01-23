@@ -56,7 +56,6 @@ dotnet http get https://reservation.weihanli.xyz/api/notice --body
 dotnet http post /api/notice title=test body=test-body
 ```
 
-
 ## Docker
 
 There's a docker image(weihanli/dotnet-httpie) that you could use directly without installing the tool, use sample:
