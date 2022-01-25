@@ -36,7 +36,7 @@ Now you can use the tool to call your API you want
 
 Usages:
 
-> dotnet http [flags] [METHOD] URL [ITEM [ITEM]]
+> dotnet-http [flags] [METHOD] URL [ITEM [ITEM]]
 
 There're three types of item
 
@@ -51,10 +51,10 @@ Here's a sample: ![sample](./images/sample.png)
 More examples you may wanna have a look
 
 ``` bash
-dotnet http :5000/api/values
-dotnet http localhost:5000/api/values
-dotnet http get https://reservation.weihanli.xyz/api/notice --body
-dotnet http post /api/notice title=test body=test-body
+dotnet-http :5000/api/values
+dotnet-http localhost:5000/api/values
+dotnet-http get https://reservation.weihanli.xyz/api/notice --body
+dotnet-http post /api/notice title=test body=test-body
 ```
 
 ## Docker
