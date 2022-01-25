@@ -17,8 +17,8 @@ public class AuthenticationMiddleware : IRequestMiddleware
     {
         AuthenticationTypeOption.AddCompletions(new[]
         {
-                "Basic",
-                "Bearer"
+            "Basic",
+            "Bearer"
         });
     }
 
