@@ -40,6 +40,7 @@ public static class Helpers
         WriteIndented = true,
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
+
     public static readonly HashSet<Option> SupportedOptions = new();
 
     private static IServiceCollection AddHttpHandlerMiddleware<THttpHandlerMiddleware>(
@@ -51,7 +52,6 @@ public static class Helpers
         return serviceCollection;
     }
 
-
     private static IServiceCollection AddRequestMiddleware<TRequestMiddleware>(
         this IServiceCollection serviceCollection)
         where TRequestMiddleware : IRequestMiddleware
@@ -60,7 +60,6 @@ public static class Helpers
             typeof(TRequestMiddleware), ServiceLifetime.Singleton));
         return serviceCollection;
     }
-
 
     private static IServiceCollection AddResponseMiddleware<TResponseMiddleware>(
         this IServiceCollection serviceCollection)
@@ -81,9 +80,10 @@ public static class Helpers
                    .Union(serviceProvider.GetServices<IRequestMiddleware>()
                     .SelectMany(x => x.SupportedOptions())
                     .Union(serviceProvider.GetServices<IResponseMiddleware>()
-            .SelectMany(x => x.SupportedOptions()))
+                   .SelectMany(x => x.SupportedOptions()))
                     .Union(serviceProvider.GetRequiredService<IOutputFormatter>().SupportedOptions())
-               ))
+                    .Union(serviceProvider.GetRequiredService<IRequestExecutor>().SupportedOptions()))
+                )
             {
                 SupportedOptions.Add(option);
             }
@@ -95,6 +95,7 @@ public static class Helpers
     }
 
     private static Parser _commandParser = null!;
+
     private static Command InitializeCommand()
     {
         var command = new RootCommand()
@@ -105,7 +106,7 @@ public static class Helpers
         //{
         //    Description = "Request method",
         //    Arity = ArgumentArity.ZeroOrOne,
-        //}; 
+        //};
         //methodArgument.SetDefaultValue(HttpMethod.Get.Method);
         //var allowedMethods = HttpMethods.ToArray();
         //methodArgument.AddSuggestions(allowedMethods);
@@ -124,12 +125,19 @@ public static class Helpers
         }
         command.SetHandler(async (ParseResult parseResult, IConsole console) =>
         {
-            var context = DependencyResolver.ResolveRequiredService<HttpContext>();
-            await DependencyResolver.ResolveRequiredService<IRequestExecutor>()
-              .ExecuteAsync(context);
-            var output = DependencyResolver.ResolveRequiredService<IOutputFormatter>()
-              .GetOutput(context);
-            console.Out.Write(output);
+            try
+            {
+                var context = DependencyResolver.ResolveRequiredService<HttpContext>();
+                await DependencyResolver.ResolveRequiredService<IRequestExecutor>()
+                    .ExecuteAsync(context);
+                var output = DependencyResolver.ResolveRequiredService<IOutputFormatter>()
+                    .GetOutput(context);
+                console.Out.Write(output);
+            }
+            catch (Exception e)
+            {
+                console.Error.Write(e.ToString());
+            }
         });
         command.TreatUnmatchedTokensAsErrors = false;
         return command;
