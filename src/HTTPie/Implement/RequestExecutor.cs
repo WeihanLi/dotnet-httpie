@@ -30,7 +30,7 @@ public partial class RequestExecutor : IRequestExecutor
     {
         return new Option[]
         {
-            TimeoutOption, IterationOption, DurationOption,// VirtualUserOption
+            TimeoutOption, IterationOption, DurationOption, VirtualUserOption
         };
     }
 
@@ -72,7 +72,7 @@ public partial class RequestExecutor : IRequestExecutor
         if (timeout > 0)
             httpClient.Timeout = TimeSpan.FromSeconds(timeout);
         var iteration = requestModel.ParseResult.GetValueForOption(IterationOption);
-        // var virtualUsers = Math.Max(requestModel.ParseResult.GetValueForOption(VirtualUserOption), 1);
+        var virtualUsers = Math.Max(requestModel.ParseResult.GetValueForOption(VirtualUserOption), 1);
         var durationValue = requestModel.ParseResult.GetValueForOption(DurationOption);
         var duration = TimeSpan.Zero;
         if (!string.IsNullOrEmpty(durationValue))
@@ -97,34 +97,41 @@ public partial class RequestExecutor : IRequestExecutor
             }
         }
 
-        var isLoadTest = duration > TimeSpan.Zero || iteration > 1;
+        var isLoadTest = duration > TimeSpan.Zero || iteration > 1 || virtualUsers > 1;
         httpContext.UpdateFlag(Constants.FlagNames.IsLoadTest, isLoadTest);
 
         var responseList = new ConcurrentBag<(HttpResponseModel Response, TimeSpan Duration)>();
         var startTimestamp = Stopwatch.GetTimestamp();
-        if (duration > TimeSpan.Zero)
-        {
-            using var cts = new CancellationTokenSource(duration);
-            while (!cts.IsCancellationRequested)
-            {
-                responseList.Add(
-                    await InvokeRequest(httpClient, httpContext, true)
-                );
-            }
-        }
-        else
-        {
-            do
-            {
-                var result = await InvokeRequest(httpClient, httpContext, isLoadTest);
-                if (isLoadTest)
-                {
-                    responseList.Add(result);
-                }
-            } while (--iteration > 0);
-        }
 
-        httpContext.Response.ElapsedTime = ProfilerHelper.GetElapsedTime(startTimestamp);
+        await Parallel.ForEachAsync(Enumerable.Range(1, virtualUsers),
+            new ParallelOptions() { MaxDegreeOfParallelism = virtualUsers }, async (_, cancellationToken) =>
+            {
+                if (duration > TimeSpan.Zero)
+                {
+                    using var cts = new CancellationTokenSource(duration);
+                    while (!cts.IsCancellationRequested)
+                    {
+                        responseList.Add(
+                            await InvokeRequest(httpClient, httpContext, true)
+                        );
+                    }
+                }
+                else
+                {
+                    do
+                    {
+                        var result = await InvokeRequest(httpClient, httpContext, isLoadTest);
+                        if (isLoadTest)
+                        {
+                            responseList.Add(result);
+                        }
+                    } while (--iteration > 0);
+                }
+            });
+        if (isLoadTest)
+        {
+            httpContext.Response.ElapsedTime = ProfilerHelper.GetElapsedTime(startTimestamp);
+        }
         httpContext.SetProperty(Constants.ResponseListPropertyName, responseList.ToArray());
     }
 
