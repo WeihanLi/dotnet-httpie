@@ -176,7 +176,7 @@ public static class Helpers
         })
         .AddSingleton<HttpRequestModel>()
         .AddSingleton(sp => new HttpContext(sp.GetRequiredService<HttpRequestModel>()))
-        .AddSingleton<ILogger>(sp =>
+        .AddSingleton(sp =>
             sp.GetRequiredService<ILoggerFactory>().CreateLogger(Constants.ApplicationName));
 
         // HttpHandlerMiddleware
@@ -224,8 +224,6 @@ public static class Helpers
         {
             throw new InvalidOperationException("The request url can not be null");
         }
-        var urlIndex = Array.IndexOf(args, requestModel.Url);
-
         requestModel.Options = args
             .Where(x => x.StartsWith('-'))
             .ToArray();
