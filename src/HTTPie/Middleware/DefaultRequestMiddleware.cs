@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
-using HTTPie.Implement;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using Microsoft.Extensions.Logging;
@@ -27,7 +26,6 @@ public class DefaultRequestMiddleware : IRequestMiddleware
             DebugOption,
             SchemaOption,
             HttpVersionOption,
-            RequestExecutor.TimeoutOption,
         };
 
     public async Task Invoke(HttpRequestModel requestModel, Func<Task> next)

@@ -17,6 +17,7 @@ public class RequestDataMiddleware : IRequestMiddleware
     {
         _httpContext = httpContext;
     }
+
     public static readonly Option FormOption = new(new[] { "-f", "--form" }, $"The request is form data, and content type is '{Constants.FormContentType}'");
     public static readonly Option JsonOption = new(new[] { "-j", "--json" }, $"The request body is json by default, and content type is '{Constants.JsonContentType}'");
     public static readonly Option<string> RawDataOption = new("--raw", $"The raw request body");
@@ -29,7 +30,7 @@ public class RequestDataMiddleware : IRequestMiddleware
     public Task Invoke(HttpRequestModel requestModel, Func<Task> next)
     {
         var isFormData = requestModel.ParseResult.HasOption(FormOption);
-        _httpContext.UpdateFlag(Constants.FeatureFlagNames.IsFormContentType, isFormData);
+        _httpContext.UpdateFlag(Constants.FlagNames.IsFormContentType, isFormData);
 
         if (requestModel.ParseResult.HasOption(RawDataOption))
         {

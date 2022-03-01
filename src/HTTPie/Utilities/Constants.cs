@@ -14,6 +14,7 @@ public static class Constants
     public const string JsonContentType = "application/json;charset=utf-8";
 
     public const string ResponseOutputFormatPropertyName = "OutputFormat";
+    public const string ResponseListPropertyName = "ResponseList";
 
     public const string AuthenticationHeaderName = "Authentication";
 
@@ -22,8 +23,9 @@ public static class Constants
 #pragma warning restore 8602
     public static readonly string DefaultUserAgent = $"{ApplicationName}/{AppVersion}";
 
-    public static class FeatureFlagNames
+    public static class FlagNames
     {
         public const string IsFormContentType = "IsFormContentType";
+        public const string IsLoadTest = "IsLoadTest";
     }
 }

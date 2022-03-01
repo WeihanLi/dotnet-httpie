@@ -27,14 +27,6 @@ public static class Helpers
         HttpMethod.Options.Method
     };
 
-    private static readonly string[] UsageExamples =
-    {
-        "http :5000/api/values",
-        "http localhost:5000/api/values",
-        "http https://reservation.weihanli.xyz/api/notice",
-        "http post /api/notice title=test body=test-body"
-    };
-
     public static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
         WriteIndented = true,
@@ -123,7 +115,7 @@ public static class Helpers
         {
             command.AddOption(option);
         }
-        command.SetHandler(async (ParseResult parseResult, IConsole console) =>
+        command.SetHandler(async (ParseResult _, IConsole console) =>
         {
             try
             {
@@ -146,38 +138,43 @@ public static class Helpers
     // ReSharper disable once InconsistentNaming
     public static IServiceCollection RegisterHTTPieServices(this IServiceCollection serviceCollection)
     {
-        serviceCollection.AddSingleton<IRequestExecutor, RequestExecutor>()
-        .AddSingleton<IRequestMapper, RequestMapper>()
-        .AddSingleton<IResponseMapper, ResponseMapper>()
-        .AddSingleton<IOutputFormatter, OutputFormatter>()
-        .AddSingleton(sp =>
-        {
-            var pipelineBuilder = PipelineBuilder.CreateAsync<HttpRequestModel>();
-            foreach (var middleware in
-                sp.GetServices<IRequestMiddleware>())
-                pipelineBuilder.Use(middleware.Invoke);
-            return pipelineBuilder.Build();
-        })
-        .AddSingleton(sp =>
-        {
-            var pipelineBuilder = PipelineBuilder.CreateAsync<HttpContext>();
-            foreach (var middleware in
-                sp.GetServices<IResponseMiddleware>())
-                pipelineBuilder.Use(middleware.Invoke);
-            return pipelineBuilder.Build();
-        })
-        .AddSingleton(sp =>
-        {
-            var pipelineBuilder = PipelineBuilder.CreateAsync<HttpClientHandler>();
-            foreach (var middleware in
-                sp.GetServices<IHttpHandlerMiddleware>())
-                pipelineBuilder.Use(middleware.Invoke);
-            return pipelineBuilder.Build();
-        })
-        .AddSingleton<HttpRequestModel>()
-        .AddSingleton(sp => new HttpContext(sp.GetRequiredService<HttpRequestModel>()))
-        .AddSingleton(sp =>
-            sp.GetRequiredService<ILoggerFactory>().CreateLogger(Constants.ApplicationName));
+        serviceCollection
+            .AddSingleton<IRequestExecutor, RequestExecutor>()
+            .AddSingleton<IRequestMapper, RequestMapper>()
+            .AddSingleton<IResponseMapper, ResponseMapper>()
+            .AddSingleton<IOutputFormatter, OutputFormatter>()
+            // request pipeline
+            .AddSingleton(sp =>
+            {
+                var pipelineBuilder = PipelineBuilder.CreateAsync<HttpRequestModel>();
+                foreach (var middleware in
+                    sp.GetServices<IRequestMiddleware>())
+                    pipelineBuilder.Use(middleware.Invoke);
+                return pipelineBuilder.Build();
+            })
+            // response pipeline
+            .AddSingleton(sp =>
+            {
+                var pipelineBuilder = PipelineBuilder.CreateAsync<HttpContext>();
+                foreach (var middleware in
+                    sp.GetServices<IResponseMiddleware>())
+                    pipelineBuilder.Use(middleware.Invoke);
+                return pipelineBuilder.Build();
+            })
+            // httpHandler pipeline
+            .AddSingleton(sp =>
+            {
+                var pipelineBuilder = PipelineBuilder.CreateAsync<HttpClientHandler>();
+                foreach (var middleware in
+                    sp.GetServices<IHttpHandlerMiddleware>())
+                    pipelineBuilder.Use(middleware.Invoke);
+                return pipelineBuilder.Build();
+            })
+            .AddSingleton<HttpRequestModel>()
+            .AddSingleton(sp => new HttpContext(sp.GetRequiredService<HttpRequestModel>()))
+            .AddSingleton(sp => sp.GetRequiredService<ILoggerFactory>()
+                .CreateLogger(Constants.ApplicationName))
+            ;
 
         // HttpHandlerMiddleware
         serviceCollection
@@ -193,9 +190,7 @@ public static class Helpers
             .AddRequestMiddleware<AuthenticationMiddleware>()
             ;
         // ResponseMiddleware
-        serviceCollection.AddResponseMiddleware<DefaultResponseMiddleware>();
-
-        return serviceCollection;
+        return serviceCollection.AddResponseMiddleware<DefaultResponseMiddleware>();
     }
 
     public static void InitRequestModel(HttpContext httpContext, string commandLine)

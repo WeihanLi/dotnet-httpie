@@ -23,9 +23,9 @@ public class HttpContext
     public HttpResponseModel Response { get; set; }
     public Dictionary<string, object> Properties { get; } = new();
 
-    public void UpdateFlag(string flagName, bool enabled)
+    public void UpdateFlag(string flagName, bool value)
     {
-        _featureFlags[flagName] = enabled;
+        _featureFlags[flagName] = value;
     }
 
     public bool GetFlag(string flagName, bool defaultValue = default)
