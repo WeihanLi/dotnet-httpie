@@ -27,19 +27,12 @@ public static class Helpers
         HttpMethod.Options.Method
     };
 
-    private static readonly string[] UsageExamples =
-    {
-        "http :5000/api/values",
-        "http localhost:5000/api/values",
-        "http https://reservation.weihanli.xyz/api/notice",
-        "http post /api/notice title=test body=test-body"
-    };
-
     public static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
         WriteIndented = true,
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
+
     public static readonly HashSet<Option> SupportedOptions = new();
 
     private static IServiceCollection AddHttpHandlerMiddleware<THttpHandlerMiddleware>(
@@ -51,7 +44,6 @@ public static class Helpers
         return serviceCollection;
     }
 
-
     private static IServiceCollection AddRequestMiddleware<TRequestMiddleware>(
         this IServiceCollection serviceCollection)
         where TRequestMiddleware : IRequestMiddleware
@@ -60,7 +52,6 @@ public static class Helpers
             typeof(TRequestMiddleware), ServiceLifetime.Singleton));
         return serviceCollection;
     }
-
 
     private static IServiceCollection AddResponseMiddleware<TResponseMiddleware>(
         this IServiceCollection serviceCollection)
@@ -81,9 +72,10 @@ public static class Helpers
                    .Union(serviceProvider.GetServices<IRequestMiddleware>()
                     .SelectMany(x => x.SupportedOptions())
                     .Union(serviceProvider.GetServices<IResponseMiddleware>()
-            .SelectMany(x => x.SupportedOptions()))
+                   .SelectMany(x => x.SupportedOptions()))
                     .Union(serviceProvider.GetRequiredService<IOutputFormatter>().SupportedOptions())
-               ))
+                    .Union(serviceProvider.GetRequiredService<IRequestExecutor>().SupportedOptions()))
+                )
             {
                 SupportedOptions.Add(option);
             }
@@ -95,6 +87,7 @@ public static class Helpers
     }
 
     private static Parser _commandParser = null!;
+
     private static Command InitializeCommand()
     {
         var command = new RootCommand()
@@ -105,7 +98,7 @@ public static class Helpers
         //{
         //    Description = "Request method",
         //    Arity = ArgumentArity.ZeroOrOne,
-        //}; 
+        //};
         //methodArgument.SetDefaultValue(HttpMethod.Get.Method);
         //var allowedMethods = HttpMethods.ToArray();
         //methodArgument.AddSuggestions(allowedMethods);
@@ -122,14 +115,21 @@ public static class Helpers
         {
             command.AddOption(option);
         }
-        command.SetHandler(async (ParseResult parseResult, IConsole console) =>
+        command.SetHandler(async (ParseResult _, IConsole console) =>
         {
-            var context = DependencyResolver.ResolveRequiredService<HttpContext>();
-            await DependencyResolver.ResolveRequiredService<IRequestExecutor>()
-              .ExecuteAsync(context);
-            var output = DependencyResolver.ResolveRequiredService<IOutputFormatter>()
-              .GetOutput(context);
-            console.Out.Write(output);
+            try
+            {
+                var context = DependencyResolver.ResolveRequiredService<HttpContext>();
+                await DependencyResolver.ResolveRequiredService<IRequestExecutor>()
+                    .ExecuteAsync(context);
+                var output = DependencyResolver.ResolveRequiredService<IOutputFormatter>()
+                    .GetOutput(context);
+                console.Out.Write(output);
+            }
+            catch (Exception e)
+            {
+                console.Error.Write(e.ToString());
+            }
         });
         command.TreatUnmatchedTokensAsErrors = false;
         return command;
@@ -138,38 +138,43 @@ public static class Helpers
     // ReSharper disable once InconsistentNaming
     public static IServiceCollection RegisterHTTPieServices(this IServiceCollection serviceCollection)
     {
-        serviceCollection.AddSingleton<IRequestExecutor, RequestExecutor>()
-        .AddSingleton<IRequestMapper, RequestMapper>()
-        .AddSingleton<IResponseMapper, ResponseMapper>()
-        .AddSingleton<IOutputFormatter, OutputFormatter>()
-        .AddSingleton(sp =>
-        {
-            var pipelineBuilder = PipelineBuilder.CreateAsync<HttpRequestModel>();
-            foreach (var middleware in
-                sp.GetServices<IRequestMiddleware>())
-                pipelineBuilder.Use(middleware.Invoke);
-            return pipelineBuilder.Build();
-        })
-        .AddSingleton(sp =>
-        {
-            var pipelineBuilder = PipelineBuilder.CreateAsync<HttpContext>();
-            foreach (var middleware in
-                sp.GetServices<IResponseMiddleware>())
-                pipelineBuilder.Use(middleware.Invoke);
-            return pipelineBuilder.Build();
-        })
-        .AddSingleton(sp =>
-        {
-            var pipelineBuilder = PipelineBuilder.CreateAsync<HttpClientHandler>();
-            foreach (var middleware in
-                sp.GetServices<IHttpHandlerMiddleware>())
-                pipelineBuilder.Use(middleware.Invoke);
-            return pipelineBuilder.Build();
-        })
-        .AddSingleton<HttpRequestModel>()
-        .AddSingleton(sp => new HttpContext(sp.GetRequiredService<HttpRequestModel>()))
-        .AddSingleton<ILogger>(sp =>
-            sp.GetRequiredService<ILoggerFactory>().CreateLogger(Constants.ApplicationName));
+        serviceCollection
+            .AddSingleton<IRequestExecutor, RequestExecutor>()
+            .AddSingleton<IRequestMapper, RequestMapper>()
+            .AddSingleton<IResponseMapper, ResponseMapper>()
+            .AddSingleton<IOutputFormatter, OutputFormatter>()
+            // request pipeline
+            .AddSingleton(sp =>
+            {
+                var pipelineBuilder = PipelineBuilder.CreateAsync<HttpRequestModel>();
+                foreach (var middleware in
+                    sp.GetServices<IRequestMiddleware>())
+                    pipelineBuilder.Use(middleware.Invoke);
+                return pipelineBuilder.Build();
+            })
+            // response pipeline
+            .AddSingleton(sp =>
+            {
+                var pipelineBuilder = PipelineBuilder.CreateAsync<HttpContext>();
+                foreach (var middleware in
+                    sp.GetServices<IResponseMiddleware>())
+                    pipelineBuilder.Use(middleware.Invoke);
+                return pipelineBuilder.Build();
+            })
+            // httpHandler pipeline
+            .AddSingleton(sp =>
+            {
+                var pipelineBuilder = PipelineBuilder.CreateAsync<HttpClientHandler>();
+                foreach (var middleware in
+                    sp.GetServices<IHttpHandlerMiddleware>())
+                    pipelineBuilder.Use(middleware.Invoke);
+                return pipelineBuilder.Build();
+            })
+            .AddSingleton<HttpRequestModel>()
+            .AddSingleton(sp => new HttpContext(sp.GetRequiredService<HttpRequestModel>()))
+            .AddSingleton(sp => sp.GetRequiredService<ILoggerFactory>()
+                .CreateLogger(Constants.ApplicationName))
+            ;
 
         // HttpHandlerMiddleware
         serviceCollection
@@ -185,9 +190,7 @@ public static class Helpers
             .AddRequestMiddleware<AuthenticationMiddleware>()
             ;
         // ResponseMiddleware
-        serviceCollection.AddResponseMiddleware<DefaultResponseMiddleware>();
-
-        return serviceCollection;
+        return serviceCollection.AddResponseMiddleware<DefaultResponseMiddleware>();
     }
 
     public static void InitRequestModel(HttpContext httpContext, string commandLine)
@@ -216,8 +219,6 @@ public static class Helpers
         {
             throw new InvalidOperationException("The request url can not be null");
         }
-        var urlIndex = Array.IndexOf(args, requestModel.Url);
-
         requestModel.Options = args
             .Where(x => x.StartsWith('-'))
             .ToArray();

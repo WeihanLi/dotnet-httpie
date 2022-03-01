@@ -7,6 +7,14 @@
     "HTTPie-pretty-test": {
       "commandName": "Project",
       "commandLineArgs": "-v --schema=https reservation.weihanli.xyz/api/notice --pretty=none --debug"
+    },
+    "HTTPie-load-test-iteration": {
+      "commandName": "Project",
+      "commandLineArgs": "-v --schema=https reservation.weihanli.xyz/api/notice --vu=10 --iteration=10 --debug"
+    },
+    "HTTPie-load-test-duration": {
+      "commandName": "Project",
+      "commandLineArgs": "-v --schema=https reservation.weihanli.xyz/api/notice --vu=10 --duration=10s"
     }
   }
 }

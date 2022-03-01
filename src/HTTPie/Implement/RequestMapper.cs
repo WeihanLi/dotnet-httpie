@@ -4,7 +4,6 @@
 using HTTPie.Abstractions;
 using HTTPie.Models;
 using HTTPie.Utilities;
-using Microsoft.Extensions.Logging;
 using System.Net.Http.Headers;
 using System.Text;
 
@@ -12,13 +11,6 @@ namespace HTTPie.Implement;
 
 public class RequestMapper : IRequestMapper
 {
-    private readonly ILogger _logger;
-
-    public RequestMapper(ILogger logger)
-    {
-        _logger = logger;
-    }
-
     public Task<HttpRequestMessage> ToRequestMessage(HttpContext httpContext)
     {
         var requestModel = httpContext.Request;
@@ -28,7 +20,7 @@ public class RequestMapper : IRequestMapper
         };
         if (!string.IsNullOrEmpty(requestModel.Body))
             request.Content = new StringContent(requestModel.Body, Encoding.UTF8,
-                httpContext.GetFlag(Constants.FeatureFlagNames.IsFormContentType)
+                httpContext.GetFlag(Constants.FlagNames.IsFormContentType)
                     ? Constants.PlainTextMediaType
                     : Constants.JsonMediaType);
         if (requestModel.Headers is { Count: > 0 })

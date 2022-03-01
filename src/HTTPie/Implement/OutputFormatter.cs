@@ -89,12 +89,18 @@ public class OutputFormatter : IOutputFormatter
         return outputFormat;
     }
 
-
     public string GetOutput(HttpContext httpContext)
     {
-        var requestModel = httpContext.Request;
-
+        var isLoadTest = httpContext.GetFlag(Constants.FlagNames.IsLoadTest);
         var outputFormat = GetOutputFormat(httpContext);
+        return isLoadTest
+            ? GetLoadTestOutput(httpContext, outputFormat)
+            : GetCommonOutput(httpContext, outputFormat);
+    }
+
+    private static string GetCommonOutput(HttpContext httpContext, OutputFormat outputFormat)
+    {
+        var requestModel = httpContext.Request;
         var prettyOption = requestModel.ParseResult.GetValueForOption(PrettyOption);
         var output = new StringBuilder();
         if (outputFormat.HasFlag(OutputFormat.RequestHeaders))
@@ -127,6 +133,58 @@ public class OutputFormatter : IOutputFormatter
         return output.ToString();
     }
 
+    private static string GetLoadTestOutput(HttpContext httpContext, OutputFormat outputFormat)
+    {
+        httpContext.TryGetProperty(Constants.ResponseListPropertyName,
+            out (HttpResponseModel Response, TimeSpan Duration)[]? responseList);
+        if (responseList is not { Length: > 0 })
+            return GetCommonOutput(httpContext, outputFormat);
+
+        var durationInMs = responseList
+            .Select(r => r.Duration.TotalMilliseconds)
+            .OrderBy(x => x)
+            .ToArray();
+        var totalElapsed = httpContext.Response.ElapsedTime.TotalMilliseconds;
+        var reportModel = new LoadTestReportModel()
+        {
+            TotalRequestCount = responseList.Length,
+            SuccessRequestCount = responseList.Count(x => x.Response.IsSuccessStatusCode),
+            Average = durationInMs.Average(),
+            TotalElapsed = totalElapsed,
+            P99 = Percentile(durationInMs, 0.99),
+            P95 = Percentile(durationInMs, 0.95),
+            P90 = Percentile(durationInMs, 0.9),
+            P50 = Percentile(durationInMs, 0.5),
+        };
+
+        return $@"{GetCommonOutput(httpContext, outputFormat & OutputFormat.RequestInfo)}
+Total request: {reportModel.TotalRequestCount}({reportModel.TotalElapsed} ms), successCount: {reportModel.SuccessRequestCount}({reportModel.SuccessRequestRate}%), failedCount: {reportModel.FailRequestCount}
+
+Request duration:
+Requests per second: {reportModel.RequestsPerSecond}
+Average: {reportModel.Average} ms
+P99: {reportModel.P99} ms
+P95: {reportModel.P95} ms
+P90: {reportModel.P90} ms
+P50: {reportModel.P50} ms
+";
+    }
+
+    // https://stackoverflow.com/questions/8137391/percentile-calculation
+    // https://en.wikipedia.org/wiki/Percentile#Calculation_methods
+    private static double Percentile(double[] sequence, double percentile)
+    {
+        // Array.Sort(sequence);
+        var len = sequence.Length;
+        var n = (len - 1) * percentile + 1;
+        var idx = (int)n;
+        // Another method: double n = (N + 1) * excelPercentile;
+        if (idx == 1) return sequence[0];
+        if (idx == len) return sequence[len - 1];
+        var d = n - idx;
+        return sequence[idx - 1] + d * (sequence[idx] - sequence[idx - 1]);
+    }
+
     private static string Prettify(string body, PrettyOptions prettyOption)
     {
         if (prettyOption == PrettyOptions.None || string.IsNullOrWhiteSpace(body))
@@ -143,7 +201,7 @@ public class OutputFormatter : IOutputFormatter
         }
     }
 
-    private string GetRequestVersionAndStatus(HttpRequestModel requestModel)
+    private static string GetRequestVersionAndStatus(HttpRequestModel requestModel)
     {
         var uri = new Uri(requestModel.Url);
         return
