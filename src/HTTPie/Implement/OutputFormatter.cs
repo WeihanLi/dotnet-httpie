@@ -92,15 +92,15 @@ public class OutputFormatter : IOutputFormatter
     public string GetOutput(HttpContext httpContext)
     {
         var isLoadTest = httpContext.GetFlag(Constants.FlagNames.IsLoadTest);
+        var outputFormat = GetOutputFormat(httpContext);
         return isLoadTest
-            ? GetLoadTestOutput(httpContext)
-            : GetCommonOutput(httpContext);
+            ? GetLoadTestOutput(httpContext, outputFormat)
+            : GetCommonOutput(httpContext, outputFormat);
     }
 
-    private static string GetCommonOutput(HttpContext httpContext)
+    private static string GetCommonOutput(HttpContext httpContext, OutputFormat outputFormat)
     {
         var requestModel = httpContext.Request;
-        var outputFormat = GetOutputFormat(httpContext);
         var prettyOption = requestModel.ParseResult.GetValueForOption(PrettyOption);
         var output = new StringBuilder();
         if (outputFormat.HasFlag(OutputFormat.RequestHeaders))
@@ -133,12 +133,12 @@ public class OutputFormatter : IOutputFormatter
         return output.ToString();
     }
 
-    private static string GetLoadTestOutput(HttpContext httpContext)
+    private static string GetLoadTestOutput(HttpContext httpContext, OutputFormat outputFormat)
     {
         httpContext.TryGetProperty(Constants.ResponseListPropertyName,
             out (HttpResponseModel Response, TimeSpan Duration)[]? responseList);
         if (responseList is not { Length: > 0 })
-            return GetCommonOutput(httpContext);
+            return GetCommonOutput(httpContext, outputFormat);
 
         var durationInMs = responseList
             .Select(r => r.Duration.TotalMilliseconds)
@@ -157,16 +157,16 @@ public class OutputFormatter : IOutputFormatter
             P50 = Percentile(durationInMs, 0.5),
         };
 
-        return $@"
-Total request: {reportModel.TotalRequestCount}({reportModel.TotalElapsed}ms), successCount: {reportModel.SuccessRequestCount}, failedCount: {reportModel.FailRequestCount}
+        return $@"{GetCommonOutput(httpContext, outputFormat & OutputFormat.RequestInfo)}
+Total request: {reportModel.TotalRequestCount}({reportModel.TotalElapsed} ms), successCount: {reportModel.SuccessRequestCount}({reportModel.SuccessRequestRate}%), failedCount: {reportModel.FailRequestCount}
 
 Request duration:
 Requests per second: {reportModel.RequestsPerSecond}
-Average: {reportModel.Average}
-P99: {reportModel.P99}
-P95: {reportModel.P95}
-P90: {reportModel.P90}
-P50: {reportModel.P50}
+Average: {reportModel.Average} ms
+P99: {reportModel.P99} ms
+P95: {reportModel.P95} ms
+P90: {reportModel.P90} ms
+P50: {reportModel.P50} ms
 ";
     }
 

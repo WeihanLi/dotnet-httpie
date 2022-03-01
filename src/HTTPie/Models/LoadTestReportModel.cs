@@ -6,6 +6,7 @@ public record LoadTestReportModel
 {
     public int TotalRequestCount { get; init; }
     public int SuccessRequestCount { get; init; }
+    public double SuccessRequestRate => SuccessRequestCount * 100.0 / TotalRequestCount;
     public int FailRequestCount => TotalRequestCount - SuccessRequestCount;
 
     public double TotalElapsed { get; init; }
