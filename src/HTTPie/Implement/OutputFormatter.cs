@@ -192,7 +192,7 @@ P50: {reportModel.P50} ms
         try
         {
             var formattedJson = JsonNode.Parse(body)?.ToJsonString(Helpers.JsonSerializerOptions)
-                                ?? string.Empty;
+                                ?? body;
             return formattedJson;
         }
         catch (Exception)
