@@ -22,8 +22,8 @@ public partial class RequestExecutor : IRequestExecutor
     private readonly Func<HttpContext, Task> _responsePipeline;
 
     public static readonly Option<double> TimeoutOption = new("--timeout", "Request timeout in seconds");
-    public static readonly Option<int> IterationOption = new("--iteration", () => 1, "Request iteration");
-    public static readonly Option<int> VirtualUserOption = new(new[] { "--virtual", "--vu", "--vus" }, () => 1, "Virtual users");
+    public static readonly Option<int> IterationOption = new(new[]{ "-n", "--iteration" }, () => 1, "Request iteration");
+    public static readonly Option<int> VirtualUserOption = new(new[] { "--virtual-users", "--vu", "--vus" }, () => 1, "Virtual users");
     public static readonly Option<string> DurationOption = new(new[] { "--duration" }, "Duration");
 
     public Option[] SupportedOptions()
