@@ -128,10 +128,7 @@ public partial class RequestExecutor : IRequestExecutor
                     } while (--iteration > 0);
                 }
             });
-        if (isLoadTest)
-        {
-            httpContext.Response.ElapsedTime = ProfilerHelper.GetElapsedTime(startTimestamp);
-        }
+        httpContext.Response.ElapsedTime = ProfilerHelper.GetElapsedTime(startTimestamp);
         httpContext.SetProperty(Constants.ResponseListPropertyName, responseList.ToArray());
     }
 
