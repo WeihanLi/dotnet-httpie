@@ -23,7 +23,7 @@ public partial class RequestExecutor : IRequestExecutor
 
     public static readonly Option<double> TimeoutOption = new("--timeout", "Request timeout in seconds");
     public static readonly Option<int> IterationOption = new(new[] { "-n", "--iteration" }, () => 1, "Request iteration");
-    public static readonly Option<int> VirtualUserOption = new(new[] { "--virtual-users", "--vu", "--vus" }, () => 1, "Virtual users");
+    public static readonly Option<int> VirtualUserOption = new(new[] { "--vu", "--vus", "--virtual-users" }, () => 1, "Virtual users");
     public static readonly Option<string> DurationOption = new(new[] { "-d", "--duration" }, "Duration");
 
     public Option[] SupportedOptions()
