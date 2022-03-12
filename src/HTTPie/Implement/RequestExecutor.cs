@@ -113,30 +113,36 @@ public partial class RequestExecutor : IRequestExecutor
         async Task InvokeLoadTest(HttpClient httpClient)
         {
             var responseList = new ConcurrentBag<HttpResponseModel>();
-            var startTimestamp = Stopwatch.GetTimestamp();
-
-            await Parallel.ForEachAsync(Enumerable.Range(1, virtualUsers),
-                new ParallelOptions { MaxDegreeOfParallelism = virtualUsers },
-                async (_, _) =>
+            Func<int, CancellationToken, ValueTask> action;
+            if (duration > TimeSpan.Zero)
+            {
+                action = async (_, _) =>
                 {
-                    if (duration > TimeSpan.Zero)
+                    using var cts = new CancellationTokenSource(duration);
+                    while (!cts.IsCancellationRequested)
                     {
-                        using var cts = new CancellationTokenSource(duration);
-                        while (!cts.IsCancellationRequested)
-                        {
-                            responseList.Add(
-                                await InvokeRequest(httpClient, httpContext, true)
-                            );
-                        }
+                        responseList.Add(
+                            await InvokeRequest(httpClient, httpContext, true)
+                        );
                     }
-                    else
+                };
+            }
+            else
+            {
+                action = async (_ ,_) => 
+                {
+                    do
                     {
-                        do
-                        {
-                            responseList.Add(await InvokeRequest(httpClient, httpContext, true));
-                        } while (--iteration > 0);
-                    }
-                });
+                        responseList.Add(await InvokeRequest(httpClient, httpContext, true));
+                    } while (--iteration > 0);
+                };
+            }
+
+            var startTimestamp = Stopwatch.GetTimestamp();
+            await Parallel.ForEachAsync(
+                Enumerable.Range(1, virtualUsers),
+                new ParallelOptions { MaxDegreeOfParallelism = virtualUsers }, 
+                action);
 
             httpContext.Response.Elapsed = ProfilerHelper.GetElapsedTime(startTimestamp);
             httpContext.SetProperty(Constants.ResponseListPropertyName, responseList.ToArray());
