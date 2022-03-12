@@ -5,7 +5,7 @@ on:
     branches: [ main ]
     
 jobs:
-  draft:
+  release:
     runs-on: windows-latest
 
     steps:
@@ -15,11 +15,11 @@ jobs:
       with:
         dotnet-version: 6.0.x
 
-    - name: package and draft release
+    - name: Create Github release
       shell: pwsh
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         ./build.ps1 --stable=true
         $VERSION = Get-ChildItem -Path artifacts/*.nupkg -Name | Select-String -Pattern '\d+.\d+.\d+' | foreach {$_.Matches.Value}
-        gh release create --generate-notes $VERSION ./artifacts/*.nupkg
+        gh release create --generate-notes $VERSION artifacts/*.nupkg
