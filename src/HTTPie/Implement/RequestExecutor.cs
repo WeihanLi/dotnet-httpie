@@ -137,13 +137,19 @@ public partial class RequestExecutor : IRequestExecutor
                     } while (--iteration > 0);
                 };
             }
-
             var startTimestamp = Stopwatch.GetTimestamp();
-            await Parallel.ForEachAsync(
-                Enumerable.Range(1, virtualUsers),
-                new ParallelOptions { MaxDegreeOfParallelism = virtualUsers },
-                action);
-
+            if (virtualUsers > 1)
+            {
+                await Parallel.ForEachAsync(
+                  Enumerable.Range(1, virtualUsers),
+                  new ParallelOptions { MaxDegreeOfParallelism = virtualUsers },
+                  action
+                );
+            }
+            else
+            {
+                await action(default, default);
+            }
             httpContext.Response.Elapsed = ProfilerHelper.GetElapsedTime(startTimestamp);
             httpContext.SetProperty(Constants.ResponseListPropertyName, responseList.ToArray());
         }
