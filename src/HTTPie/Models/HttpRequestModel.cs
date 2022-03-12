@@ -22,6 +22,7 @@ public record HttpRequestModel
 
     public string[] Options { get; set; } = Array.Empty<string>();
     public string[] RequestItems { get; set; } = Array.Empty<string>();
+    public DateTimeOffset Timestamp { get; set; }
 
     [JsonIgnore]
     public ParseResult ParseResult { get; set; } = null!;

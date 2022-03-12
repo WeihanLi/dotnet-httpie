@@ -49,7 +49,7 @@ public class OutputFormatter : IOutputFormatter
         {
             return outputFormat;
         }
-        outputFormat = OutputFormat.ResponseInfo;
+        outputFormat = OutputFormat.ResponseInfoWithTimestamp;
 
         var requestModel = httpContext.Request;
         if (requestModel.ParseResult.HasOption(QuietOption))
@@ -82,6 +82,7 @@ public class OutputFormatter : IOutputFormatter
                     'B' => OutputFormat.RequestBody,
                     'h' => OutputFormat.ResponseHeaders,
                     'b' => OutputFormat.ResponseBody,
+                    't' => OutputFormat.Timestamp,
                     _ => OutputFormat.None
                 })
                     .Aggregate(OutputFormat.None, (current, format) => current | format);
@@ -137,19 +138,20 @@ public class OutputFormatter : IOutputFormatter
     private static string GetLoadTestOutput(HttpContext httpContext, OutputFormat outputFormat)
     {
         httpContext.TryGetProperty(Constants.ResponseListPropertyName,
-            out (HttpResponseModel Response, TimeSpan Duration)[]? responseList);
+            out HttpResponseModel[]? responseList);
         if (responseList is not { Length: > 0 })
             return GetCommonOutput(httpContext, outputFormat);
 
         var durationInMs = responseList
-            .Select(r => r.Duration.TotalMilliseconds)
+            .Where(x => x.Elapsed.HasValue)
+            .Select(r => r.Elapsed.GetValueOrDefault().TotalMilliseconds)
             .OrderBy(x => x)
             .ToArray();
-        var totalElapsed = httpContext.Response.ElapsedTime.TotalMilliseconds;
+        var totalElapsed = httpContext.Response.Elapsed.GetValueOrDefault().TotalMilliseconds;
         var reportModel = new LoadTestReportModel()
         {
             TotalRequestCount = responseList.Length,
-            SuccessRequestCount = responseList.Count(x => x.Response.IsSuccessStatusCode),
+            SuccessRequestCount = responseList.Count(x => x.IsSuccessStatusCode),
             Average = durationInMs.Average(),
             TotalElapsed = totalElapsed,
             Min = SortedArrayStatistics.Minimum(durationInMs),
@@ -163,7 +165,7 @@ public class OutputFormatter : IOutputFormatter
         };
 
         return $@"{GetCommonOutput(httpContext, outputFormat & OutputFormat.RequestInfo)}
-Total request: {reportModel.TotalRequestCount}({reportModel.TotalElapsed} ms), successCount: {reportModel.SuccessRequestCount}({reportModel.SuccessRequestRate}%), failedCount: {reportModel.FailRequestCount}
+Total requests: {reportModel.TotalRequestCount}({reportModel.TotalElapsed} ms), successCount: {reportModel.SuccessRequestCount}({reportModel.SuccessRequestRate}%), failedCount: {reportModel.FailRequestCount}
 
 Request duration:
 Requests per second: {reportModel.RequestsPerSecond}
