@@ -124,7 +124,7 @@ public static class Helpers
                     .ExecuteAsync(context);
                 var output = DependencyResolver.ResolveRequiredService<IOutputFormatter>()
                     .GetOutput(context);
-                console.Out.Write(output);
+                console.Out.Write(output.Trim());
             }
             catch (Exception e)
             {
