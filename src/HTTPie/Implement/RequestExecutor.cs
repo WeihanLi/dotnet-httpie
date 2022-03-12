@@ -129,7 +129,7 @@ public partial class RequestExecutor : IRequestExecutor
             }
             else
             {
-                action = async (_ ,_) => 
+                action = async (_, _) =>
                 {
                     do
                     {
@@ -141,7 +141,7 @@ public partial class RequestExecutor : IRequestExecutor
             var startTimestamp = Stopwatch.GetTimestamp();
             await Parallel.ForEachAsync(
                 Enumerable.Range(1, virtualUsers),
-                new ParallelOptions { MaxDegreeOfParallelism = virtualUsers }, 
+                new ParallelOptions { MaxDegreeOfParallelism = virtualUsers },
                 action);
 
             httpContext.Response.Elapsed = ProfilerHelper.GetElapsedTime(startTimestamp);
