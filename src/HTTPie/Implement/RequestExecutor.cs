@@ -67,10 +67,10 @@ public partial class RequestExecutor : IRequestExecutor
             AllowAutoRedirect = false
         };
         await _httpHandlerPipeline(httpClientHandler);
-        using var httpClient = new HttpClient(httpClientHandler);
+        using var client = new HttpClient(httpClientHandler);
         var timeout = requestModel.ParseResult.GetValueForOption(TimeoutOption);
         if (timeout > 0)
-            httpClient.Timeout = TimeSpan.FromSeconds(timeout);
+            client.Timeout = TimeSpan.FromSeconds(timeout);
         var iteration = requestModel.ParseResult.GetValueForOption(IterationOption);
         var virtualUsers = Math.Max(requestModel.ParseResult.GetValueForOption(VirtualUserOption), 1);
         var durationValue = requestModel.ParseResult.GetValueForOption(DurationOption);
@@ -100,71 +100,71 @@ public partial class RequestExecutor : IRequestExecutor
         var isLoadTest = duration > TimeSpan.Zero || iteration > 1 || virtualUsers > 1;
         httpContext.UpdateFlag(Constants.FlagNames.IsLoadTest, isLoadTest);
 
-        var responseList = new ConcurrentBag<(HttpResponseModel Response, TimeSpan Duration)>();
-        var startTimestamp = Stopwatch.GetTimestamp();
-
-        await Parallel.ForEachAsync(Enumerable.Range(1, virtualUsers),
-            new ParallelOptions() { MaxDegreeOfParallelism = virtualUsers }, async (_, cancellationToken) =>
-            {
-                if (duration > TimeSpan.Zero)
-                {
-                    using var cts = new CancellationTokenSource(duration);
-                    while (!cts.IsCancellationRequested)
-                    {
-                        responseList.Add(
-                            await InvokeRequest(httpClient, httpContext, true)
-                        );
-                    }
-                }
-                else
-                {
-                    do
-                    {
-                        var result = await InvokeRequest(httpClient, httpContext, isLoadTest);
-                        if (isLoadTest)
-                        {
-                            responseList.Add(result);
-                        }
-                    } while (--iteration > 0);
-                }
-            });
         if (isLoadTest)
         {
-            httpContext.Response.ElapsedTime = ProfilerHelper.GetElapsedTime(startTimestamp);
+            await InvokeLoadTest(client);
         }
-        httpContext.SetProperty(Constants.ResponseListPropertyName, responseList.ToArray());
+        else
+        {
+            httpContext.Response = await InvokeRequest(client, httpContext, false);
+            await _responsePipeline(httpContext);
+        }
+
+        async Task InvokeLoadTest(HttpClient httpClient)
+        {
+            var responseList = new ConcurrentBag<HttpResponseModel>();
+            var startTimestamp = Stopwatch.GetTimestamp();
+
+            await Parallel.ForEachAsync(Enumerable.Range(1, virtualUsers),
+                new ParallelOptions { MaxDegreeOfParallelism = virtualUsers },
+                async (_, _) =>
+                {
+                    if (duration > TimeSpan.Zero)
+                    {
+                        using var cts = new CancellationTokenSource(duration);
+                        while (!cts.IsCancellationRequested)
+                        {
+                            responseList.Add(
+                                await InvokeRequest(httpClient, httpContext, true)
+                            );
+                        }
+                    }
+                    else
+                    {
+                        do
+                        {
+                            responseList.Add(await InvokeRequest(httpClient, httpContext, true));
+                        } while (--iteration > 0);
+                    }
+                });
+
+            httpContext.Response.Elapsed = ProfilerHelper.GetElapsedTime(startTimestamp);
+            httpContext.SetProperty(Constants.ResponseListPropertyName, responseList.ToArray());
+        }
     }
 
-    private async Task<(HttpResponseModel response, TimeSpan duration)> InvokeRequest(HttpClient httpClient, HttpContext httpContext, bool isLoadTest)
+    private async Task<HttpResponseModel> InvokeRequest(HttpClient httpClient, HttpContext httpContext, bool isLoadTest)
     {
         var responseModel = new HttpResponseModel();
-        var watch = ValueStopwatch.StartNew();
-        TimeSpan elapsed;
         try
         {
             using var requestMessage = await _requestMapper.ToRequestMessage(httpContext);
             LogRequestMessage(requestMessage);
+            httpContext.Request.Timestamp = DateTimeOffset.Now;
+            var startTime = Stopwatch.GetTimestamp();
             using var responseMessage = await httpClient.SendAsync(requestMessage);
+            var elapsed = ProfilerHelper.GetElapsedTime(startTime);
             LogResponseMessage(responseMessage);
-            elapsed = watch.Elapsed;
             responseModel = await _responseMapper.ToResponseModel(responseMessage);
-            if (!isLoadTest)
-            {
-                responseModel.ElapsedTime = elapsed;
-                httpContext.Response = responseModel;
-                await _responsePipeline(httpContext);
-            }
+            responseModel.Elapsed = elapsed;
+            responseModel.Timestamp = httpContext.Request.Timestamp.Add(elapsed);
+            LogRequestDuration(httpContext.Request.Url, httpContext.Request.Method, responseModel.StatusCode, elapsed);
         }
         catch (Exception exception)
         {
             LogException(exception);
         }
-        finally
-        {
-            elapsed = watch.Elapsed;
-            LogRequestDuration(httpContext.Request.Url, httpContext.Request.Method, responseModel.StatusCode, elapsed);
-        }
-        return (responseModel, elapsed);
+        return responseModel;
     }
 
     [LoggerMessage(Level = LogLevel.Debug, EventId = 0, Message = "Request should be offline, wont send request")]

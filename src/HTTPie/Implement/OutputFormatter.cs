@@ -4,6 +4,7 @@
 using HTTPie.Abstractions;
 using HTTPie.Models;
 using HTTPie.Utilities;
+using MathNet.Numerics.Statistics;
 using Microsoft.Extensions.Primitives;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -48,7 +49,7 @@ public class OutputFormatter : IOutputFormatter
         {
             return outputFormat;
         }
-        outputFormat = OutputFormat.ResponseInfo;
+        outputFormat = OutputFormat.ResponseInfoWithTimestamp;
 
         var requestModel = httpContext.Request;
         if (requestModel.ParseResult.HasOption(QuietOption))
@@ -81,6 +82,7 @@ public class OutputFormatter : IOutputFormatter
                     'B' => OutputFormat.RequestBody,
                     'h' => OutputFormat.ResponseHeaders,
                     'b' => OutputFormat.ResponseBody,
+                    't' => OutputFormat.Timestamp,
                     _ => OutputFormat.None
                 })
                     .Aggregate(OutputFormat.None, (current, format) => current | format);
@@ -136,53 +138,47 @@ public class OutputFormatter : IOutputFormatter
     private static string GetLoadTestOutput(HttpContext httpContext, OutputFormat outputFormat)
     {
         httpContext.TryGetProperty(Constants.ResponseListPropertyName,
-            out (HttpResponseModel Response, TimeSpan Duration)[]? responseList);
+            out HttpResponseModel[]? responseList);
         if (responseList is not { Length: > 0 })
             return GetCommonOutput(httpContext, outputFormat);
 
         var durationInMs = responseList
-            .Select(r => r.Duration.TotalMilliseconds)
+            .Where(x => x.Elapsed > TimeSpan.Zero)
+            .Select(r => r.Elapsed.TotalMilliseconds)
             .OrderBy(x => x)
             .ToArray();
-        var totalElapsed = httpContext.Response.ElapsedTime.TotalMilliseconds;
+        var totalElapsed = httpContext.Response.Elapsed.TotalMilliseconds;
         var reportModel = new LoadTestReportModel()
         {
             TotalRequestCount = responseList.Length,
-            SuccessRequestCount = responseList.Count(x => x.Response.IsSuccessStatusCode),
+            SuccessRequestCount = responseList.Count(x => x.IsSuccessStatusCode),
             Average = durationInMs.Average(),
             TotalElapsed = totalElapsed,
-            P99 = Percentile(durationInMs, 0.99),
-            P95 = Percentile(durationInMs, 0.95),
-            P90 = Percentile(durationInMs, 0.9),
-            P50 = Percentile(durationInMs, 0.5),
+            Min = SortedArrayStatistics.Minimum(durationInMs),
+            Max = SortedArrayStatistics.Maximum(durationInMs),
+            Median = SortedArrayStatistics.Median(durationInMs),
+            P99 = SortedArrayStatistics.Quantile(durationInMs, 0.99),
+            P95 = SortedArrayStatistics.Quantile(durationInMs, 0.95),
+            P90 = SortedArrayStatistics.Quantile(durationInMs, 0.90),
+            P75 = SortedArrayStatistics.Quantile(durationInMs, 0.75),
+            P50 = SortedArrayStatistics.Quantile(durationInMs, 0.50),
         };
 
         return $@"{GetCommonOutput(httpContext, outputFormat & OutputFormat.RequestInfo)}
-Total request: {reportModel.TotalRequestCount}({reportModel.TotalElapsed} ms), successCount: {reportModel.SuccessRequestCount}({reportModel.SuccessRequestRate}%), failedCount: {reportModel.FailRequestCount}
+Total requests: {reportModel.TotalRequestCount}({reportModel.TotalElapsed} ms), successCount: {reportModel.SuccessRequestCount}({reportModel.SuccessRequestRate}%), failedCount: {reportModel.FailRequestCount}
 
 Request duration:
 Requests per second: {reportModel.RequestsPerSecond}
-Average: {reportModel.Average} ms
-P99: {reportModel.P99} ms
-P95: {reportModel.P95} ms
-P90: {reportModel.P90} ms
-P50: {reportModel.P50} ms
+{nameof(reportModel.Min)}: {reportModel.Min} ms
+{nameof(reportModel.Max)}: {reportModel.Max} ms
+{nameof(reportModel.Median)}: {reportModel.Median} ms
+{nameof(reportModel.Average)}: {reportModel.Average} ms
+{nameof(reportModel.P99)}: {reportModel.P99} ms
+{nameof(reportModel.P95)}: {reportModel.P95} ms
+{nameof(reportModel.P90)}: {reportModel.P90} ms
+{nameof(reportModel.P75)}: {reportModel.P75} ms
+{nameof(reportModel.P50)}: {reportModel.P50} ms
 ";
-    }
-
-    // https://stackoverflow.com/questions/8137391/percentile-calculation
-    // https://en.wikipedia.org/wiki/Percentile#Calculation_methods
-    private static double Percentile(double[] sequence, double percentile)
-    {
-        // Array.Sort(sequence);
-        var len = sequence.Length;
-        var n = (len - 1) * percentile + 1;
-        var idx = (int)n;
-        // Another method: double n = (N + 1) * excelPercentile;
-        if (idx == 1) return sequence[0];
-        if (idx == len) return sequence[len - 1];
-        var d = n - idx;
-        return sequence[idx - 1] + d * (sequence[idx] - sequence[idx - 1]);
     }
 
     private static string Prettify(string body, PrettyOptions prettyOption)
