@@ -102,7 +102,7 @@ public partial class RequestExecutor : IRequestExecutor
         }
         else
         {
-            httpContext.Response = await InvokeRequest(client, httpContext, false);
+            httpContext.Response = await InvokeRequest(client, httpContext);
             await _responsePipeline(httpContext);
         }
 
@@ -118,7 +118,7 @@ public partial class RequestExecutor : IRequestExecutor
                     while (!cts.IsCancellationRequested)
                     {
                         responseList.Add(
-                            await InvokeRequest(httpClient, httpContext, true)
+                            await InvokeRequest(httpClient, httpContext)
                         );
                     }
                 };
@@ -129,7 +129,7 @@ public partial class RequestExecutor : IRequestExecutor
                 {
                     do
                     {
-                        responseList.Add(await InvokeRequest(httpClient, httpContext, true));
+                        responseList.Add(await InvokeRequest(httpClient, httpContext));
                     } while (--iteration > 0);
                 };
             }
@@ -151,7 +151,7 @@ public partial class RequestExecutor : IRequestExecutor
         }
     }
 
-    private async Task<HttpResponseModel> InvokeRequest(HttpClient httpClient, HttpContext httpContext, bool isLoadTest)
+    private async Task<HttpResponseModel> InvokeRequest(HttpClient httpClient, HttpContext httpContext)
     {
         var responseModel = new HttpResponseModel();
         try
