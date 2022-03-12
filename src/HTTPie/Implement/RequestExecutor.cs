@@ -72,26 +72,22 @@ public partial class RequestExecutor : IRequestExecutor
         if (timeout > 0)
             client.Timeout = TimeSpan.FromSeconds(timeout);
         var iteration = requestModel.ParseResult.GetValueForOption(IterationOption);
-        var virtualUsers = Math.Max(requestModel.ParseResult.GetValueForOption(VirtualUserOption), 1);
+        var virtualUsers = requestModel.ParseResult.GetValueForOption(VirtualUserOption);
         var durationValue = requestModel.ParseResult.GetValueForOption(DurationOption);
         var duration = TimeSpan.Zero;
         if (!string.IsNullOrEmpty(durationValue))
         {
-            if (durationValue[^1].ToLower() is 's' && double.TryParse(durationValue[..^1], out var seconds))
+            if (!char.IsNumber(durationValue[^1]) && double.TryParse(durationValue[..^1], out var value))
             {
-                duration = TimeSpan.FromSeconds(seconds);
+                duration = durationValue[^1].ToLower() switch
+                {
+                    's' => TimeSpan.FromSeconds(value),
+                    'm' => TimeSpan.FromMinutes(value),
+                    'h' => TimeSpan.FromHours(value),
+                    _ => TimeSpan.Zero
+                };
             }
-            else
-            if (durationValue[^1].ToLower() is 'm' && double.TryParse(durationValue[..^1], out var minutes))
-            {
-                duration = TimeSpan.FromMinutes(minutes);
-            }
-            else
-            if (durationValue[^1].ToLower() is 'h' && double.TryParse(durationValue[..^1], out var hours))
-            {
-                duration = TimeSpan.FromHours(hours);
-            }
-            else
+            if (duration == TimeSpan.Zero)
             {
                 TimeSpan.TryParse(durationValue, out duration);
             }
@@ -113,31 +109,43 @@ public partial class RequestExecutor : IRequestExecutor
         async Task InvokeLoadTest(HttpClient httpClient)
         {
             var responseList = new ConcurrentBag<HttpResponseModel>();
-            var startTimestamp = Stopwatch.GetTimestamp();
-
-            await Parallel.ForEachAsync(Enumerable.Range(1, virtualUsers),
-                new ParallelOptions { MaxDegreeOfParallelism = virtualUsers },
-                async (_, _) =>
+            Func<int, CancellationToken, ValueTask> action;
+            if (duration > TimeSpan.Zero)
+            {
+                action = async (_, _) =>
                 {
-                    if (duration > TimeSpan.Zero)
+                    using var cts = new CancellationTokenSource(duration);
+                    while (!cts.IsCancellationRequested)
                     {
-                        using var cts = new CancellationTokenSource(duration);
-                        while (!cts.IsCancellationRequested)
-                        {
-                            responseList.Add(
-                                await InvokeRequest(httpClient, httpContext, true)
-                            );
-                        }
+                        responseList.Add(
+                            await InvokeRequest(httpClient, httpContext, true)
+                        );
                     }
-                    else
+                };
+            }
+            else
+            {
+                action = async (_, _) =>
+                {
+                    do
                     {
-                        do
-                        {
-                            responseList.Add(await InvokeRequest(httpClient, httpContext, true));
-                        } while (--iteration > 0);
-                    }
-                });
-
+                        responseList.Add(await InvokeRequest(httpClient, httpContext, true));
+                    } while (--iteration > 0);
+                };
+            }
+            var startTimestamp = Stopwatch.GetTimestamp();
+            if (virtualUsers > 1)
+            {
+                await Parallel.ForEachAsync(
+                  Enumerable.Range(1, virtualUsers),
+                  new ParallelOptions { MaxDegreeOfParallelism = virtualUsers },
+                  action
+                );
+            }
+            else
+            {
+                await action(default, default);
+            }
             httpContext.Response.Elapsed = ProfilerHelper.GetElapsedTime(startTimestamp);
             httpContext.SetProperty(Constants.ResponseListPropertyName, responseList.ToArray());
         }
