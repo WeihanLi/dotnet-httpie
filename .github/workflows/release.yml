@@ -22,4 +22,4 @@ jobs:
       run: |
         ./build.ps1 --stable=true
         $VERSION = Get-ChildItem -Path artifacts/*.nupkg -Name | Select-String -Pattern '\d+.\d+.\d+' | foreach {$_.Matches.Value}
-        gh release create --generate-notes $VERSION ./artifacts/*.nupkg
+        gh release create --generate-notes $VERSION artifacts/*.nupkg
