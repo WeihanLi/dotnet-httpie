@@ -72,26 +72,22 @@ public partial class RequestExecutor : IRequestExecutor
         if (timeout > 0)
             client.Timeout = TimeSpan.FromSeconds(timeout);
         var iteration = requestModel.ParseResult.GetValueForOption(IterationOption);
-        var virtualUsers = Math.Max(requestModel.ParseResult.GetValueForOption(VirtualUserOption), 1);
+        var virtualUsers = requestModel.ParseResult.GetValueForOption(VirtualUserOption);
         var durationValue = requestModel.ParseResult.GetValueForOption(DurationOption);
         var duration = TimeSpan.Zero;
         if (!string.IsNullOrEmpty(durationValue))
         {
-            if (durationValue[^1].ToLower() is 's' && double.TryParse(durationValue[..^1], out var seconds))
+            if (!char.IsNumber(durationValue[^1]) && double.TryParse(durationValue[..^1], out var value))
             {
-                duration = TimeSpan.FromSeconds(seconds);
+                duration = durationValue[^1].ToLower() switch
+                {
+                    's' => TimeSpan.FromSeconds(value),
+                    'm' => TimeSpan.FromMinutes(value),
+                    'h' => TimeSpan.FromHours(value),
+                    _ => TimeSpan.Zero
+                };
             }
-            else
-            if (durationValue[^1].ToLower() is 'm' && double.TryParse(durationValue[..^1], out var minutes))
-            {
-                duration = TimeSpan.FromMinutes(minutes);
-            }
-            else
-            if (durationValue[^1].ToLower() is 'h' && double.TryParse(durationValue[..^1], out var hours))
-            {
-                duration = TimeSpan.FromHours(hours);
-            }
-            else
+            if (duration == TimeSpan.Zero)
             {
                 TimeSpan.TryParse(durationValue, out duration);
             }
