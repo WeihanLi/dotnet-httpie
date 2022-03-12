@@ -16,10 +16,10 @@ public class DefaultResponseMiddleware : IResponseMiddleware
         if ((outputFormat & OutputFormat.Timestamp) != 0)
         {
             context.Request.Headers.TryAdd(Constants.RequestTimestampHeaderName, context.Request.Timestamp.ToString());
-            if (context.Response.Elapsed.HasValue)
+            if (context.Response.Elapsed > TimeSpan.Zero)
             {
                 context.Response.Headers.TryAdd(Constants.ResponseTimestampHeaderName, context.Response.Timestamp.ToString());
-                context.Response.Headers.TryAdd(Constants.RequestDurationHeaderName, $"{context.Response.Elapsed.Value.TotalMilliseconds}ms");
+                context.Response.Headers.TryAdd(Constants.RequestDurationHeaderName, $"{context.Response.Elapsed.TotalMilliseconds}ms");
             }
         }
         return next();

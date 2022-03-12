@@ -143,11 +143,11 @@ public class OutputFormatter : IOutputFormatter
             return GetCommonOutput(httpContext, outputFormat);
 
         var durationInMs = responseList
-            .Where(x => x.Elapsed.HasValue)
-            .Select(r => r.Elapsed.GetValueOrDefault().TotalMilliseconds)
+            .Where(x => x.Elapsed > TimeSpan.Zero)
+            .Select(r => r.Elapsed.TotalMilliseconds)
             .OrderBy(x => x)
             .ToArray();
-        var totalElapsed = httpContext.Response.Elapsed.GetValueOrDefault().TotalMilliseconds;
+        var totalElapsed = httpContext.Response.Elapsed.TotalMilliseconds;
         var reportModel = new LoadTestReportModel()
         {
             TotalRequestCount = responseList.Length,

@@ -13,6 +13,6 @@ public record HttpResponseModel
     public Dictionary<string, StringValues> Headers { get; set; } = new();
     public string Body { get; set; } = string.Empty;
     public DateTimeOffset Timestamp { get; set; }
-    public TimeSpan? Elapsed { get; set; }
+    public TimeSpan Elapsed { get; set; }
     public bool IsSuccessStatusCode => (int)StatusCode >= 200 && (int)StatusCode <= 299;
 }
