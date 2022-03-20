@@ -1,21 +1,17 @@
 <Project>
-    <Import Project="./build/sign.props"/>
-    <Import Project="./build/version.props"/>
     <PropertyGroup>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <PackageIcon>icon.png</PackageIcon>
-        <PackageTags>HTTPie http https curl rest</PackageTags>
+        <PackageTags>httpie http https curl rest</PackageTags>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/WeihanLi/dotnet-httpie</RepositoryUrl>
-        <PackageProjectUrl>https://github.com/WeihanLi/dotnet-httpie</PackageProjectUrl>
         <Product>dotnet-HTTPie</Product>
         <Authors>WeihanLi</Authors>
-        <PackageReleaseNotes>https://github.com/WeihanLi/dotnet-httpie/tree/main/docs/ReleaseNotes.md</PackageReleaseNotes>
-        <Copyright>Copyright 2021 (c) WeihanLi</Copyright>
+        <Copyright>Copyright 2021-$([System.DateTime]::Now.Year) (c) WeihanLi</Copyright>
     </PropertyGroup>
     <ItemGroup>
         <None Include="$(MSBuildThisFileDirectory)icon.png" Pack="true" Visible="false" PackagePath=""/>

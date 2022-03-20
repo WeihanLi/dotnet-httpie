@@ -8,12 +8,12 @@ using System.Text;
 
 namespace HTTPie.Middleware;
 
-public class AuthenticationMiddleware : IRequestMiddleware
+public class AuthorizationMiddleware : IRequestMiddleware
 {
     public static readonly Option<string> AuthenticationTypeOption = new(new[] { "--auth-type", "-A" }, () => "Basic", "Authentication type");
     public static readonly Option<string> AuthenticationValueOption = new(new[] { "--auth", "-a" }, "Authentication value");
 
-    static AuthenticationMiddleware()
+    static AuthorizationMiddleware()
     {
         AuthenticationTypeOption.AddCompletions(new[]
         {
@@ -29,11 +29,11 @@ public class AuthenticationMiddleware : IRequestMiddleware
         if (requestModel.ParseResult.HasOption(AuthenticationValueOption))
         {
             var authValue = requestModel.ParseResult.GetValueForOption(AuthenticationValueOption);
-            if (!requestModel.Headers.ContainsKey(Constants.AuthenticationHeaderName) && !string.IsNullOrEmpty(authValue))
+            if (!requestModel.Headers.ContainsKey(Constants.AuthorizationHeaderName) && !string.IsNullOrEmpty(authValue))
             {
                 var authType = requestModel.ParseResult.GetValueForOption(AuthenticationTypeOption);
                 var authHeaderValue = GetAuthHeader(authType, authValue);
-                requestModel.Headers.TryAdd(Constants.AuthenticationHeaderName, authHeaderValue);
+                requestModel.Headers.TryAdd(Constants.AuthorizationHeaderName, authHeaderValue);
             }
         }
         return next();
@@ -51,11 +51,11 @@ public class AuthenticationMiddleware : IRequestMiddleware
 
         static string GetAuthSchema(string? authenticationType)
         {
-            if (string.IsNullOrEmpty(authenticationType))
+            if (string.IsNullOrEmpty(authenticationType) || "basic".EqualsIgnoreCase(authenticationType))
             {
                 return "Basic";
             }
-            if ("jwt".EqualsIgnoreCase(authenticationType))
+            if ("jwt".EqualsIgnoreCase(authenticationType) || "bearer".EqualsIgnoreCase(authenticationType))
             {
                 return "Bearer";
             }

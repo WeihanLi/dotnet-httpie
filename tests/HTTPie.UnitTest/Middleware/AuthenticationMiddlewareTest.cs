@@ -5,7 +5,7 @@ using System.Text;
 
 namespace HTTPie.UnitTest.Middleware;
 
-public class AuthenticationMiddlewareTest
+public class AuthorizationMiddlewareTest
 {
     [Theory]
     [InlineData("GET :5000/api/values")]
@@ -14,7 +14,7 @@ public class AuthenticationMiddlewareTest
     {
         var httpContext = new HttpContext();
         Helpers.InitRequestModel(httpContext, input);
-        var middleware = new AuthenticationMiddleware();
+        var middleware = new AuthorizationMiddleware();
         await middleware.Invoke(httpContext.Request, () => Task.CompletedTask);
         httpContext.Request.Headers.Should().BeEmpty();
     }
@@ -26,11 +26,11 @@ public class AuthenticationMiddlewareTest
     {
         var httpContext = new HttpContext();
         Helpers.InitRequestModel(httpContext, input);
-        var middleware = new AuthenticationMiddleware();
+        var middleware = new AuthorizationMiddleware();
         await middleware.Invoke(httpContext.Request, () => Task.CompletedTask);
         httpContext.Request.Headers.Should().NotBeEmpty();
-        httpContext.Request.Headers.Should().ContainKey(Constants.AuthenticationHeaderName);
-        var value = httpContext.Request.Headers[Constants.AuthenticationHeaderName].ToString();
+        httpContext.Request.Headers.Should().ContainKey(Constants.AuthorizationHeaderName);
+        var value = httpContext.Request.Headers[Constants.AuthorizationHeaderName].ToString();
         value.Should().NotBeNullOrEmpty();
         value.Should().StartWith("Basic ");
         value["Basic ".Length..].Should().Be(Convert.ToBase64String(Encoding.UTF8.GetBytes("uid:pwd")));
@@ -43,11 +43,11 @@ public class AuthenticationMiddlewareTest
     {
         var httpContext = new HttpContext();
         Helpers.InitRequestModel(httpContext, input);
-        var middleware = new AuthenticationMiddleware();
+        var middleware = new AuthorizationMiddleware();
         await middleware.Invoke(httpContext.Request, () => Task.CompletedTask);
         httpContext.Request.Headers.Should().NotBeEmpty();
-        httpContext.Request.Headers.Should().ContainKey(Constants.AuthenticationHeaderName);
-        var value = httpContext.Request.Headers[Constants.AuthenticationHeaderName].ToString();
+        httpContext.Request.Headers.Should().ContainKey(Constants.AuthorizationHeaderName);
+        var value = httpContext.Request.Headers[Constants.AuthorizationHeaderName].ToString();
         value.Should().NotBeNullOrEmpty();
         value.Should().StartWith("Bearer ");
         value["Bearer ".Length..].Should().Be("TestToken");

@@ -16,7 +16,7 @@ public static class Constants
     public const string ResponseOutputFormatPropertyName = "OutputFormat";
     public const string ResponseListPropertyName = "ResponseList";
 
-    public const string AuthenticationHeaderName = "Authentication";
+    public const string AuthorizationHeaderName = "Authorization";
 
     public const string RequestTimestampHeaderName = $"X-{ApplicationName}-RequestTimestamp";
     public const string ResponseTimestampHeaderName = $"X-{ApplicationName}-ResponseTimestamp";
