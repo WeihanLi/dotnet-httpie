@@ -187,7 +187,7 @@ public static class Helpers
             .AddRequestMiddleware<RequestHeadersMiddleware>()
             .AddRequestMiddleware<RequestDataMiddleware>()
             .AddRequestMiddleware<DefaultRequestMiddleware>()
-            .AddRequestMiddleware<AuthenticationMiddleware>()
+            .AddRequestMiddleware<AuthorizationMiddleware>()
             ;
         // ResponseMiddleware
         return serviceCollection.AddResponseMiddleware<DefaultResponseMiddleware>();
