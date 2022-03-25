@@ -33,7 +33,7 @@ public static class Helpers
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
 
-    public static readonly HashSet<Option> SupportedOptions = new();
+    private static readonly HashSet<Option> SupportedOptions = new();
 
     private static IServiceCollection AddHttpHandlerMiddleware<THttpHandlerMiddleware>(
         this IServiceCollection serviceCollection)
@@ -166,7 +166,7 @@ public static class Helpers
             {
                 var pipelineBuilder = PipelineBuilder.CreateAsync<HttpClientHandler>();
                 foreach (var middleware in
-                    sp.GetServices<IHttpHandlerMiddleware>())
+                         sp.GetServices<IHttpHandlerMiddleware>())
                     pipelineBuilder.Use(middleware.Invoke);
                 return pipelineBuilder.Build();
             })
