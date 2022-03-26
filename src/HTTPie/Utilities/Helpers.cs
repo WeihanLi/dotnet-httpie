@@ -75,7 +75,7 @@ public static class Helpers
                     .Union(serviceProvider.GetRequiredService<IOutputFormatter>().SupportedOptions())
                     .Union(serviceProvider.GetRequiredService<IRequestExecutor>().SupportedOptions()))
                     .Union(serviceProvider.GetRequiredService<ILoadTestExporterSelector>().SupportedOptions())
-                    .Union(serviceProvider.GetServices<ILoadTestExporter>().SelectMany(x=>x.SupportedOptions()))
+                    .Union(serviceProvider.GetServices<ILoadTestExporter>().SelectMany(x => x.SupportedOptions()))
                     )
             {
                 SupportedOptions.Add(option);

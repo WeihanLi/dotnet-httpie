@@ -27,8 +27,8 @@ public class JsonLoadTestExporter : ILoadTestExporter
         }
         var result = new
         {
-            context.Response.Elapsed, 
-            context.Request, 
+            context.Response.Elapsed,
+            context.Request,
             ResponseList = responseList
         };
         await using var fs = File.Create(jsonPath);
