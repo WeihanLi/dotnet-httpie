@@ -13,7 +13,7 @@ public class OutputFormatterTest
     public OutputFormatterTest()
     {
         _outputFormatter = new OutputFormatter(
-            new ServiceCollection().BuildServiceProvider(), 
+            new ServiceCollection().BuildServiceProvider(),
             NullLogger<OutputFormatter>.Instance)
             ;
     }

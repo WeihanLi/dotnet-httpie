@@ -6,7 +6,7 @@ using HTTPie.Models;
 
 namespace HTTPie.Implement;
 
-public class LoadTestExporterSelector: ILoadTestExporterSelector
+public class LoadTestExporterSelector : ILoadTestExporterSelector
 {
     private readonly HttpContext _context;
     private readonly Dictionary<string, ILoadTestExporter> _exporters;

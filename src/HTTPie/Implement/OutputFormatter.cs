@@ -41,7 +41,7 @@ public class OutputFormatter : IOutputFormatter
         _serviceProvider = serviceProvider;
         _logger = logger;
     }
-    
+
     public ICollection<Option> SupportedOptions() => new HashSet<Option>()
         {
             OfflineOption,
@@ -178,14 +178,14 @@ public class OutputFormatter : IOutputFormatter
         try
         {
             var exporter = _serviceProvider.GetService<ILoadTestExporter>();
-            if(exporter != null)
-              await exporter.Export(httpContext, responseList);
+            if (exporter != null)
+                await exporter.Export(httpContext, responseList);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Export load test result failed");
         }
-        
+
         return $@"{GetCommonOutput(httpContext, outputFormat & OutputFormat.RequestInfo)}
 Total requests: {reportModel.TotalRequestCount}({reportModel.TotalElapsed} ms), successCount: {reportModel.SuccessRequestCount}({reportModel.SuccessRequestRate}%), failedCount: {reportModel.FailRequestCount}
 
