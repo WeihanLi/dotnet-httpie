@@ -190,7 +190,10 @@ public static class Helpers
             .AddRequestMiddleware<AuthorizationMiddleware>()
             ;
         // ResponseMiddleware
-        return serviceCollection.AddResponseMiddleware<DefaultResponseMiddleware>();
+        return serviceCollection
+            .AddResponseMiddleware<DefaultResponseMiddleware>()
+            .AddResponseMiddleware<JsonSchemaValidationMiddleware>()
+            ;
     }
 
     public static void InitRequestModel(HttpContext httpContext, string commandLine)
