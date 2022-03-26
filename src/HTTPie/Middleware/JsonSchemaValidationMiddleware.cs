@@ -15,11 +15,11 @@ public class JsonSchemaValidationMiddleware: IResponseMiddleware
     private readonly ILogger<JsonSchemaValidationMiddleware> _logger;
     private const string JsonSchemaValidationResultHeader = "X-JsonSchema-ValidationResult";
     
-    private const string JsonSchemaLoadFailed = "JsonSchemaFailedToLoad";
-    private const string JsonSchemaValidateFailed = "JsonSchemaFailedToValidate";
+    private const string JsonSchemaLoadFailed = "JsonSchema fail to load";
+    private const string JsonSchemaValidateFailed = "JsonSchema fail to validate";
     
     
-    private static readonly Option<string>  JsonSchemaFilePathOption = new("--json-schema-file-path", "Json schema file path");
+    private static readonly Option<string>  JsonSchemaPathOption = new("--json-schema-path", "Json schema path");
     private static readonly Option<OutputFormat> JsonSchemaValidationOutputFormatOption = new("--json-schema-out-format",()=> OutputFormat.Detailed, "Json schema validation result output format");
 
     public JsonSchemaValidationMiddleware(ILogger<JsonSchemaValidationMiddleware> logger)
@@ -29,12 +29,12 @@ public class JsonSchemaValidationMiddleware: IResponseMiddleware
 
     public ICollection<Option> SupportedOptions()
     {
-        return new Option[] { JsonSchemaFilePathOption, JsonSchemaValidationOutputFormatOption };
+        return new Option[] { JsonSchemaPathOption, JsonSchemaValidationOutputFormatOption };
     }
 
     public async Task Invoke(HttpContext context, Func<Task> next)
     {
-        var schemaPath = context.Request.ParseResult.GetValueForOption(JsonSchemaFilePathOption)?.Trim();
+        var schemaPath = context.Request.ParseResult.GetValueForOption(JsonSchemaPathOption)?.Trim();
         if (string.IsNullOrEmpty(schemaPath))
         {
             return;
@@ -57,8 +57,7 @@ public class JsonSchemaValidationMiddleware: IResponseMiddleware
         }
         catch (Exception e)
         {
-            _logger.LogWarning(e, "Load JsonSchema failed");
-
+            _logger.LogWarning(e, JsonSchemaLoadFailed);
             validationResultMessage = JsonSchemaLoadFailed;
         }
         if (jsonSchema is not null)
@@ -70,11 +69,11 @@ public class JsonSchemaValidationMiddleware: IResponseMiddleware
                     OutputFormat = context.Request.ParseResult.GetValueForOption(JsonSchemaValidationOutputFormatOption)
                 };
                 var validateResult = jsonSchema.Validate(context.Response.Body, options);
-                validationResultMessage = $"{validateResult.IsValid}:{validateResult.Message}".Trim(':');
+                validationResultMessage = $"{validateResult.IsValid},{validateResult.Message}".Trim(',');
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Validate Json schema failed");
+                _logger.LogWarning(e, JsonSchemaValidateFailed);
                 validationResultMessage = JsonSchemaValidateFailed;
             }
         }
