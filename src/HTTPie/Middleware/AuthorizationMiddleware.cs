@@ -10,8 +10,8 @@ namespace HTTPie.Middleware;
 
 public class AuthorizationMiddleware : IRequestMiddleware
 {
-    public static readonly Option<string> AuthenticationTypeOption = new(new[] { "--auth-type", "-A" }, () => "Basic", "Authentication type");
-    public static readonly Option<string> AuthenticationValueOption = new(new[] { "--auth", "-a" }, "Authentication value");
+    private static readonly Option<string> AuthenticationTypeOption = new(new[] { "--auth-type", "-A" }, () => "Basic", "Authentication type");
+    private static readonly Option<string> AuthenticationValueOption = new(new[] { "--auth", "-a" }, "Authentication value");
 
     static AuthorizationMiddleware()
     {
