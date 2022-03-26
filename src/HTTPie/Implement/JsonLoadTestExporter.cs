@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace HTTPie.Implement;
 
-public class JsonLoadTestExporter: ILoadTestExporter
+public class JsonLoadTestExporter : ILoadTestExporter
 {
     private static readonly Option<string> OutputJsonPathOption = new("--output-json-path", "output json file path");
 
