@@ -13,7 +13,7 @@ namespace HTTPie.Middleware;
 public class JsonSchemaValidationMiddleware: IResponseMiddleware
 {
     private readonly ILogger<JsonSchemaValidationMiddleware> _logger;
-    private const string JsonSchemaValidationResultHeader = "X-JsonSchema-ValiateResult";
+    private const string JsonSchemaValidationResultHeader = "X-JsonSchema-ValidationResult";
     
     private const string JsonSchemaLoadFailed = "JsonSchemaFailedToLoad";
     private const string JsonSchemaValidateFailed = "JsonSchemaFailedToValidate";
