@@ -21,6 +21,7 @@ public class LoadTestExporterSelector : ILoadTestExporterSelector
     {
         _context = context;
         _exporters = exporters.ToDictionary(x => x.Type, x => x, StringComparer.OrdinalIgnoreCase);
+        ExporterTypeOption.AddCompletions(_exporters.Keys.ToArray());
     }
 
     public ILoadTestExporter? Select()
