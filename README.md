@@ -6,6 +6,8 @@
 
 [![Github Actions Build Status](https://github.com/WeihanLi/dotnet-HTTPie/workflows/default/badge.svg?branch=dev)](https://github.com/WeihanLi/dotnet-HTTPie/actions?query=workflow%default+branch%3Adev)
 
+[![Docker Pulls](https://img.shields.io/docker/pulls/weihanli/dotnet-httpie)](https://hub.docker.com/repository/docker/weihanli/dotnet-httpie)
+
 ## Intro
 
 dotnet tool version of HTTPie, Modern, user-friendly command-line HTTP client for the API era.
@@ -34,17 +36,26 @@ Now you can use the tool to call your API you want
 
 Usages:
 
-> http [flags] [METHOD] URL [ITEM [ITEM]]
+> dotnet-http [flags] [METHOD] URL [ITEM [ITEM]]
 
 There're three types of item
 
-Type | Grammer
+Type | Grammar
 -----|-------
 Query| name`==`test
 Header| X-Api-Key`:`test
 Request-Data | name`=`test, raw data field example(Only effective for JSON): age`:=`10, job`:=`'{"Id":1,"Name":"test"}'(Escape needed for Windows)
 
 Here's a sample: ![sample](./images/sample.png)
+
+More examples you may wanna have a look
+
+``` bash
+dotnet-http :5000/api/values
+dotnet-http localhost:5000/api/values
+dotnet-http get https://reservation.weihanli.xyz/api/notice --body
+dotnet-http post /api/notice title=test body=test-body
+```
 
 ## Docker
 
@@ -61,15 +72,6 @@ docker run --rm --pull=always weihanli/dotnet-httpie:latest http get httpbin.org
 ```
 
 ## More
-
-There're some examples you may wanna have a look
-
-``` bash
-http :5000/api/values
-http localhost:5000/api/values
-http get https://reservation.weihanli.xyz/api/notice --body
-http post /api/notice title=test body=test-body
-```
 
 For detailed document: have a look at HTTPie documents <https://httpie.io/docs#examples>
 

@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
-using HTTPie.Implement;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using Microsoft.Extensions.Logging;
@@ -18,16 +17,15 @@ public class DefaultRequestMiddleware : IRequestMiddleware
         _logger = logger;
     }
 
-    public static readonly Option DebugOption = new("--debug", "Enable debug mode, output debug log");
-    public static readonly Option<string> SchemaOption = new("--schema", "The HTTP request schema");
-    public static readonly Option<Version> HttpVersionOption = new("--httpVersion", "The HTTP request HTTP version");
+    private static readonly Option DebugOption = new("--debug", "Enable debug mode, output debug log");
+    private static readonly Option<string> SchemaOption = new("--schema", "The HTTP request schema");
+    private static readonly Option<Version> HttpVersionOption = new("--httpVersion", "The HTTP request HTTP version");
 
     public ICollection<Option> SupportedOptions() => new HashSet<Option>()
         {
             DebugOption,
             SchemaOption,
             HttpVersionOption,
-            RequestExecutor.TimeoutOption,
         };
 
     public async Task Invoke(HttpRequestModel requestModel, Func<Task> next)

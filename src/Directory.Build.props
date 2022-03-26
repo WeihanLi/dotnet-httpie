@@ -1,0 +1,14 @@
+<Project>
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+    <Import Project="../build/sign.props"/>
+    <Import Project="../build/version.props"/>
+    <PropertyGroup>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/WeihanLi/dotnet-httpie</PackageProjectUrl>
+        <PackageReleaseNotes>https://github.com/WeihanLi/dotnet-httpie/tree/main/docs/ReleaseNotes.md</PackageReleaseNotes>
+        <ContinuousIntegrationBuild Condition="'$(TF_BUILD)' == 'true' or '$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)../icon.png" Pack="true" Visible="false" PackagePath=""/>
+    </ItemGroup>
+</Project>

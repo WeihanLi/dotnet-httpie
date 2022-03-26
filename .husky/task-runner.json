@@ -1,0 +1,15 @@
+{
+   "tasks": [
+      {
+         "name": "dotnet-build",
+         "command": "dotnet",
+         "args": [ "build" ]
+      },
+      {
+         "name": "dotnet-format",
+         "command": "dotnet",
+         "args": [ "dotnet-format", "--include", "${staged}" ],
+         "include": [ "**/*.cs", "**/*.vb" ]
+      }
+   ]
+}

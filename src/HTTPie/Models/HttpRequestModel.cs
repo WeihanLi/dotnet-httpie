@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 
 using Microsoft.Extensions.Primitives;
-using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace HTTPie.Models;
 
@@ -22,7 +22,9 @@ public record HttpRequestModel
 
     public string[] Options { get; set; } = Array.Empty<string>();
     public string[] RequestItems { get; set; } = Array.Empty<string>();
+    public DateTimeOffset Timestamp { get; set; }
 
+    [Newtonsoft.Json.JsonIgnore]
     [JsonIgnore]
     public ParseResult ParseResult { get; set; } = null!;
 

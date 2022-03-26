@@ -1,10 +1,11 @@
 name: dotnet-outdated
 
 on:
-  schedule:
-    - cron:  '0 1 * * *'
+  # schedule:
+  #   - cron:  '0 1 * * *'
   push:
     branches: 
+      - "main"
       - "dev"
 jobs:
   build:
