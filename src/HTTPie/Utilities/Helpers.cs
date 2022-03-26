@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using System.CommandLine.Builder;
+using System.CommandLine.IO;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 
@@ -122,13 +123,13 @@ public static class Helpers
                 var context = DependencyResolver.ResolveRequiredService<HttpContext>();
                 await DependencyResolver.ResolveRequiredService<IRequestExecutor>()
                     .ExecuteAsync(context);
-                var output = DependencyResolver.ResolveRequiredService<IOutputFormatter>()
+                var output = await DependencyResolver.ResolveRequiredService<IOutputFormatter>()
                     .GetOutput(context);
-                console.Out.Write(output.Trim());
+                console.Out.WriteLine(output.Trim());
             }
             catch (Exception e)
             {
-                console.Error.Write(e.ToString());
+                console.Error.WriteLine($"Unhandled exception: {e}");
             }
         });
         command.TreatUnmatchedTokensAsErrors = false;
@@ -143,6 +144,8 @@ public static class Helpers
             .AddSingleton<IRequestMapper, RequestMapper>()
             .AddSingleton<IResponseMapper, ResponseMapper>()
             .AddSingleton<IOutputFormatter, OutputFormatter>()
+            .AddSingleton<ILoadTestExporterSelector, LoadTestExporterSelector>()
+            .AddSingleton<ILoadTestExporter, JsonLoadTestExporter>()
             // request pipeline
             .AddSingleton(sp =>
             {

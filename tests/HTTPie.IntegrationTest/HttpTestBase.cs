@@ -47,13 +47,13 @@ public abstract class HttpTestBase : IDisposable
 
     protected async Task<int> Handle(string[] args)
     {
-        return await Helpers.Handle(Services, args);
+        return await Services.Handle(args);
     }
 
     protected async Task<string> GetOutput(string input)
     {
         await Handle(input);
-        return Services.GetRequiredService<IOutputFormatter>()
+        return await Services.GetRequiredService<IOutputFormatter>()
             .GetOutput(GetHttpContext());
     }
 

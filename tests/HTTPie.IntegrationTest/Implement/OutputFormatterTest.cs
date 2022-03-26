@@ -27,8 +27,8 @@ public class OutputFormatterTest : HttpTestBase
         Assert.Empty(output);
 
         var response = GetResponse();
-        Assert.Empty(response.Headers);
-        Assert.Empty(response.Body);
+        Assert.NotEmpty(response.Headers);
+        Assert.NotEmpty(response.Body);
     }
 
     [Theory]
@@ -40,7 +40,7 @@ public class OutputFormatterTest : HttpTestBase
 
         var response = GetResponse();
         Assert.NotEmpty(response.Headers);
-        Assert.Empty(response.Body);
+        Assert.NotEmpty(response.Body);
     }
 
     [Theory]
@@ -52,7 +52,6 @@ public class OutputFormatterTest : HttpTestBase
         Assert.NotEmpty(output);
 
         var response = GetResponse();
-        Assert.Empty(response.Headers);
         Assert.NotNull(response.Body);
         Assert.NotEmpty(response.Body);
         Assert.Equal(response.Body.Trim(), output.Trim());

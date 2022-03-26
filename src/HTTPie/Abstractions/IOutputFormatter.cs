@@ -7,5 +7,5 @@ namespace HTTPie.Abstractions;
 
 public interface IOutputFormatter : IPlugin
 {
-    string GetOutput(HttpContext httpContext);
+    Task<string> GetOutput(HttpContext httpContext);
 }

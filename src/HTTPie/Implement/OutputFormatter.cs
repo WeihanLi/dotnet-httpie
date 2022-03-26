@@ -5,6 +5,8 @@ using HTTPie.Abstractions;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using MathNet.Numerics.Statistics;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -22,15 +24,24 @@ public enum PrettyOptions
 
 public class OutputFormatter : IOutputFormatter
 {
-    public static readonly Option<PrettyOptions> PrettyOption = new("--pretty", () => PrettyOptions.All, "pretty output");
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<OutputFormatter> _logger;
+    private static readonly Option<PrettyOptions> PrettyOption = new("--pretty", () => PrettyOptions.All, "pretty output");
 
-    public static readonly Option QuietOption = new(new[] { "--quiet", "-q" }, "quiet mode, output nothing");
+    private static readonly Option QuietOption = new(new[] { "--quiet", "-q" }, "quiet mode, output nothing");
     public static readonly Option OfflineOption = new("--offline", "offline mode, would not send the request, just print request info");
-    public static readonly Option OutputHeadersOption = new(new[] { "-h", "--headers" }, "output response headers only");
-    public static readonly Option OutputBodyOption = new(new[] { "-b", "--body" }, "output response headers and response body only");
-    public static readonly Option OutputVerboseOption = new(new[] { "-v", "--verbose" }, "output request/response, response headers and response body");
-    public static readonly Option<string> OutputPrintModeOption = new(new[] { "-p", "--print" }, "print mode, output specific info,H:request headers,B:request body,h:response headers,b:response body");
+    private static readonly Option OutputHeadersOption = new(new[] { "-h", "--headers" }, "output response headers only");
+    private static readonly Option OutputBodyOption = new(new[] { "-b", "--body" }, "output response headers and response body only");
+    private static readonly Option OutputVerboseOption = new(new[] { "-v", "--verbose" }, "output request/response, response headers and response body");
+    private static readonly Option<string> OutputPrintModeOption = new(new[] { "-p", "--print" }, "print mode, output specific info,H:request headers,B:request body,h:response headers,b:response body");
 
+
+    public OutputFormatter(IServiceProvider serviceProvider, ILogger<OutputFormatter> logger)
+    {
+        _serviceProvider = serviceProvider;
+        _logger = logger;
+    }
+    
     public ICollection<Option> SupportedOptions() => new HashSet<Option>()
         {
             OfflineOption,
@@ -91,12 +102,12 @@ public class OutputFormatter : IOutputFormatter
         return outputFormat;
     }
 
-    public string GetOutput(HttpContext httpContext)
+    public async Task<string> GetOutput(HttpContext httpContext)
     {
         var isLoadTest = httpContext.GetFlag(Constants.FlagNames.IsLoadTest);
         var outputFormat = GetOutputFormat(httpContext);
         return isLoadTest
-            ? GetLoadTestOutput(httpContext, outputFormat)
+            ? await GetLoadTestOutput(httpContext, outputFormat).ConfigureAwait(false)
             : GetCommonOutput(httpContext, outputFormat);
     }
 
@@ -135,7 +146,7 @@ public class OutputFormatter : IOutputFormatter
         return output.ToString();
     }
 
-    private static string GetLoadTestOutput(HttpContext httpContext, OutputFormat outputFormat)
+    private async Task<string> GetLoadTestOutput(HttpContext httpContext, OutputFormat outputFormat)
     {
         httpContext.TryGetProperty(Constants.ResponseListPropertyName,
             out HttpResponseModel[]? responseList);
@@ -164,6 +175,17 @@ public class OutputFormatter : IOutputFormatter
             P50 = SortedArrayStatistics.Quantile(durationInMs, 0.50),
         };
 
+        try
+        {
+            var exporter = _serviceProvider.GetService<ILoadTestExporter>();
+            if(exporter != null)
+              await exporter.Export(httpContext, responseList);
+        }
+        catch(Exception ex)
+        {
+            _logger.LogError(ex, "Export load test result failed");
+        }
+        
         return $@"{GetCommonOutput(httpContext, outputFormat & OutputFormat.RequestInfo)}
 Total requests: {reportModel.TotalRequestCount}({reportModel.TotalElapsed} ms), successCount: {reportModel.SuccessRequestCount}({reportModel.SuccessRequestRate}%), failedCount: {reportModel.FailRequestCount}
 
@@ -218,3 +240,4 @@ Schema: {uri.Scheme}";
             $"{headers.Select(h => $"{h.Key}: {h.Value}").OrderBy(h => h).StringJoin(Environment.NewLine)}";
     }
 }
+
