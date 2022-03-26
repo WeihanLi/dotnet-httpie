@@ -68,15 +68,15 @@ public static class Helpers
         if (SupportedOptions.Count == 0)
         {
             foreach (var option in
-                serviceProvider.GetServices<IHttpHandlerMiddleware>()
-                   .SelectMany(x => x.SupportedOptions())
-                   .Union(serviceProvider.GetServices<IRequestMiddleware>()
-                    .SelectMany(x => x.SupportedOptions())
-                    .Union(serviceProvider.GetServices<IResponseMiddleware>()
-                   .SelectMany(x => x.SupportedOptions()))
+                serviceProvider
+                    .GetServices<IHttpHandlerMiddleware>().SelectMany(x => x.SupportedOptions())
+                    .Union(serviceProvider.GetServices<IRequestMiddleware>().SelectMany(x => x.SupportedOptions())
+                    .Union(serviceProvider.GetServices<IResponseMiddleware>().SelectMany(x => x.SupportedOptions()))
                     .Union(serviceProvider.GetRequiredService<IOutputFormatter>().SupportedOptions())
                     .Union(serviceProvider.GetRequiredService<IRequestExecutor>().SupportedOptions()))
-                )
+                    .Union(serviceProvider.GetRequiredService<ILoadTestExporterSelector>().SupportedOptions())
+                    .Union(serviceProvider.GetServices<ILoadTestExporter>().SelectMany(x=>x.SupportedOptions()))
+                    )
             {
                 SupportedOptions.Add(option);
             }
