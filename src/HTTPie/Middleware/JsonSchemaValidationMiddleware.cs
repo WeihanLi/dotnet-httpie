@@ -10,17 +10,17 @@ using OutputFormat = Json.Schema.OutputFormat;
 
 namespace HTTPie.Middleware;
 
-public class JsonSchemaValidationMiddleware: IResponseMiddleware
+public class JsonSchemaValidationMiddleware : IResponseMiddleware
 {
     private readonly ILogger<JsonSchemaValidationMiddleware> _logger;
     private const string JsonSchemaValidationResultHeader = "X-JsonSchema-ValidationResult";
-    
+
     private const string JsonSchemaLoadFailed = "JsonSchema fail to load";
     private const string JsonSchemaValidateFailed = "JsonSchema fail to validate";
-    
-    
-    private static readonly Option<string>  JsonSchemaPathOption = new("--json-schema-path", "Json schema path");
-    private static readonly Option<OutputFormat> JsonSchemaValidationOutputFormatOption = new("--json-schema-out-format",()=> OutputFormat.Detailed, "Json schema validation result output format");
+
+
+    private static readonly Option<string> JsonSchemaPathOption = new("--json-schema-path", "Json schema path");
+    private static readonly Option<OutputFormat> JsonSchemaValidationOutputFormatOption = new("--json-schema-out-format", () => OutputFormat.Detailed, "Json schema validation result output format");
 
     public JsonSchemaValidationMiddleware(ILogger<JsonSchemaValidationMiddleware> logger)
     {
@@ -44,7 +44,7 @@ public class JsonSchemaValidationMiddleware: IResponseMiddleware
         JsonSchema? jsonSchema = null;
         try
         {
-            if (schemaPath.StartsWith("http://", StringComparison.OrdinalIgnoreCase) 
+            if (schemaPath.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
                 || schemaPath.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
             {
                 using var httpClient = new HttpClient();
