@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Weihan Li. All rights reserved.
 // Licensed under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using WeihanLi.Common.Abstractions;
 
 namespace HTTPie.Models;
 
-public class HttpContext: IProperties
+public class HttpContext : IProperties
 {
     private readonly Dictionary<string, bool> _featureFlags = new();
 

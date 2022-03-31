@@ -1,3 +1,6 @@
+﻿// Copyright (c) Weihan Li. All rights reserved.
+// Licensed under the MIT license.
+
 using System.Diagnostics.CodeAnalysis;
 
 namespace HTTPie.Utilities;
@@ -11,7 +14,7 @@ public static class MimeTypeMap
 
     private static IDictionary<string, string> BuildMappings()
     {
-        var mappings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) 
+        var mappings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
 
             #region Big freaking list of mime types
@@ -732,7 +735,7 @@ public static class MimeTypeMap
     /// <param name="mimeType">The variable to store the MIME type.</param>
     /// <returns>The MIME type.</returns>
     /// <exception cref="ArgumentNullException" />
-    public static bool TryGetMimeType(string str, [NotNullWhen(true)]out string? mimeType)
+    public static bool TryGetMimeType(string str, [NotNullWhen(true)] out string? mimeType)
     {
         Guard.NotNull(str);
 

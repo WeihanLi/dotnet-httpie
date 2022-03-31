@@ -20,7 +20,7 @@ public class FollowRedirectMiddleware : IHttpHandlerMiddleware
 
     public Task Invoke(HttpClientHandler httpClientHandler, Func<Task> next)
     {
-        if (_requestModel.ParseResult.HasOption(FollowOption) 
+        if (_requestModel.ParseResult.HasOption(FollowOption)
             || _requestModel.ParseResult.HasOption(DownloadMiddleware.DownloadOption))
         {
             httpClientHandler.AllowAutoRedirect = true;
