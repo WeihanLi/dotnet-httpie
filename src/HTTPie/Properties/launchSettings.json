@@ -14,7 +14,11 @@
     },
     "HTTPie-load-test-duration": {
       "commandName": "Project",
-      "commandLineArgs": "-v --schema=https reservation.weihanli.xyz/health --vu=10 -d=10s"
+      "commandLineArgs": "-v --schema=https reservation.weihanli.xyz/health --vu=10 --duration=10s"
+    },
+    "HTTPie-download-test": {
+      "commandName": "Project",
+      "commandLineArgs": "-v --schema=https https://reservation.weihanli.xyz/api/notice -d"
     }
   }
 }

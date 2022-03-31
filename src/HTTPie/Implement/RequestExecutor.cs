@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
+using WeihanLi.Common.Extensions;
 using WeihanLi.Common.Http;
 
 namespace HTTPie.Implement;
@@ -24,7 +25,7 @@ public partial class RequestExecutor : IRequestExecutor
     private static readonly Option<double> TimeoutOption = new("--timeout", "Request timeout in seconds");
     private static readonly Option<int> IterationOption = new(new[] { "-n", "--iteration" }, () => 1, "Request iteration");
     private static readonly Option<int> VirtualUserOption = new(new[] { "--vu", "--vus", "--virtual-users" }, () => 1, "Virtual users");
-    private static readonly Option<string> DurationOption = new(new[] { "-d", "--duration" }, "Duration");
+    private static readonly Option<string> DurationOption = new(new[] { "--duration" }, "Request duration, 10s/1m ...");
 
     public Option[] SupportedOptions()
     {
