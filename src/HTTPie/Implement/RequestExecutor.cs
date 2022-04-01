@@ -13,7 +13,7 @@ using WeihanLi.Common.Http;
 
 namespace HTTPie.Implement;
 
-public partial class RequestExecutor : IRequestExecutor
+public sealed partial class RequestExecutor : IRequestExecutor
 {
     private readonly Func<HttpClientHandler, Task> _httpHandlerPipeline;
     private readonly ILogger _logger;

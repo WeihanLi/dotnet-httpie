@@ -9,7 +9,7 @@ using System.Text;
 
 namespace HTTPie.Implement;
 
-public class RequestMapper : IRequestMapper
+public sealed class RequestMapper : IRequestMapper
 {
     public Task<HttpRequestMessage> ToRequestMessage(HttpContext httpContext)
     {

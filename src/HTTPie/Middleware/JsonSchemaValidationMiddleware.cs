@@ -10,7 +10,7 @@ using OutputFormat = Json.Schema.OutputFormat;
 
 namespace HTTPie.Middleware;
 
-public class JsonSchemaValidationMiddleware : IResponseMiddleware
+public sealed class JsonSchemaValidationMiddleware : IResponseMiddleware
 {
     private readonly ILogger<JsonSchemaValidationMiddleware> _logger;
     private const string JsonSchemaValidationResultHeader = "X-JsonSchema-ValidationResult";

@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace HTTPie.Middleware;
 
-public class DefaultRequestMiddleware : IRequestMiddleware
+public sealed class DefaultRequestMiddleware : IRequestMiddleware
 {
     private readonly ILogger _logger;
 

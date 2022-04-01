@@ -3,11 +3,13 @@
 
 using Microsoft.Extensions.Primitives;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 
 namespace HTTPie.Models;
 
-public record HttpRequestModel
+[DebuggerDisplay("{Method} {Url}")]
+public sealed class HttpRequestModel
 {
     [Required] public string Schema { get; set; } = "http";
 

@@ -5,7 +5,7 @@ using WeihanLi.Common.Abstractions;
 
 namespace HTTPie.Models;
 
-public class HttpContext : IProperties
+public sealed class HttpContext : IProperties
 {
     private readonly Dictionary<string, bool> _featureFlags = new();
 

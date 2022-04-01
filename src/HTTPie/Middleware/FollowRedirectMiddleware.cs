@@ -6,7 +6,7 @@ using HTTPie.Models;
 
 namespace HTTPie.Middleware;
 
-public class FollowRedirectMiddleware : IHttpHandlerMiddleware
+public sealed class FollowRedirectMiddleware : IHttpHandlerMiddleware
 {
     private readonly HttpRequestModel _requestModel;
 

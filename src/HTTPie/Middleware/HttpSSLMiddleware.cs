@@ -7,7 +7,7 @@ using System.Security.Authentication;
 
 namespace HTTPie.Middleware;
 
-public class HttpSslMiddleware : IHttpHandlerMiddleware
+public sealed class HttpSslMiddleware : IHttpHandlerMiddleware
 {
     private readonly HttpRequestModel _requestModel;
 

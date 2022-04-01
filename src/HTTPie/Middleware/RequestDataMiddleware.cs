@@ -9,7 +9,7 @@ using System.Text;
 
 namespace HTTPie.Middleware;
 
-public class RequestDataMiddleware : IRequestMiddleware
+public sealed class RequestDataMiddleware : IRequestMiddleware
 {
     private readonly HttpContext _httpContext;
 

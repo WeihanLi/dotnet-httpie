@@ -6,7 +6,7 @@ using System.Net;
 
 namespace HTTPie.Models;
 
-public record HttpResponseModel
+public sealed class HttpResponseModel
 {
     public Version HttpVersion { get; init; } = new(1, 1);
     public HttpStatusCode StatusCode { get; init; }

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace HTTPie.Middleware;
 
-public class QueryStringMiddleware : IRequestMiddleware
+public sealed class QueryStringMiddleware : IRequestMiddleware
 {
     public Task Invoke(HttpRequestModel requestModel, Func<Task> next)
     {

@@ -23,7 +23,7 @@ public enum PrettyOptions
     All = 3
 }
 
-public class OutputFormatter : IOutputFormatter
+public sealed class OutputFormatter : IOutputFormatter
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<OutputFormatter> _logger;

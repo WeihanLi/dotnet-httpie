@@ -7,7 +7,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace HTTPie.Implement;
 
-public class ResponseMapper : IResponseMapper
+public sealed class ResponseMapper : IResponseMapper
 {
     public async Task<HttpResponseModel> ToResponseModel(HttpResponseMessage responseMessage)
     {
