@@ -37,8 +37,15 @@ public sealed class DownloadMiddleware : IResponseMiddleware
                 output = GetFileNameFromUrl(context.Request.Url, contentType);
             }
         }
-        var fileName = output.GetValueOrDefault($"{DateTime.Now:yyyyMMdd-HHmmss}.temp");
-        await File.WriteAllBytesAsync(fileName, context.Response.Bytes);
+        var fileName = output.GetValueOrDefault($"{DateTime.Now:yyyyMMdd-HHmmss}.tmp");
+        if (context.Request.ParseResult.HasOption(ContinueOption))
+        {
+            await File.AppendAllTextAsync(fileName, context.Response.Body).ConfigureAwait(false);
+        }
+        else
+        {
+            await File.WriteAllBytesAsync(fileName, context.Response.Bytes).ConfigureAwait(false);
+        }
         await next();
     }
 
