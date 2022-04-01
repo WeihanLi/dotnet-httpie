@@ -18,8 +18,17 @@ public class ResponseMapper : IResponseMapper
             Headers = responseMessage.Headers
                 .Union(responseMessage.Content.Headers)
                 .ToDictionary(x => x.Key, x => new StringValues(x.Value.ToArray())),
-            Body = await responseMessage.Content.ReadAsStringAsync()
+            Bytes = await responseMessage.Content.ReadAsByteArrayAsync()
         };
+        try
+        {
+            responseModel.Body = responseModel.Bytes.GetString();
+        }
+        catch
+        {
+            // ignored
+            responseModel.Body = string.Empty;
+        }
         return responseModel;
     }
 }

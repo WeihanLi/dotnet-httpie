@@ -195,6 +195,7 @@ public static class Helpers
         // ResponseMiddleware
         return serviceCollection
             .AddResponseMiddleware<DefaultResponseMiddleware>()
+            .AddResponseMiddleware<DownloadMiddleware>()
             .AddResponseMiddleware<JsonSchemaValidationMiddleware>()
             ;
     }

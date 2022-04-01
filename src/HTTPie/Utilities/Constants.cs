@@ -10,6 +10,7 @@ public static class Constants
     public const string JsonMediaType = "application/json";
 
     public const string ContentTypeHeaderName = "Content-Type";
+    public const string ContentDispositionHeaderName = "Content-Disposition";
     public const string FormContentType = "application/x-www-form-urlencoded;charset=utf-8";
     public const string JsonContentType = "application/json;charset=utf-8";
 

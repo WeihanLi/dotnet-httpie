@@ -8,9 +8,10 @@ namespace HTTPie.Models;
 
 public record HttpResponseModel
 {
-    public Version HttpVersion { get; set; } = new(1, 1);
-    public HttpStatusCode StatusCode { get; set; }
-    public Dictionary<string, StringValues> Headers { get; set; } = new();
+    public Version HttpVersion { get; init; } = new(1, 1);
+    public HttpStatusCode StatusCode { get; init; }
+    public Dictionary<string, StringValues> Headers { get; init; } = new();
+    public byte[] Bytes { get; init; } = Array.Empty<byte>();
     public string Body { get; set; } = string.Empty;
     public DateTimeOffset Timestamp { get; set; }
     public TimeSpan Elapsed { get; set; }

@@ -8,7 +8,7 @@ using System.Text;
 
 namespace HTTPie.Middleware;
 
-public class AuthorizationMiddleware : IRequestMiddleware
+public sealed class AuthorizationMiddleware : IRequestMiddleware
 {
     private static readonly Option<string> AuthenticationTypeOption = new(new[] { "--auth-type", "-A" }, () => "Basic", "Authentication type");
     private static readonly Option<string> AuthenticationValueOption = new(new[] { "--auth", "-a" }, "Authentication value");
