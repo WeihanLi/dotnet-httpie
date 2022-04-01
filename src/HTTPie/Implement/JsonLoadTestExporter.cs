@@ -9,7 +9,7 @@ namespace HTTPie.Implement;
 
 public class JsonLoadTestExporter : ILoadTestExporter
 {
-    private static readonly Option<string> OutputJsonPathOption = new("--output-json-path", "output json file path");
+    private static readonly Option<string> OutputJsonPathOption = new("--export-json-path", "Expected export json file path");
 
     public ICollection<Option> SupportedOptions()
     {
