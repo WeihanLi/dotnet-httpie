@@ -66,8 +66,10 @@ public sealed class DownloadMiddleware : IResponseMiddleware
     private static string GetFileNameFromUrl(string url, string responseContentType)
     {
         var contentType = responseContentType.Split(';')[0].Trim();
-        var fileNameWithoutExt = Path.GetFileNameWithoutExtension(url);
-        var fileExtension = Path.GetExtension(url);
+        // https://www.nuget.org/profiles/weihanli/avatar?imageSize=512
+        var uri = new Uri(url);
+        var fileNameWithoutExt = Path.GetFileNameWithoutExtension(uri.AbsolutePath);
+        var fileExtension = Path.GetExtension(uri.AbsolutePath);
         var extension = fileExtension.GetValueOrDefault(MimeTypeMap.GetExtension(contentType));
         return $"{fileNameWithoutExt}{extension}";
     }

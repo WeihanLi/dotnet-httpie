@@ -18,7 +18,11 @@
     },
     "HTTPie-download-test": {
       "commandName": "Project",
-      "commandLineArgs": "-v --schema=https https://reservation.weihanli.xyz/api/notice -d"
+      "commandLineArgs": "-v https://reservation.weihanli.xyz/api/notice -d -c"
+    },
+    "HTTPie-download-test-2": {
+      "commandName": "Project",
+      "commandLineArgs": "-v https://www.nuget.org/profiles/weihanli/avatar?imageSize=512 -d"
     }
   }
 }
