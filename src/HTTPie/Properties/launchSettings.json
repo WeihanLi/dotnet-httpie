@@ -23,6 +23,10 @@
     "HTTPie-download-test-2": {
       "commandName": "Project",
       "commandLineArgs": "-v https://www.nuget.org/profiles/weihanli/avatar?imageSize=512 -d"
+    },
+    "no-cache-test": {
+      "commandName": "Project",
+      "commandLineArgs": "https://www.nuget.org/profiles/weihanli/avatar?imageSize=512 --no-cache --offline"
     }
   }
 }
