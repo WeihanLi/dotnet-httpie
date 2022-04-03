@@ -7,7 +7,8 @@
         <PackAsTool>true</PackAsTool>
         <ToolCommandName>dotnet-http</ToolCommandName>
         <PackageId>dotnet-httpie</PackageId>
-        <Title>dotnet-HTTPie</Title>
+        <Title>dotnet-httpie</Title>
+        <AssemblyName>dotnet-httpie</AssemblyName>
         <Description>dotnet httpie, a command-line HTTP client</Description>
     </PropertyGroup>
     <ItemGroup>
