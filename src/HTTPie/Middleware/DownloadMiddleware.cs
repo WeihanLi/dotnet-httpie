@@ -21,6 +21,11 @@ public sealed class DownloadMiddleware : IResponseMiddleware
 
     public async Task Invoke(HttpContext context, Func<Task> next)
     {
+        var download = context.Request.ParseResult.HasOption(DownloadOption);
+        if (!download)
+        {
+            return;
+        }
         var output = context.Request.ParseResult.GetValueForOption(OutputOption);
         if (string.IsNullOrWhiteSpace(output))
         {
@@ -34,7 +39,7 @@ public sealed class DownloadMiddleware : IResponseMiddleware
             {
                 // guess a file name
                 context.Response.Headers.TryGetValue(Constants.ContentTypeHeaderName, out var contentType);
-                output = GetFileNameFromUrl(context.Request.Url, contentType);
+                output = GetFileNameFromUrl(context.Request.Url, contentType.ToString());
             }
         }
         var fileName = output.GetValueOrDefault($"{DateTime.Now:yyyyMMdd-HHmmss}.tmp");
