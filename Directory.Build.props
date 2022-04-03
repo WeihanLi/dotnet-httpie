@@ -14,9 +14,6 @@
         <Copyright>Copyright 2021-$([System.DateTime]::Now.Year) (c) WeihanLi</Copyright>
     </PropertyGroup>
     <ItemGroup>
-        <None Include="$(MSBuildThisFileDirectory)icon.png" Pack="true" Visible="false" PackagePath=""/>
-    </ItemGroup>
-    <ItemGroup>
         <Using Include="WeihanLi.Common"/>
         <Using Include="WeihanLi.Common.Helpers"/>
         <Using Include="WeihanLi.Extensions"/>

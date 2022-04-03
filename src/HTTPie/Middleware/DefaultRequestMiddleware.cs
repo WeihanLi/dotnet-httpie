@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace HTTPie.Middleware;
 
-public class DefaultRequestMiddleware : IRequestMiddleware
+public sealed class DefaultRequestMiddleware : IRequestMiddleware
 {
     private readonly ILogger _logger;
 
@@ -17,9 +17,9 @@ public class DefaultRequestMiddleware : IRequestMiddleware
         _logger = logger;
     }
 
-    public static readonly Option DebugOption = new("--debug", "Enable debug mode, output debug log");
-    public static readonly Option<string> SchemaOption = new("--schema", "The HTTP request schema");
-    public static readonly Option<Version> HttpVersionOption = new("--httpVersion", "The HTTP request HTTP version");
+    private static readonly Option DebugOption = new("--debug", "Enable debug mode, output debug log");
+    private static readonly Option<string> SchemaOption = new("--schema", "The HTTP request schema");
+    private static readonly Option<Version> HttpVersionOption = new("--httpVersion", "The HTTP request HTTP version");
 
     public ICollection<Option> SupportedOptions() => new HashSet<Option>()
         {

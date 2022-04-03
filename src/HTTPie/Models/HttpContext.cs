@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Weihan Li. All rights reserved.
 // Licensed under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
+using WeihanLi.Common.Abstractions;
 
 namespace HTTPie.Models;
 
-public class HttpContext
+public sealed class HttpContext : IProperties
 {
     private readonly Dictionary<string, bool> _featureFlags = new();
 
@@ -21,7 +21,7 @@ public class HttpContext
 
     public HttpRequestModel Request { get; }
     public HttpResponseModel Response { get; set; }
-    public Dictionary<string, object> Properties { get; } = new();
+    public IDictionary<string, object?> Properties { get; } = new Dictionary<string, object?>();
 
     public void UpdateFlag(string flagName, bool value)
     {
@@ -38,19 +38,14 @@ public class HttpContext
 
 public static class HttpContextExtensions
 {
-    public static bool TryGetProperty<T>(this HttpContext httpContext, string propertyName, [NotNullWhen(true)] out T? propertyValue) where T : notnull
+    public static bool TryGetProperty<T>(this HttpContext httpContext, string propertyName, out T? propertyValue)
     {
         if (httpContext.Properties.TryGetValue(propertyName, out var value))
         {
-            propertyValue = (T)value;
+            propertyValue = (T?)value;
             return true;
         }
         propertyValue = default;
         return false;
-    }
-
-    public static void SetProperty<T>(this HttpContext httpContext, string propertyName, T propertyValue) where T : notnull
-    {
-        httpContext.Properties[propertyName] = propertyValue;
     }
 }

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace HTTPie.Middleware;
 
-public class RequestHeadersMiddleware : IRequestMiddleware
+public sealed class RequestHeadersMiddleware : IRequestMiddleware
 {
     public Task Invoke(HttpRequestModel model, Func<Task> next)
     {

@@ -7,32 +7,47 @@ using Microsoft.Extensions.Primitives;
 
 namespace HTTPie.Implement;
 
-public class ResponseMapper : IResponseMapper
+public sealed class ResponseMapper : IResponseMapper
 {
-    private readonly HttpContext _httpContext;
-
-    public ResponseMapper(HttpContext httpContext)
-    {
-        _httpContext = httpContext;
-    }
     public async Task<HttpResponseModel> ToResponseModel(HttpResponseMessage responseMessage)
     {
         var responseModel = new HttpResponseModel
         {
             HttpVersion = responseMessage.Version,
             StatusCode = responseMessage.StatusCode,
+            Headers = responseMessage.Headers
+                .Union(responseMessage.Content.Headers)
+                .ToDictionary(x => x.Key, x => new StringValues(x.Value.ToArray())),
+            Bytes = await responseMessage.Content.ReadAsByteArrayAsync(),
         };
-        var outputFormat = OutputFormatter.GetOutputFormat(_httpContext);
-        if (outputFormat.HasFlag(OutputFormat.ResponseHeaders))
+        if (IsTextResponse(responseMessage))
         {
-            responseModel.Headers = responseMessage.Headers
-              .Union(responseMessage.Content.Headers)
-              .ToDictionary(x => x.Key, x => new StringValues(x.Value.ToArray()));
-        }
-        if (outputFormat.HasFlag(OutputFormat.ResponseBody))
-        {
-            responseModel.Body = await responseMessage.Content.ReadAsStringAsync();
+            try
+            {
+                responseModel.Body = responseModel.Bytes.GetString();
+            }
+            catch
+            {
+                // ignored
+            }
         }
         return responseModel;
     }
+
+    private static bool IsTextResponse(HttpResponseMessage response)
+    {
+        if (response.Content.Headers.ContentType?.MediaType is null)
+        {
+            return true;
+        }
+        var contentType = response.Content.Headers.ContentType;
+        var mediaType = contentType.MediaType;
+        var isTextContent = mediaType.StartsWith("text/", StringComparison.OrdinalIgnoreCase)
+            || mediaType.StartsWith("application/json", StringComparison.OrdinalIgnoreCase)
+            || mediaType.StartsWith("application/xml", StringComparison.OrdinalIgnoreCase)
+            || mediaType.StartsWith("application/javascript", StringComparison.OrdinalIgnoreCase)
+            ;
+        return isTextContent;
+    }
+
 }

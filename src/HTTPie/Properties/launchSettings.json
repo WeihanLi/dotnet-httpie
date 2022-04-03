@@ -14,7 +14,19 @@
     },
     "HTTPie-load-test-duration": {
       "commandName": "Project",
-      "commandLineArgs": "-v --schema=https reservation.weihanli.xyz/health --vu=10 -d=10s"
+      "commandLineArgs": "-v --schema=https reservation.weihanli.xyz/health --vu=10 --duration=10s"
+    },
+    "HTTPie-download-test": {
+      "commandName": "Project",
+      "commandLineArgs": "-v https://reservation.weihanli.xyz/api/notice -d -c"
+    },
+    "HTTPie-download-test-2": {
+      "commandName": "Project",
+      "commandLineArgs": "-v https://www.nuget.org/profiles/weihanli/avatar?imageSize=512 -d"
+    },
+    "no-cache-test": {
+      "commandName": "Project",
+      "commandLineArgs": "https://www.nuget.org/profiles/weihanli/avatar?imageSize=512 --no-cache --offline"
     }
   }
 }

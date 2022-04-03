@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using System.CommandLine.Builder;
+using System.CommandLine.IO;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 
@@ -33,7 +34,7 @@ public static class Helpers
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
 
-    public static readonly HashSet<Option> SupportedOptions = new();
+    private static readonly HashSet<Option> SupportedOptions = new();
 
     private static IServiceCollection AddHttpHandlerMiddleware<THttpHandlerMiddleware>(
         this IServiceCollection serviceCollection)
@@ -67,15 +68,15 @@ public static class Helpers
         if (SupportedOptions.Count == 0)
         {
             foreach (var option in
-                serviceProvider.GetServices<IHttpHandlerMiddleware>()
-                   .SelectMany(x => x.SupportedOptions())
-                   .Union(serviceProvider.GetServices<IRequestMiddleware>()
-                    .SelectMany(x => x.SupportedOptions())
-                    .Union(serviceProvider.GetServices<IResponseMiddleware>()
-                   .SelectMany(x => x.SupportedOptions()))
+                serviceProvider
+                    .GetServices<IHttpHandlerMiddleware>().SelectMany(x => x.SupportedOptions())
+                    .Union(serviceProvider.GetServices<IRequestMiddleware>().SelectMany(x => x.SupportedOptions())
+                    .Union(serviceProvider.GetServices<IResponseMiddleware>().SelectMany(x => x.SupportedOptions()))
                     .Union(serviceProvider.GetRequiredService<IOutputFormatter>().SupportedOptions())
                     .Union(serviceProvider.GetRequiredService<IRequestExecutor>().SupportedOptions()))
-                )
+                    .Union(serviceProvider.GetRequiredService<ILoadTestExporterSelector>().SupportedOptions())
+                    .Union(serviceProvider.GetServices<ILoadTestExporter>().SelectMany(x => x.SupportedOptions()))
+                    )
             {
                 SupportedOptions.Add(option);
             }
@@ -122,13 +123,13 @@ public static class Helpers
                 var context = DependencyResolver.ResolveRequiredService<HttpContext>();
                 await DependencyResolver.ResolveRequiredService<IRequestExecutor>()
                     .ExecuteAsync(context);
-                var output = DependencyResolver.ResolveRequiredService<IOutputFormatter>()
+                var output = await DependencyResolver.ResolveRequiredService<IOutputFormatter>()
                     .GetOutput(context);
-                console.Out.Write(output.Trim());
+                console.Out.WriteLine(output.Trim());
             }
             catch (Exception e)
             {
-                console.Error.Write(e.ToString());
+                console.Error.WriteLine($"Unhandled exception: {e}");
             }
         });
         command.TreatUnmatchedTokensAsErrors = false;
@@ -143,6 +144,8 @@ public static class Helpers
             .AddSingleton<IRequestMapper, RequestMapper>()
             .AddSingleton<IResponseMapper, ResponseMapper>()
             .AddSingleton<IOutputFormatter, OutputFormatter>()
+            .AddSingleton<ILoadTestExporterSelector, LoadTestExporterSelector>()
+            .AddSingleton<ILoadTestExporter, JsonLoadTestExporter>()
             // request pipeline
             .AddSingleton(sp =>
             {
@@ -166,7 +169,7 @@ public static class Helpers
             {
                 var pipelineBuilder = PipelineBuilder.CreateAsync<HttpClientHandler>();
                 foreach (var middleware in
-                    sp.GetServices<IHttpHandlerMiddleware>())
+                         sp.GetServices<IHttpHandlerMiddleware>())
                     pipelineBuilder.Use(middleware.Invoke);
                 return pipelineBuilder.Build();
             })
@@ -188,9 +191,14 @@ public static class Helpers
             .AddRequestMiddleware<RequestDataMiddleware>()
             .AddRequestMiddleware<DefaultRequestMiddleware>()
             .AddRequestMiddleware<AuthorizationMiddleware>()
+            .AddRequestMiddleware<RequestCacheMiddleware>()
             ;
         // ResponseMiddleware
-        return serviceCollection.AddResponseMiddleware<DefaultResponseMiddleware>();
+        return serviceCollection
+            .AddResponseMiddleware<DefaultResponseMiddleware>()
+            .AddResponseMiddleware<DownloadMiddleware>()
+            .AddResponseMiddleware<JsonSchemaValidationMiddleware>()
+            ;
     }
 
     public static void InitRequestModel(HttpContext httpContext, string commandLine)
