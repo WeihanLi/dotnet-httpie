@@ -18,17 +18,36 @@ public sealed class ResponseMapper : IResponseMapper
             Headers = responseMessage.Headers
                 .Union(responseMessage.Content.Headers)
                 .ToDictionary(x => x.Key, x => new StringValues(x.Value.ToArray())),
-            Bytes = await responseMessage.Content.ReadAsByteArrayAsync()
+            Bytes = await responseMessage.Content.ReadAsByteArrayAsync(),
         };
-        try
+        if (IsTextResponse(responseMessage))
         {
-            responseModel.Body = responseModel.Bytes.GetString();
-        }
-        catch
-        {
-            // ignored
-            responseModel.Body = string.Empty;
+            try
+            {
+                responseModel.Body = responseModel.Bytes.GetString();
+            }
+            catch
+            {
+                // ignored
+            }            
         }
         return responseModel;
     }
+    
+    private static bool IsTextResponse(HttpResponseMessage response)
+    {
+        if (response.Content.Headers.ContentType?.MediaType is null)
+        {
+            return false;
+        }
+        var contentType = response.Content.Headers.ContentType;
+        var mediaType = contentType.MediaType;
+        var isTextContent = mediaType.StartsWith("text/", StringComparison.OrdinalIgnoreCase)
+            || mediaType.StartsWith("application/json", StringComparison.OrdinalIgnoreCase)
+            || mediaType.StartsWith("application/xml", StringComparison.OrdinalIgnoreCase)
+            || mediaType.StartsWith("application/javascript", StringComparison.OrdinalIgnoreCase)
+            ;
+        return isTextContent;
+    }
+     
 }
