@@ -38,7 +38,7 @@ public sealed class ResponseMapper : IResponseMapper
     {
         if (response.Content.Headers.ContentType?.MediaType is null)
         {
-            return false;
+            return true;
         }
         var contentType = response.Content.Headers.ContentType;
         var mediaType = contentType.MediaType;
