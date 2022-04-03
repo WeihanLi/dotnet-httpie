@@ -29,11 +29,11 @@ public sealed class ResponseMapper : IResponseMapper
             catch
             {
                 // ignored
-            }            
+            }
         }
         return responseModel;
     }
-    
+
     private static bool IsTextResponse(HttpResponseMessage response)
     {
         if (response.Content.Headers.ContentType?.MediaType is null)
@@ -49,5 +49,5 @@ public sealed class ResponseMapper : IResponseMapper
             ;
         return isTextContent;
     }
-     
+
 }

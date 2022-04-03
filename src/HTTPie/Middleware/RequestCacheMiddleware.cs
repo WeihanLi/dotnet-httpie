@@ -7,7 +7,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace HTTPie.Middleware;
 
-public sealed class RequestCacheMiddleware: IRequestMiddleware
+public sealed class RequestCacheMiddleware : IRequestMiddleware
 {
     private static readonly Option NoCacheOption = new("--no-cache", "Send 'Cache-Control: No-Cache' request header");
 
