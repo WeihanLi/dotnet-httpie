@@ -180,7 +180,7 @@ public sealed class OutputFormatter : IOutputFormatter
         {
             var exporterSelector = _serviceProvider.GetRequiredService<ILoadTestExporterSelector>();
             var exporter = exporterSelector.Select();
-            if(exporter is not null) 
+            if (exporter is not null)
                 await exporter.Export(httpContext, responseList);
         }
         catch (Exception ex)

@@ -8,7 +8,7 @@ using WeihanLi.Npoi.Configurations;
 
 namespace HTTPie.Implement;
 
-public sealed class CsvLoadTestExporter: ILoadTestExporter
+public sealed class CsvLoadTestExporter : ILoadTestExporter
 {
     static CsvLoadTestExporter()
     {
