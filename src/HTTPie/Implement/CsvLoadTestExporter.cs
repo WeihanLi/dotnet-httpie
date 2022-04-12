@@ -4,11 +4,17 @@
 using HTTPie.Abstractions;
 using HTTPie.Models;
 using WeihanLi.Npoi;
+using WeihanLi.Npoi.Configurations;
 
 namespace HTTPie.Implement;
 
 public sealed class CsvLoadTestExporter: ILoadTestExporter
 {
+    static CsvLoadTestExporter()
+    {
+        FluentSettings.LoadMappingProfile<ResponseMappingProfile>();
+    }
+
     private static readonly Option<string> OutputCsvPathOption = new("--export-csv-path", "Expected export csv file path");
 
     public ICollection<Option> SupportedOptions()
@@ -25,5 +31,14 @@ public sealed class CsvLoadTestExporter: ILoadTestExporter
             return;
         }
         await responseList.ToCsvFileAsync(csvPath);
+    }
+
+    private sealed class ResponseMappingProfile : IMappingProfile<HttpResponseModel>
+    {
+        public void Configure(IExcelConfiguration<HttpResponseModel> configuration)
+        {
+            configuration.Property(x => x.Bytes).Ignored();
+            configuration.Property(x => x.Headers).Ignored();
+        }
     }
 }
