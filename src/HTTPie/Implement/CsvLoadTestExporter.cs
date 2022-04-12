@@ -7,7 +7,7 @@ using WeihanLi.Npoi;
 
 namespace HTTPie.Implement;
 
-public sealed class CsvLoadTestExporter: ILoadTestExporter
+public sealed class CsvLoadTestExporter : ILoadTestExporter
 {
     private static readonly Option<string> OutputCsvPathOption = new("--export-csv-path", "Expected export csv file path");
 
