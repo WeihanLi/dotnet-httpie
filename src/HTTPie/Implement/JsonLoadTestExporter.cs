@@ -16,7 +16,7 @@ public sealed class JsonLoadTestExporter : ILoadTestExporter
         return new[] { OutputJsonPathOption };
     }
 
-    public string Type => "Json";
+    public string Type => "json";
 
     public async ValueTask Export(HttpContext context, HttpResponseModel[] responseList)
     {
