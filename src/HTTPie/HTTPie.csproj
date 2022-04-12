@@ -1,25 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <TargetFramework>net6.0</TargetFramework>
-        <Nullable>enable</Nullable>
-        <NoWarn>$(NoWarn);CS1591</NoWarn>
-        <PackAsTool>true</PackAsTool>
-        <ToolCommandName>dotnet-http</ToolCommandName>
-        <PackageId>dotnet-httpie</PackageId>
-        <Title>dotnet-httpie</Title>
-        <AssemblyName>dotnet-httpie</AssemblyName>
-        <Description>dotnet httpie, a command-line HTTP client</Description>
-    </PropertyGroup>
-    <ItemGroup>
-        <Using Include="System.CommandLine" />
-        <Using Include="System.CommandLine.Parsing" />
-    </ItemGroup>
-    <ItemGroup>
-        <PackageReference Include="JsonSchema.Net" Version="2.2.1" />
-        <PackageReference Include="MathNet.Numerics.Signed" Version="5.0.0-beta01" />
-        <PackageReference Include="System.CommandLine" Version="2.0.0-beta3.22114.1" />
-        <PackageReference Include="WeihanLi.Common" Version="1.0.50" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
-    </ItemGroup>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>dotnet-http</ToolCommandName>
+    <PackageId>dotnet-httpie</PackageId>
+    <Title>dotnet-httpie</Title>
+    <AssemblyName>dotnet-httpie</AssemblyName>
+    <Description>dotnet httpie, a command-line HTTP client</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <Using Include="System.CommandLine" />
+    <Using Include="System.CommandLine.Parsing" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="JsonSchema.Net" Version="2.2.1" />
+    <PackageReference Include="MathNet.Numerics.Signed" Version="5.0.0-beta01" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta3.22114.1" />
+    <PackageReference Include="WeihanLi.Common" Version="1.0.51" />
+    <PackageReference Include="WeihanLi.Npoi" Version="2.0.0" />
+  </ItemGroup>
 </Project>
