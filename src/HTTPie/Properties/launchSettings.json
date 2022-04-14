@@ -1,5 +1,9 @@
 {
   "profiles": {
+    "HTTPie-help": {
+      "commandName": "Project",
+      "commandLineArgs": "--help"
+    },
     "HTTPie": {
       "commandName": "Project",
       "commandLineArgs": "-v --schema=https httpbin.org/post test==hello Api-Version:1.2 --raw={\\\"Id\\\":1,\\\"Name\\\":\\\"Alice\\\"} --debug"
@@ -35,6 +39,10 @@
     "no-cache-test": {
       "commandName": "Project",
       "commandLineArgs": "https://www.nuget.org/profiles/weihanli/avatar?imageSize=512 --no-cache --offline"
+    },
+    "proxy-test": {
+      "commandName": "Project",
+      "commandLineArgs": "https://www.nuget.org/profiles/weihanli/avatar?imageSize=512 --proxy=socks5://172.16.80.136:3389 -v"
     }
   }
 }

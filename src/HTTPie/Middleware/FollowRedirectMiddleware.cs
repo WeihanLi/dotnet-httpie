@@ -32,7 +32,7 @@ public sealed class FollowRedirectMiddleware : IHttpHandlerMiddleware
     }
     public ICollection<Option> SupportedOptions() => new[]
     {
-            FollowOption,
-            MaxRedirectsOption
-        };
+        FollowOption,
+        MaxRedirectsOption
+    };
 }

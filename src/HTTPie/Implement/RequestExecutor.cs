@@ -9,7 +9,6 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
 using WeihanLi.Common.Extensions;
-using WeihanLi.Common.Http;
 
 namespace HTTPie.Implement;
 
@@ -63,7 +62,7 @@ public sealed partial class RequestExecutor : IRequestExecutor
             return;
         }
 
-        using var httpClientHandler = new NoProxyHttpClientHandler
+        using var httpClientHandler = new HttpClientHandler
         {
             AllowAutoRedirect = false
         };
