@@ -7,7 +7,7 @@ using System.Net;
 
 namespace HTTPie.Middleware;
 
-public sealed class ProxyMiddleware: IHttpHandlerMiddleware
+public sealed class ProxyMiddleware : IHttpHandlerMiddleware
 {
     private readonly HttpRequestModel _requestModel;
     private static readonly Option<string> ProxyOption = new("--proxy", "Send request with proxy");
