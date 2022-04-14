@@ -184,6 +184,7 @@ public static class Helpers
         serviceCollection
             .AddHttpHandlerMiddleware<FollowRedirectMiddleware>()
             .AddHttpHandlerMiddleware<HttpSslMiddleware>()
+            .AddHttpHandlerMiddleware<ProxyMiddleware>()
             ;
         // RequestMiddleware
         serviceCollection
