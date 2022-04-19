@@ -9,7 +9,7 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/WeihanLi/dotnet-httpie</RepositoryUrl>
-        <Product>dotnet-HTTPie</Product>
+        <Product>dotnet-httpie</Product>
         <Authors>WeihanLi</Authors>
         <Copyright>Copyright 2021-$([System.DateTime]::Now.Year) (c) WeihanLi</Copyright>
     </PropertyGroup>
