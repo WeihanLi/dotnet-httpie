@@ -13,8 +13,8 @@ public sealed class DownloadMiddleware : IResponseMiddleware
     public static readonly Option DownloadOption = new(new[] { "-d", "--download" }, "Download file");
     private static readonly Option ContinueOption = new(new[] { "-c", "--continue" }, "Download file using append mode");
     private static readonly Option<string> OutputOption = new(new[] { "-o", "--output" }, "Output file path");
-    private static readonly Option<string> CheckSumOption = new(new[] { "--checksum"}, "Checksum to validate");
-    private static readonly Option<HashType> CheckSumAlgOption = new(new[] { "--checksum-alg" }, ()=> HashType.SHA1, "Checksum hash algorithm type");
+    private static readonly Option<string> CheckSumOption = new(new[] { "--checksum" }, "Checksum to validate");
+    private static readonly Option<HashType> CheckSumAlgOption = new(new[] { "--checksum-alg" }, () => HashType.SHA1, "Checksum hash algorithm type");
 
     public ICollection<Option> SupportedOptions()
     {
