@@ -13,10 +13,12 @@ public sealed class DownloadMiddleware : IResponseMiddleware
     public static readonly Option DownloadOption = new(new[] { "-d", "--download" }, "Download file");
     private static readonly Option ContinueOption = new(new[] { "-c", "--continue" }, "Download file using append mode");
     private static readonly Option<string> OutputOption = new(new[] { "-o", "--output" }, "Output file path");
+    private static readonly Option<string> CheckSumOption = new(new[] { "--checksum" }, "Checksum to validate");
+    private static readonly Option<HashType> CheckSumAlgOption = new(new[] { "--checksum-alg" }, () => HashType.SHA1, "Checksum hash algorithm type");
 
     public ICollection<Option> SupportedOptions()
     {
-        return new[] { DownloadOption, ContinueOption, OutputOption };
+        return new[] { DownloadOption, ContinueOption, OutputOption, CheckSumOption, CheckSumAlgOption };
     }
 
     public async Task Invoke(HttpContext context, Func<Task> next)
@@ -24,6 +26,7 @@ public sealed class DownloadMiddleware : IResponseMiddleware
         var download = context.Request.ParseResult.HasOption(DownloadOption);
         if (!download)
         {
+            await next();
             return;
         }
         var output = context.Request.ParseResult.GetValueForOption(OutputOption);
@@ -50,6 +53,16 @@ public sealed class DownloadMiddleware : IResponseMiddleware
         else
         {
             await File.WriteAllBytesAsync(fileName, context.Response.Bytes).ConfigureAwait(false);
+        }
+
+        var checksum = context.Request.ParseResult.GetValueForOption(CheckSumOption);
+        if (checksum.IsNotNullOrWhiteSpace())
+        {
+            var checksumAlgType = context.Request.ParseResult.GetValueForOption(CheckSumAlgOption);
+            var calculatedValue = HashHelper.GetHashedString(checksumAlgType, context.Response.Bytes);
+            var checksumMatched = calculatedValue.EqualsIgnoreCase(checksum);
+            context.Response.Headers.TryAdd(Constants.ResponseCheckSumValueHeaderName, calculatedValue);
+            context.Response.Headers.TryAdd(Constants.ResponseCheckSumValidHeaderName, checksumMatched.ToString());
         }
         await next();
     }

@@ -43,6 +43,14 @@
     "proxy-test": {
       "commandName": "Project",
       "commandLineArgs": "https://www.nuget.org/profiles/weihanli/avatar?imageSize=512 --proxy=socks5://172.16.80.136:3389 -v"
+    },
+    "HTTPie-download-with-checksum": {
+      "commandName": "Project",
+      "commandLineArgs": "-v https://www.nuget.org/profiles/weihanli/avatar?imageSize=512 -d --checksum 1234"
+    },
+    "HTTPie-download-with-checksum-alg": {
+      "commandName": "Project",
+      "commandLineArgs": "-v https://www.nuget.org/profiles/weihanli/avatar?imageSize=512 -d --checksum 1234 --checksum-alg=md5"
     }
   }
 }
