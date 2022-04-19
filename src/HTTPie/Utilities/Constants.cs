@@ -23,6 +23,9 @@ public static class Constants
     public const string ResponseTimestampHeaderName = $"X-{ApplicationName}-ResponseTimestamp";
     public const string RequestDurationHeaderName = $"X-{ApplicationName}-Duration";
 
+    public const string ResponseCheckSumValueHeaderName = $"X-{ApplicationName}-CheckSum-Value";
+    public const string ResponseCheckSumValidHeaderName = $"X-{ApplicationName}-CheckSum-Valid";
+
 #pragma warning disable 8602
     private static readonly string AppVersion = typeof(Constants).Assembly.GetName().Version.ToString(3);
 #pragma warning restore 8602
