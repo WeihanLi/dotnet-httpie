@@ -7,6 +7,8 @@ WORKDIR /app
 COPY ./src/ ./src/
 COPY ./build/ ./build/
 COPY ./Directory.Build.props ./
+COPY ./Directory.Build.targets ./
+COPY ./Directory.Packages.props ./
 WORKDIR /app/src/HTTPie/
 RUN dotnet publish -c Release --self-contained --use-current-runtime -p:AssemblyName=http -p:PublishSingleFile=true -p:PublishTrimmed=true -p:EnableCompressionInSingleFile=true -o /app/artifacts
 
