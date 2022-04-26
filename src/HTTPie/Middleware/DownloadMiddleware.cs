@@ -88,7 +88,7 @@ public sealed class DownloadMiddleware : IResponseMiddleware
         var uri = new Uri(url);
         var fileNameWithoutExt = Path.GetFileNameWithoutExtension(uri.AbsolutePath);
         var fileExtension = Path.GetExtension(uri.AbsolutePath);
-        var extension = fileExtension.GetValueOrDefault(MimeTypeMap.GetExtension(contentType));
+        var extension = fileExtension.GetValueOrDefault(() => MimeTypeMap.GetExtension(contentType));
         return $"{fileNameWithoutExt}{extension}";
     }
 }
