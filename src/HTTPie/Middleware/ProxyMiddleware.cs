@@ -39,7 +39,7 @@ public sealed class ProxyMiddleware : IHttpHandlerMiddleware
                 httpClientHandler.UseProxy = true;
             }
         }
-        
+
         return next(httpClientHandler);
     }
 }

@@ -41,7 +41,7 @@ public sealed class HttpSslMiddleware : IHttpHandlerMiddleware
             if (Enum.TryParse(sslOption, out SslProtocols sslProtocols))
                 httpClientHandler.SslProtocols = sslProtocols;
         }
-        
+
         return next(httpClientHandler);
     }
 }

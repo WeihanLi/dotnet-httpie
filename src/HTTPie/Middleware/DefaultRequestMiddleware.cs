@@ -66,7 +66,7 @@ public sealed class DefaultRequestMiddleware : IRequestMiddleware
         }
 
         requestModel.Headers.TryAdd("User-Agent", Constants.DefaultUserAgent);
-        
+
         return next(requestModel);
     }
 }
