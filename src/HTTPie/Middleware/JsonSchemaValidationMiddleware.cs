@@ -37,6 +37,7 @@ public sealed class JsonSchemaValidationMiddleware : IResponseMiddleware
         var schemaPath = context.Request.ParseResult.GetValueForOption(JsonSchemaPathOption)?.Trim();
         if (string.IsNullOrEmpty(schemaPath))
         {
+            await next(context);
             return;
         }
 
@@ -78,5 +79,7 @@ public sealed class JsonSchemaValidationMiddleware : IResponseMiddleware
             }
         }
         context.Response.Headers.TryAdd(JsonSchemaValidationResultHeader, validationResultMessage);
+        
+        await next(context);
     }
 }
