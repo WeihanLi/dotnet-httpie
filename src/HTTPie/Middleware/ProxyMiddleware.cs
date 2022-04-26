@@ -23,7 +23,7 @@ public sealed class ProxyMiddleware : IHttpHandlerMiddleware
         return new[] { ProxyOption, NoProxyOption };
     }
 
-    public Task Invoke(HttpClientHandler httpClientHandler, Func<Task> next)
+    public Task Invoke(HttpClientHandler httpClientHandler, Func<HttpClientHandler, Task> next)
     {
         if (_requestModel.ParseResult.HasOption(NoProxyOption))
         {
@@ -39,6 +39,7 @@ public sealed class ProxyMiddleware : IHttpHandlerMiddleware
                 httpClientHandler.UseProxy = true;
             }
         }
-        return next();
+        
+        return next(httpClientHandler);
     }
 }

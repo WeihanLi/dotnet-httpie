@@ -28,7 +28,7 @@ public sealed class DefaultRequestMiddleware : IRequestMiddleware
             HttpVersionOption,
         };
 
-    public async Task Invoke(HttpRequestModel requestModel, Func<Task> next)
+    public Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
         var schema = requestModel.ParseResult.GetValueForOption(SchemaOption);
         if (!string.IsNullOrEmpty(schema)) requestModel.Schema = schema;
@@ -66,6 +66,7 @@ public sealed class DefaultRequestMiddleware : IRequestMiddleware
         }
 
         requestModel.Headers.TryAdd("User-Agent", Constants.DefaultUserAgent);
-        await next();
+        
+        return next(requestModel);
     }
 }

@@ -25,7 +25,7 @@ public sealed class HttpSslMiddleware : IHttpHandlerMiddleware
             SslProtocalOption,
         };
 
-    public Task Invoke(HttpClientHandler httpClientHandler, Func<Task> next)
+    public Task Invoke(HttpClientHandler httpClientHandler, Func<HttpClientHandler, Task> next)
     {
         if (_requestModel.Options.Contains("--verify=no")
             || _requestModel.ParseResult.HasOption(DisableSslVerifyOption))
@@ -41,7 +41,7 @@ public sealed class HttpSslMiddleware : IHttpHandlerMiddleware
             if (Enum.TryParse(sslOption, out SslProtocols sslProtocols))
                 httpClientHandler.SslProtocols = sslProtocols;
         }
-
-        return next();
+        
+        return next(httpClientHandler);
     }
 }

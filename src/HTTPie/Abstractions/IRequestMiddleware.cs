@@ -7,5 +7,5 @@ namespace HTTPie.Abstractions;
 
 public interface IRequestMiddleware : IPlugin
 {
-    Task Invoke(HttpRequestModel requestModel, Func<Task> next);
+    Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next);
 }

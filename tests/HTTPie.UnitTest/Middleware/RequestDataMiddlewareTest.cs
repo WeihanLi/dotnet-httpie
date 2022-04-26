@@ -16,7 +16,7 @@ public class RequestDataMiddlewareTest
         });
         Helpers.InitRequestModel(httpContext, url);
         var middleware = new RequestDataMiddleware(httpContext);
-        middleware.Invoke(httpContext.Request, () => Task.CompletedTask);
+        middleware.Invoke(httpContext.Request, _ => Task.CompletedTask);
         Assert.Null(httpContext.Request.Body);
     }
 
@@ -28,7 +28,7 @@ public class RequestDataMiddlewareTest
         var httpContext = new HttpContext(new HttpRequestModel());
         Helpers.InitRequestModel(httpContext, input);
         var middleware = new RequestDataMiddleware(httpContext);
-        middleware.Invoke(httpContext.Request, () => Task.CompletedTask);
+        middleware.Invoke(httpContext.Request, _ => Task.CompletedTask);
         Assert.Null(httpContext.Request.Body);
     }
 
@@ -41,7 +41,7 @@ public class RequestDataMiddlewareTest
         var httpContext = new HttpContext(new HttpRequestModel());
         Helpers.InitRequestModel(httpContext, input);
         var middleware = new RequestDataMiddleware(httpContext);
-        middleware.Invoke(httpContext.Request, () => Task.CompletedTask);
+        middleware.Invoke(httpContext.Request, _ => Task.CompletedTask);
         Assert.Null(httpContext.Request.Body);
     }
 
@@ -54,7 +54,7 @@ public class RequestDataMiddlewareTest
         var httpContext = new HttpContext(new HttpRequestModel());
         Helpers.InitRequestModel(httpContext, input);
         var middleware = new RequestDataMiddleware(httpContext);
-        middleware.Invoke(httpContext.Request, () => Task.CompletedTask);
+        middleware.Invoke(httpContext.Request, _ => Task.CompletedTask);
         Assert.Null(httpContext.Request.Body);
     }
 
@@ -65,7 +65,7 @@ public class RequestDataMiddlewareTest
         var httpContext = new HttpContext(new HttpRequestModel());
         Helpers.InitRequestModel(httpContext, input.Split(' '));
         var middleware = new RequestDataMiddleware(httpContext);
-        middleware.Invoke(httpContext.Request, () => Task.CompletedTask);
+        middleware.Invoke(httpContext.Request, _ => Task.CompletedTask);
         Assert.NotNull(httpContext.Request.Body);
         Assert.Equal(@"{""Id"":1,""Name"":""Alice""}", httpContext.Request.Body);
     }

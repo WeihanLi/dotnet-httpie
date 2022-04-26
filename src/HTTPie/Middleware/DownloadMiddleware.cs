@@ -21,12 +21,12 @@ public sealed class DownloadMiddleware : IResponseMiddleware
         return new[] { DownloadOption, ContinueOption, OutputOption, CheckSumOption, CheckSumAlgOption };
     }
 
-    public async Task Invoke(HttpContext context, Func<Task> next)
+    public async Task Invoke(HttpContext context, Func<HttpContext, Task> next)
     {
         var download = context.Request.ParseResult.HasOption(DownloadOption);
         if (!download)
         {
-            await next();
+            await next(context);
             return;
         }
         var output = context.Request.ParseResult.GetValueForOption(OutputOption);
@@ -64,7 +64,7 @@ public sealed class DownloadMiddleware : IResponseMiddleware
             context.Response.Headers.TryAdd(Constants.ResponseCheckSumValueHeaderName, calculatedValue);
             context.Response.Headers.TryAdd(Constants.ResponseCheckSumValidHeaderName, checksumMatched.ToString());
         }
-        await next();
+        await next(context);
     }
 
 

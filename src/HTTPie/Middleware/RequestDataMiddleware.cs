@@ -27,7 +27,7 @@ public sealed class RequestDataMiddleware : IRequestMiddleware
             FormOption, JsonOption, RawDataOption
         };
 
-    public Task Invoke(HttpRequestModel requestModel, Func<Task> next)
+    public Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
         var isFormData = requestModel.ParseResult.HasOption(FormOption);
         _httpContext.UpdateFlag(Constants.FlagNames.IsFormContentType, isFormData);
@@ -94,6 +94,6 @@ public sealed class RequestDataMiddleware : IRequestMiddleware
                 requestModel.Method = HttpMethod.Post;
             }
         }
-        return next();
+        return next(requestModel);
     }
 }

@@ -16,12 +16,12 @@ public sealed class RequestCacheMiddleware : IRequestMiddleware
         return new[] { NoCacheOption };
     }
 
-    public Task Invoke(HttpRequestModel requestModel, Func<Task> next)
+    public Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
         if (requestModel.ParseResult.HasOption(NoCacheOption))
         {
             requestModel.Headers["Cache-Control"] = new StringValues("No-Cache");
         }
-        return Task.CompletedTask;
+        return next(requestModel);
     }
 }

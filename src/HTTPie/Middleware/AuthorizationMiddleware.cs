@@ -24,7 +24,7 @@ public sealed class AuthorizationMiddleware : IRequestMiddleware
 
     public ICollection<Option> SupportedOptions() => new Option[] { AuthenticationTypeOption, AuthenticationValueOption };
 
-    public Task Invoke(HttpRequestModel requestModel, Func<Task> next)
+    public Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
         if (requestModel.ParseResult.HasOption(AuthenticationValueOption))
         {
@@ -36,7 +36,7 @@ public sealed class AuthorizationMiddleware : IRequestMiddleware
                 requestModel.Headers.TryAdd(Constants.AuthorizationHeaderName, authHeaderValue);
             }
         }
-        return next();
+        return next(requestModel);
     }
 
     private static string GetAuthHeader(string? authType, string authValue)

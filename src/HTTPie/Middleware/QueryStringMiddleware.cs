@@ -9,7 +9,7 @@ namespace HTTPie.Middleware;
 
 public sealed class QueryStringMiddleware : IRequestMiddleware
 {
-    public Task Invoke(HttpRequestModel requestModel, Func<Task> next)
+    public Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
         foreach (var query in
             requestModel.RequestItems.Where(x => x.IndexOf("==", StringComparison.Ordinal) > 0))
@@ -25,6 +25,6 @@ public sealed class QueryStringMiddleware : IRequestMiddleware
             }
         }
 
-        return next();
+        return next(requestModel);
     }
 }
