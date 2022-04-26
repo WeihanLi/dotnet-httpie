@@ -28,7 +28,7 @@ public sealed class FollowRedirectMiddleware : IHttpHandlerMiddleware
         var maxRedirects = _requestModel.ParseResult.GetValueForOption(MaxRedirectsOption);
         if (maxRedirects > 0)
             httpClientHandler.MaxAutomaticRedirections = maxRedirects;
-        
+
         return next(httpClientHandler);
     }
     public ICollection<Option> SupportedOptions() => new[]
