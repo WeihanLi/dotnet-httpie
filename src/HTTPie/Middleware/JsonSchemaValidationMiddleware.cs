@@ -79,7 +79,7 @@ public sealed class JsonSchemaValidationMiddleware : IResponseMiddleware
             }
         }
         context.Response.Headers.TryAdd(JsonSchemaValidationResultHeader, validationResultMessage);
-        
+
         await next(context);
     }
 }
