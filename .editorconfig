@@ -8,6 +8,12 @@ root = true
 indent_style = space
 # (Please don't specify an indent_size here; that has too many unintended consequences.)
 
+# Shell scripts
+[*.sh]
+end_of_line = lf
+[*.{cmd,bat}]
+end_of_line = crlf
+
 # Code files
 [*.{cs,csx,vb,vbx}]
 indent_size = 4
