@@ -5,8 +5,9 @@ on:
   #   - cron:  '0 1 * * *'
   push:
     branches: 
-      - "main"
-      - "dev"
+      # - "main"
+      # - "dev"
+      - "test"
 jobs:
   build:
     runs-on: ubuntu-latest
