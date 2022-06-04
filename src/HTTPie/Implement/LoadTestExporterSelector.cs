@@ -12,7 +12,7 @@ public sealed class LoadTestExporterSelector : ILoadTestExporterSelector
     private readonly Dictionary<string, ILoadTestExporter> _exporters;
     private static readonly Option<string> ExporterTypeOption = new("--exporter-type", "Load test result exporter type");
 
-    public ICollection<Option> SupportedOptions()
+    public Option[] SupportedOptions()
     {
         return new[] { ExporterTypeOption };
     }

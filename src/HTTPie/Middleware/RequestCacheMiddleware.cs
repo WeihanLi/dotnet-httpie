@@ -9,19 +9,19 @@ namespace HTTPie.Middleware;
 
 public sealed class RequestCacheMiddleware : IRequestMiddleware
 {
-    private static readonly Option NoCacheOption = new("--no-cache", "Send 'Cache-Control: No-Cache' request header");
+    private static readonly Option<bool> NoCacheOption = new("--no-cache", "Send 'Cache-Control: No-Cache' request header");
 
-    public ICollection<Option> SupportedOptions()
+    public Option[] SupportedOptions()
     {
-        return new[] { NoCacheOption };
+        return new Option[] { NoCacheOption };
     }
 
-    public Task Invoke(HttpRequestModel requestModel, Func<Task> next)
+    public Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
         if (requestModel.ParseResult.HasOption(NoCacheOption))
         {
             requestModel.Headers["Cache-Control"] = new StringValues("No-Cache");
         }
-        return Task.CompletedTask;
+        return next(requestModel);
     }
 }

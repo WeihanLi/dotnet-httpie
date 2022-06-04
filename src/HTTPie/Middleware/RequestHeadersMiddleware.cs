@@ -9,7 +9,7 @@ namespace HTTPie.Middleware;
 
 public sealed class RequestHeadersMiddleware : IRequestMiddleware
 {
-    public Task Invoke(HttpRequestModel model, Func<Task> next)
+    public Task Invoke(HttpRequestModel model, Func<HttpRequestModel, Task> next)
     {
         foreach (var input in model.RequestItems
             .Where(x => x.IndexOf(':') > 0
@@ -18,13 +18,20 @@ public sealed class RequestHeadersMiddleware : IRequestMiddleware
             var arr = input.Split(':');
             if (arr.Length == 2)
             {
-                if (model.Headers.TryGetValue(arr[0], out var values))
-                    model.Headers[arr[0]] = new StringValues(values.ToArray().Union(new[] { arr[1] }).ToArray());
+                var (headerName, headerValue) = (arr[0], arr[1]);
+                if (model.Headers.TryGetValue(headerName, out var values))
+                {
+                    var originalValues = values.ToArray();
+                    var newValues = new string[values.Count + 1];
+                    Array.Copy(originalValues, newValues, originalValues.Length);
+                    newValues[^1] = headerValue;
+                    model.Headers[headerName] = new StringValues(newValues);
+                }
                 else
-                    model.Headers[arr[0]] = arr[1];
+                    model.Headers[headerName] = headerValue;
             }
         }
 
-        return next();
+        return next(model);
     }
 }

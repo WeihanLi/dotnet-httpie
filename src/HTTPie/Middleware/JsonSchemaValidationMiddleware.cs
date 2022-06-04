@@ -27,16 +27,17 @@ public sealed class JsonSchemaValidationMiddleware : IResponseMiddleware
         _logger = logger;
     }
 
-    public ICollection<Option> SupportedOptions()
+    public Option[] SupportedOptions()
     {
         return new Option[] { JsonSchemaPathOption, JsonSchemaValidationOutputFormatOption };
     }
 
-    public async Task Invoke(HttpContext context, Func<Task> next)
+    public async Task Invoke(HttpContext context, Func<HttpContext, Task> next)
     {
         var schemaPath = context.Request.ParseResult.GetValueForOption(JsonSchemaPathOption)?.Trim();
         if (string.IsNullOrEmpty(schemaPath))
         {
+            await next(context);
             return;
         }
 
@@ -78,5 +79,7 @@ public sealed class JsonSchemaValidationMiddleware : IResponseMiddleware
             }
         }
         context.Response.Headers.TryAdd(JsonSchemaValidationResultHeader, validationResultMessage);
+
+        await next(context);
     }
 }

@@ -54,4 +54,3 @@ catch (Exception e)
     logger.InvokeRequestException(e);
     return -1;
 }
-

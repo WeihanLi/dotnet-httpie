@@ -11,7 +11,7 @@ public sealed class JsonLoadTestExporter : ILoadTestExporter
 {
     private static readonly Option<string> OutputJsonPathOption = new("--export-json-path", "Expected export json file path");
 
-    public ICollection<Option> SupportedOptions()
+    public Option[] SupportedOptions()
     {
         return new[] { OutputJsonPathOption };
     }

@@ -10,7 +10,7 @@ namespace HTTPie.Middleware;
 
 public sealed class DefaultResponseMiddleware : IResponseMiddleware
 {
-    public Task Invoke(HttpContext context, Func<Task> next)
+    public Task Invoke(HttpContext context, Func<HttpContext, Task> next)
     {
         var outputFormat = OutputFormatter.GetOutputFormat(context);
         if ((outputFormat & OutputFormat.Timestamp) != 0)
@@ -22,6 +22,6 @@ public sealed class DefaultResponseMiddleware : IResponseMiddleware
                 context.Response.Headers.TryAdd(Constants.RequestDurationHeaderName, $"{context.Response.Elapsed.TotalMilliseconds}ms");
             }
         }
-        return next();
+        return next(context);
     }
 }

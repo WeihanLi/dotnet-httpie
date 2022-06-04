@@ -12,6 +12,7 @@
         <Product>dotnet-httpie</Product>
         <Authors>WeihanLi</Authors>
         <Copyright>Copyright 2021-$([System.DateTime]::Now.Year) (c) WeihanLi</Copyright>
+        <NoWarn>NU1507;</NoWarn>
     </PropertyGroup>
     <ItemGroup>
         <Using Include="WeihanLi.Common"/>

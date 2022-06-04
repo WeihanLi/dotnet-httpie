@@ -10,23 +10,23 @@ namespace HTTPie.Middleware;
 
 public sealed class DownloadMiddleware : IResponseMiddleware
 {
-    public static readonly Option DownloadOption = new(new[] { "-d", "--download" }, "Download file");
-    private static readonly Option ContinueOption = new(new[] { "-c", "--continue" }, "Download file using append mode");
+    public static readonly Option<bool> DownloadOption = new(new[] { "-d", "--download" }, "Download file");
+    private static readonly Option<bool> ContinueOption = new(new[] { "-c", "--continue" }, "Download file using append mode");
     private static readonly Option<string> OutputOption = new(new[] { "-o", "--output" }, "Output file path");
     private static readonly Option<string> CheckSumOption = new(new[] { "--checksum" }, "Checksum to validate");
     private static readonly Option<HashType> CheckSumAlgOption = new(new[] { "--checksum-alg" }, () => HashType.SHA1, "Checksum hash algorithm type");
 
-    public ICollection<Option> SupportedOptions()
+    public Option[] SupportedOptions()
     {
-        return new[] { DownloadOption, ContinueOption, OutputOption, CheckSumOption, CheckSumAlgOption };
+        return new Option[] { DownloadOption, ContinueOption, OutputOption, CheckSumOption, CheckSumAlgOption };
     }
 
-    public async Task Invoke(HttpContext context, Func<Task> next)
+    public async Task Invoke(HttpContext context, Func<HttpContext, Task> next)
     {
         var download = context.Request.ParseResult.HasOption(DownloadOption);
         if (!download)
         {
-            await next();
+            await next(context);
             return;
         }
         var output = context.Request.ParseResult.GetValueForOption(OutputOption);
@@ -64,7 +64,7 @@ public sealed class DownloadMiddleware : IResponseMiddleware
             context.Response.Headers.TryAdd(Constants.ResponseCheckSumValueHeaderName, calculatedValue);
             context.Response.Headers.TryAdd(Constants.ResponseCheckSumValidHeaderName, checksumMatched.ToString());
         }
-        await next();
+        await next(context);
     }
 
 
@@ -88,7 +88,7 @@ public sealed class DownloadMiddleware : IResponseMiddleware
         var uri = new Uri(url);
         var fileNameWithoutExt = Path.GetFileNameWithoutExtension(uri.AbsolutePath);
         var fileExtension = Path.GetExtension(uri.AbsolutePath);
-        var extension = fileExtension.GetValueOrDefault(MimeTypeMap.GetExtension(contentType));
+        var extension = fileExtension.GetValueOrDefault(() => MimeTypeMap.GetExtension(contentType));
         return $"{fileNameWithoutExt}{extension}";
     }
 }

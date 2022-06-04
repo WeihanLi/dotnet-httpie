@@ -116,20 +116,21 @@ public static class Helpers
         {
             command.AddOption(option);
         }
-        command.SetHandler(async (ParseResult _, IConsole console) =>
+        command.SetHandler(async invocationContext =>
         {
             try
             {
                 var context = DependencyResolver.ResolveRequiredService<HttpContext>();
+                context.CancellationToken = invocationContext.GetCancellationToken();
                 await DependencyResolver.ResolveRequiredService<IRequestExecutor>()
                     .ExecuteAsync(context);
                 var output = await DependencyResolver.ResolveRequiredService<IOutputFormatter>()
                     .GetOutput(context);
-                console.Out.WriteLine(output.Trim());
+                invocationContext.Console.Out.WriteLine(output.Trim());
             }
             catch (Exception e)
             {
-                console.Error.WriteLine($"Unhandled exception: {e}");
+                invocationContext.Console.Error.WriteLine($"Unhandled exception: {e}");
             }
         });
         command.TreatUnmatchedTokensAsErrors = false;
@@ -208,7 +209,8 @@ public static class Helpers
 
     public static void InitRequestModel(HttpContext httpContext, string[] args)
     {
-        if (args.Contains("--help"))
+        // should output helps
+        if (args.Contains("-h") || args.Contains("-?") || args.Contains("--help"))
         {
             return;
         }

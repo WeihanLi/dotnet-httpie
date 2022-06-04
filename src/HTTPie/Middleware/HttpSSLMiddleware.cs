@@ -16,16 +16,16 @@ public sealed class HttpSslMiddleware : IHttpHandlerMiddleware
         _requestModel = requestModel;
     }
 
-    private static readonly Option DisableSslVerifyOption = new(new[] { "--no-verify", "--verify=no" }, "disable ssl cert check");
+    private static readonly Option<bool> DisableSslVerifyOption = new(new[] { "--no-verify", "--verify=no" }, "disable ssl cert check");
     private static readonly Option<SslProtocols> SslProtocalOption = new("--ssl", "specific the ssl protocols, ssl3, tls, tls1.1, tls1.2, tls1.3");
 
-    public ICollection<Option> SupportedOptions() => new HashSet<Option>()
+    public Option[] SupportedOptions() => new Option[]
         {
             DisableSslVerifyOption,
             SslProtocalOption,
         };
 
-    public Task Invoke(HttpClientHandler httpClientHandler, Func<Task> next)
+    public Task Invoke(HttpClientHandler httpClientHandler, Func<HttpClientHandler, Task> next)
     {
         if (_requestModel.Options.Contains("--verify=no")
             || _requestModel.ParseResult.HasOption(DisableSslVerifyOption))
@@ -42,6 +42,6 @@ public sealed class HttpSslMiddleware : IHttpHandlerMiddleware
                 httpClientHandler.SslProtocols = sslProtocols;
         }
 
-        return next();
+        return next(httpClientHandler);
     }
 }

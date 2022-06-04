@@ -18,16 +18,16 @@ public sealed class RequestDataMiddleware : IRequestMiddleware
         _httpContext = httpContext;
     }
 
-    private static readonly Option FormOption = new(new[] { "-f", "--form" }, $"The request is form data, and content type is '{Constants.FormContentType}'");
-    private static readonly Option JsonOption = new(new[] { "-j", "--json" }, $"The request body is json by default, and content type is '{Constants.JsonContentType}'");
+    private static readonly Option<bool> FormOption = new(new[] { "-f", "--form" }, $"The request is form data, and content type is '{Constants.FormContentType}'");
+    private static readonly Option<bool> JsonOption = new(new[] { "-j", "--json" }, $"The request body is json by default, and content type is '{Constants.JsonContentType}'");
     private static readonly Option<string> RawDataOption = new("--raw", $"The raw request body");
 
-    public ICollection<Option> SupportedOptions() => new[]
+    public Option[] SupportedOptions() => new Option[]
     {
             FormOption, JsonOption, RawDataOption
         };
 
-    public Task Invoke(HttpRequestModel requestModel, Func<Task> next)
+    public Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
         var isFormData = requestModel.ParseResult.HasOption(FormOption);
         _httpContext.UpdateFlag(Constants.FlagNames.IsFormContentType, isFormData);
@@ -94,6 +94,6 @@ public sealed class RequestDataMiddleware : IRequestMiddleware
                 requestModel.Method = HttpMethod.Post;
             }
         }
-        return next();
+        return next(requestModel);
     }
 }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Weihan Li. All rights reserved.
 // Licensed under the MIT license.
 
+using Newtonsoft.Json;
 using WeihanLi.Common.Abstractions;
 
 namespace HTTPie.Models;
@@ -21,6 +22,10 @@ public sealed class HttpContext : IProperties
 
     public HttpRequestModel Request { get; }
     public HttpResponseModel Response { get; set; }
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    [JsonIgnore]
+    public CancellationToken CancellationToken { get; set; }
     public IDictionary<string, object?> Properties { get; } = new Dictionary<string, object?>();
 
     public void UpdateFlag(string flagName, bool value)
