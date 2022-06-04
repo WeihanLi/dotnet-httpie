@@ -16,10 +16,10 @@ public sealed class HttpSslMiddleware : IHttpHandlerMiddleware
         _requestModel = requestModel;
     }
 
-    private static readonly Option DisableSslVerifyOption = new(new[] { "--no-verify", "--verify=no" }, "disable ssl cert check");
+    private static readonly Option<bool> DisableSslVerifyOption = new(new[] { "--no-verify", "--verify=no" }, "disable ssl cert check");
     private static readonly Option<SslProtocols> SslProtocalOption = new("--ssl", "specific the ssl protocols, ssl3, tls, tls1.1, tls1.2, tls1.3");
 
-    public ICollection<Option> SupportedOptions() => new HashSet<Option>()
+    public Option[] SupportedOptions() => new Option[]
         {
             DisableSslVerifyOption,
             SslProtocalOption,

@@ -27,7 +27,7 @@ public sealed class JsonSchemaValidationMiddleware : IResponseMiddleware
         _logger = logger;
     }
 
-    public ICollection<Option> SupportedOptions()
+    public Option[] SupportedOptions()
     {
         return new Option[] { JsonSchemaPathOption, JsonSchemaValidationOutputFormatOption };
     }

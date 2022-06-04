@@ -160,13 +160,17 @@ public sealed partial class RequestExecutor : IRequestExecutor
             LogRequestMessage(requestMessage);
             httpContext.Request.Timestamp = DateTimeOffset.Now;
             var startTime = Stopwatch.GetTimestamp();
-            using var responseMessage = await httpClient.SendAsync(requestMessage);
+            using var responseMessage = await httpClient.SendAsync(requestMessage, httpContext.CancellationToken);
             var elapsed = ProfilerHelper.GetElapsedTime(startTime);
             LogResponseMessage(responseMessage);
             responseModel = await _responseMapper.ToResponseModel(responseMessage);
             responseModel.Elapsed = elapsed;
             responseModel.Timestamp = httpContext.Request.Timestamp.Add(elapsed);
             LogRequestDuration(httpContext.Request.Url, httpContext.Request.Method, responseModel.StatusCode, elapsed);
+        }
+        catch (OperationCanceledException operationCanceledException) when (httpContext.CancellationToken.IsCancellationRequested)
+        {
+            LogRequestCancelled(operationCanceledException);
         }
         catch (Exception exception)
         {
@@ -192,4 +196,8 @@ public sealed partial class RequestExecutor : IRequestExecutor
 
     [LoggerMessage(Level = LogLevel.Error, EventId = 1001, Message = "Send httpRequest exception")]
     private partial void LogException(Exception exception);
+    
+    
+    [LoggerMessage(Level = LogLevel.Warning, EventId = 1002, Message = "Request cancelled")]
+    private partial void LogRequestCancelled(Exception exception);
 }

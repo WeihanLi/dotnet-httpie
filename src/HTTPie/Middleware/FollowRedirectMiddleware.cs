@@ -10,7 +10,7 @@ public sealed class FollowRedirectMiddleware : IHttpHandlerMiddleware
 {
     private readonly HttpRequestModel _requestModel;
 
-    private static readonly Option FollowOption = new(new[] { "--follow", "-F" }, "The HTTP request should follow redirects");
+    private static readonly Option<bool> FollowOption = new(new[] { "--follow", "-F" }, "The HTTP request should follow redirects");
     private static readonly Option<int> MaxRedirectsOption = new("--max-redirects", "Allowed max HTTP request redirect times");
 
     public FollowRedirectMiddleware(HttpRequestModel requestModel)
@@ -31,7 +31,7 @@ public sealed class FollowRedirectMiddleware : IHttpHandlerMiddleware
 
         return next(httpClientHandler);
     }
-    public ICollection<Option> SupportedOptions() => new[]
+    public Option[] SupportedOptions() => new Option[]
     {
         FollowOption,
         MaxRedirectsOption

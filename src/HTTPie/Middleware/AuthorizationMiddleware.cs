@@ -22,7 +22,7 @@ public sealed class AuthorizationMiddleware : IRequestMiddleware
         });
     }
 
-    public ICollection<Option> SupportedOptions() => new Option[] { AuthenticationTypeOption, AuthenticationValueOption };
+    public Option[] SupportedOptions() => new Option[] { AuthenticationTypeOption, AuthenticationValueOption };
 
     public Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {

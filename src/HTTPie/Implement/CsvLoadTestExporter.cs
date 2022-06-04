@@ -17,7 +17,7 @@ public sealed class CsvLoadTestExporter : ILoadTestExporter
 
     private static readonly Option<string> OutputCsvPathOption = new("--export-csv-path", "Expected export csv file path");
 
-    public ICollection<Option> SupportedOptions()
+    public Option[] SupportedOptions()
     {
         return new[] { OutputCsvPathOption };
     }

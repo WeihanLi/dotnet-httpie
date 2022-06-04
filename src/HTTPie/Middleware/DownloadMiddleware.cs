@@ -10,15 +10,15 @@ namespace HTTPie.Middleware;
 
 public sealed class DownloadMiddleware : IResponseMiddleware
 {
-    public static readonly Option DownloadOption = new(new[] { "-d", "--download" }, "Download file");
-    private static readonly Option ContinueOption = new(new[] { "-c", "--continue" }, "Download file using append mode");
+    public static readonly Option<bool> DownloadOption = new(new[] { "-d", "--download" }, "Download file");
+    private static readonly Option<bool> ContinueOption = new(new[] { "-c", "--continue" }, "Download file using append mode");
     private static readonly Option<string> OutputOption = new(new[] { "-o", "--output" }, "Output file path");
     private static readonly Option<string> CheckSumOption = new(new[] { "--checksum" }, "Checksum to validate");
     private static readonly Option<HashType> CheckSumAlgOption = new(new[] { "--checksum-alg" }, () => HashType.SHA1, "Checksum hash algorithm type");
 
-    public ICollection<Option> SupportedOptions()
+    public Option[] SupportedOptions()
     {
-        return new[] { DownloadOption, ContinueOption, OutputOption, CheckSumOption, CheckSumAlgOption };
+        return new Option[] { DownloadOption, ContinueOption, OutputOption, CheckSumOption, CheckSumAlgOption };
     }
 
     public async Task Invoke(HttpContext context, Func<HttpContext, Task> next)

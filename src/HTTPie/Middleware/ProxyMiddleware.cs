@@ -11,16 +11,16 @@ public sealed class ProxyMiddleware : IHttpHandlerMiddleware
 {
     private readonly HttpRequestModel _requestModel;
     private static readonly Option<string> ProxyOption = new("--proxy", "Send request with proxy");
-    private static readonly Option NoProxyOption = new("--no-proxy", "Disable proxy");
+    private static readonly Option<bool> NoProxyOption = new("--no-proxy", "Disable proxy");
 
     public ProxyMiddleware(HttpRequestModel requestModel)
     {
         _requestModel = requestModel;
     }
 
-    public ICollection<Option> SupportedOptions()
+    public Option[] SupportedOptions()
     {
-        return new[] { ProxyOption, NoProxyOption };
+        return new Option[] { ProxyOption, NoProxyOption };
     }
 
     public Task Invoke(HttpClientHandler httpClientHandler, Func<HttpClientHandler, Task> next)
