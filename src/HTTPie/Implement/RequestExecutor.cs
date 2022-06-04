@@ -196,8 +196,8 @@ public sealed partial class RequestExecutor : IRequestExecutor
 
     [LoggerMessage(Level = LogLevel.Error, EventId = 1001, Message = "Send httpRequest exception")]
     private partial void LogException(Exception exception);
-    
-    
+
+
     [LoggerMessage(Level = LogLevel.Warning, EventId = 1002, Message = "Request cancelled")]
     private partial void LogRequestCancelled(Exception exception);
 }
