@@ -208,7 +208,8 @@ public static class Helpers
 
     public static void InitRequestModel(HttpContext httpContext, string[] args)
     {
-        if (args.Contains("--help"))
+        // should output helps
+        if (args.Contains("-h") || args.Contains("-?") || args.Contains("--help"))
         {
             return;
         }
