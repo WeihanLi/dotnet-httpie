@@ -84,7 +84,6 @@ public static class Helpers
         var command = InitializeCommand();
         var builder = new CommandLineBuilder(command);
         builder
-            .UseVersionOption()
             .UseHelp("--help", "-?", "/?")
             .UseEnvironmentVariableDirective()
             .UseParseDirective()
