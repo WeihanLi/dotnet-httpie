@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using Newtonsoft.Json;
+using System.CommandLine.Invocation;
 using WeihanLi.Common.Abstractions;
 
 namespace HTTPie.Models;
@@ -25,7 +26,12 @@ public sealed class HttpContext : IProperties
 
     [System.Text.Json.Serialization.JsonIgnore]
     [JsonIgnore]
-    public CancellationToken CancellationToken { get; set; }
+    public CancellationToken CancellationToken => InvocationContext.GetCancellationToken();
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    [JsonIgnore]
+    public InvocationContext InvocationContext { get; set; } = null!;
+
     public IDictionary<string, object?> Properties { get; } = new Dictionary<string, object?>();
 
     public void UpdateFlag(string flagName, bool value)

@@ -29,11 +29,12 @@ serviceCollection.AddLogging(builder =>
     }
     builder.SetMinimumLevel(debugEnabled ? LogLevel.Debug : LogLevel.Warning);
 });
-serviceCollection.RegisterHTTPieServices();
+serviceCollection.RegisterApplicationServices();
 await using var services = serviceCollection.BuildServiceProvider();
-DependencyResolver.SetDependencyResolver(services);
-Helpers.InitializeSupportOptions(services);
-if (args is not { Length: > 0 })
+
+// output helps when no argument or there's only "-h"/"/h"
+if (args is not { Length: > 0 } || 
+    (args.Length == 1 && args[0] is "-h" or "/h"))
 {
     args = new[] { "--help" };
 }
@@ -45,12 +46,4 @@ if (args.Contains("--version"))
 
 var logger = services.GetRequiredService<ILogger>();
 logger.PrintInputParameters(args.StringJoin(";"));
-try
-{
-    return await services.Handle(args);
-}
-catch (Exception e)
-{
-    logger.InvokeRequestException(e);
-    return -1;
-}
+return await services.Handle(args);
