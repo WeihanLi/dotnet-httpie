@@ -28,7 +28,7 @@ public static class Helpers
         HttpMethod.Delete.Method,
         HttpMethod.Options.Method
     };
-    
+
     public static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
         WriteIndented = true,
@@ -81,7 +81,7 @@ public static class Helpers
             {
                 var context = serviceProvider.GetRequiredService<HttpContext>();
                 context.InvocationContext = invocationContext;
-                
+
                 var requestModel = context.Request;
                 requestModel.ParseResult = invocationContext.ParseResult;
 
@@ -105,7 +105,7 @@ public static class Helpers
                     .WhereNotNull()
                     .Where(x => !x.StartsWith('-'))
                     .ToArray();
-                
+
                 await next(invocationContext);
             })
             ;
@@ -118,7 +118,7 @@ public static class Helpers
         {
             Name = "http",
         };
-        
+
         // var methodArgument = new Argument<HttpMethod>("method")
         // {
         //     Description = "Request method",
@@ -128,14 +128,14 @@ public static class Helpers
         // var allowedMethods = HttpMethods.ToArray();
         // methodArgument.AddCompletions(allowedMethods);
         // command.AddArgument(methodArgument);
-        
+
         // var urlArgument = new Argument<string>("url")
         // {
         //     Description = "Request url",
         //     Arity = ArgumentArity.ExactlyOne
         // };
         // command.AddArgument(urlArgument);
-        
+
         // options
         foreach (var option in
                  serviceProvider
@@ -151,7 +151,7 @@ public static class Helpers
             command.AddOption(option);
         }
         command.TreatUnmatchedTokensAsErrors = false;
-        
+
         handler ??= async invocationContext =>
         {
             var context = serviceProvider.ResolveRequiredService<HttpContext>();
@@ -164,7 +164,7 @@ public static class Helpers
         command.SetHandler(handler);
         return command;
     }
-    
+
     public static IServiceCollection RegisterApplicationServices(this IServiceCollection serviceCollection)
     {
         serviceCollection
@@ -230,13 +230,13 @@ public static class Helpers
             .AddResponseMiddleware<JsonSchemaValidationMiddleware>()
             ;
     }
-    
+
     public static async Task<int> Handle(this IServiceProvider services, string[] args)
     {
         var commandParser = services.ConstructCommand();
         return await commandParser.InvokeAsync(args);
     }
-    
+
     public static async Task<int> Handle(this IServiceProvider services, string commandLine, Func<InvocationContext, Task>? handler = null)
     {
         var commandParser = services.ConstructCommand(handler);

@@ -9,7 +9,7 @@ namespace HTTPie.UnitTest.Implement;
 public class OutputFormatterTest
 {
     private readonly OutputFormatter _outputFormatter;
-    
+
     public OutputFormatterTest(IServiceProvider serviceProvider)
     {
         _outputFormatter = new OutputFormatter(

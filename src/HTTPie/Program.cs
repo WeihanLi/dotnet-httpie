@@ -33,7 +33,7 @@ serviceCollection.RegisterApplicationServices();
 await using var services = serviceCollection.BuildServiceProvider();
 
 // output helps when no argument or there's only "-h"/"/h"
-if (args is not { Length: > 0 } || 
+if (args is not { Length: > 0 } ||
     (args.Length == 1 && args[0] is "-h" or "/h"))
 {
     args = new[] { "--help" };
