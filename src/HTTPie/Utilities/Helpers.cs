@@ -83,7 +83,29 @@ public static class Helpers
         }
         var command = InitializeCommand();
         var builder = new CommandLineBuilder(command);
-        builder.UseDefaults();
+        builder
+            .UseVersionOption()
+            .UseHelp("--help", "-?", "/?")
+            .UseEnvironmentVariableDirective()
+            .UseParseDirective()
+            .UseSuggestDirective()
+            .RegisterWithDotnetSuggest()
+            .UseTypoCorrections()
+            .UseParseErrorReporting()
+            .UseExceptionHandler()
+            .CancelOnProcessTermination()
+            .AddMiddleware(async (invocationContext, next) =>
+            {
+                var context = DependencyResolver.ResolveRequiredService<HttpContext>();
+                context.CancellationToken = invocationContext.GetCancellationToken();
+                await DependencyResolver.ResolveRequiredService<IRequestExecutor>()
+                    .ExecuteAsync(context);
+                var output = await DependencyResolver.ResolveRequiredService<IOutputFormatter>()
+                    .GetOutput(context);
+                invocationContext.Console.Out.WriteLine(output.Trim());
+
+                await next(invocationContext);
+            });
         _commandParser = builder.Build();
     }
 
@@ -116,23 +138,6 @@ public static class Helpers
         {
             command.AddOption(option);
         }
-        command.SetHandler(async invocationContext =>
-        {
-            try
-            {
-                var context = DependencyResolver.ResolveRequiredService<HttpContext>();
-                context.CancellationToken = invocationContext.GetCancellationToken();
-                await DependencyResolver.ResolveRequiredService<IRequestExecutor>()
-                    .ExecuteAsync(context);
-                var output = await DependencyResolver.ResolveRequiredService<IOutputFormatter>()
-                    .GetOutput(context);
-                invocationContext.Console.Out.WriteLine(output.Trim());
-            }
-            catch (Exception e)
-            {
-                invocationContext.Console.Error.WriteLine($"Unhandled exception: {e}");
-            }
-        });
         command.TreatUnmatchedTokensAsErrors = false;
         return command;
     }
@@ -210,7 +215,7 @@ public static class Helpers
     public static void InitRequestModel(HttpContext httpContext, string[] args)
     {
         // should output helps
-        if (args.Contains("-h") || args.Contains("-?") || args.Contains("--help"))
+        if (args.Contains("-?") || args.Contains("--help"))
         {
             return;
         }
