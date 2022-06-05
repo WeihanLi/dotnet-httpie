@@ -10,10 +10,10 @@ public class OutputFormatterTest
 {
     private readonly OutputFormatter _outputFormatter;
 
-    public OutputFormatterTest()
+    public OutputFormatterTest(IServiceProvider serviceProvider)
     {
         _outputFormatter = new OutputFormatter(
-            new ServiceCollection().BuildServiceProvider(),
+            serviceProvider,
             NullLogger<OutputFormatter>.Instance)
             ;
     }
@@ -24,8 +24,12 @@ public class OutputFormatterTest
     [InlineData(":5000/api/values --quiet")]
     public async Task QuietTest(string input)
     {
-        var httpContext = new HttpContext(new HttpRequestModel());
-        Helpers.InitRequestModel(httpContext, input);
+        var services = new ServiceCollection()
+            .AddLogging()
+            .RegisterApplicationServices()
+            .BuildServiceProvider();
+        await services.Handle(input, _ => Task.CompletedTask);
+        var httpContext = services.GetRequiredService<HttpContext>();
         var output = await _outputFormatter.GetOutput(httpContext);
         Assert.Empty(output);
     }

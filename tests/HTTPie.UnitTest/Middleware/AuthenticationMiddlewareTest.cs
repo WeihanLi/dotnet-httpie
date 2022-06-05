@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Weihan Li. All rights reserved.
 // Licensed under the MIT license.
 
+using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 
 namespace HTTPie.UnitTest.Middleware;
@@ -12,8 +13,12 @@ public class AuthorizationMiddlewareTest
     [InlineData(":5000/api/values")]
     public async Task NoAuthTest(string input)
     {
-        var httpContext = new HttpContext();
-        Helpers.InitRequestModel(httpContext, input);
+        var services = new ServiceCollection()
+            .AddLogging()
+            .RegisterApplicationServices()
+            .BuildServiceProvider();
+        await services.Handle(input, _ => Task.CompletedTask);
+        var httpContext = services.GetRequiredService<HttpContext>();
         var middleware = new AuthorizationMiddleware();
         await middleware.Invoke(httpContext.Request, _ => Task.CompletedTask);
         httpContext.Request.Headers.Should().BeEmpty();
@@ -24,8 +29,12 @@ public class AuthorizationMiddlewareTest
     [InlineData("-A=Basic -a=uid:pwd :5000/api/values")]
     public async Task BasicAuthTest(string input)
     {
-        var httpContext = new HttpContext();
-        Helpers.InitRequestModel(httpContext, input);
+        var services = new ServiceCollection()
+            .AddLogging()
+            .RegisterApplicationServices()
+            .BuildServiceProvider();
+        await services.Handle(input, _ => Task.CompletedTask);
+        var httpContext = services.GetRequiredService<HttpContext>();
         var middleware = new AuthorizationMiddleware();
         await middleware.Invoke(httpContext.Request, _ => Task.CompletedTask);
         httpContext.Request.Headers.Should().NotBeEmpty();
@@ -41,8 +50,12 @@ public class AuthorizationMiddlewareTest
     [InlineData("-A=jwt -a=TestToken :5000/api/values")]
     public async Task JwtAuthTest(string input)
     {
-        var httpContext = new HttpContext();
-        Helpers.InitRequestModel(httpContext, input);
+        var services = new ServiceCollection()
+            .AddLogging()
+            .RegisterApplicationServices()
+            .BuildServiceProvider();
+        await services.Handle(input, _ => Task.CompletedTask);
+        var httpContext = services.GetRequiredService<HttpContext>();
         var middleware = new AuthorizationMiddleware();
         await middleware.Invoke(httpContext.Request, _ => Task.CompletedTask);
         httpContext.Request.Headers.Should().NotBeEmpty();
