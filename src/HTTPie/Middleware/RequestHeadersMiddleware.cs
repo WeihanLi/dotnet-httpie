@@ -3,6 +3,7 @@
 
 using HTTPie.Abstractions;
 using HTTPie.Models;
+using HTTPie.Utilities;
 using Microsoft.Extensions.Primitives;
 
 namespace HTTPie.Middleware;
@@ -11,11 +12,12 @@ public sealed class RequestHeadersMiddleware : IRequestMiddleware
 {
     public Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
-        foreach (var item in requestModel.RequestItems
-            .Where(x => x.IndexOf(":=", StringComparison.OrdinalIgnoreCase) < 0))
+        foreach (var item in requestModel.RequestItems)
         {
             var index = item.IndexOf(':');
-            if (index > 0 && item[..index].IsMatch(@"[\w_\-]+"))
+            if (index > 0 && item.Length > (index + 1)
+                          && item[(index + 1)] != '='
+                          && item[..index].IsMatch(Constants.ParamNameRegex))
             {
                 var queryKey = item[..index];
                 var queryValue = item[(index + 1)..];

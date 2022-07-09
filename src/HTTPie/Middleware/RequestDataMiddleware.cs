@@ -40,9 +40,15 @@ public sealed class RequestDataMiddleware : IRequestMiddleware
         else
         {
             var dataInput = requestModel.RequestItems
-            .Where(x => x.IndexOf('=') > 0
-                        && x.IndexOf("==", StringComparison.Ordinal) <= 0
-                        )
+                .Where(x =>
+            {
+                var index = x.IndexOf('=');
+                if (index > 0 && x[..index].IsMatch(Constants.ParamNameRegex))
+                {
+                    return index == x.Length - 1 || x[index + 1] != '=';
+                }
+                return false;
+            })
             .ToArray();
             if (dataInput.Length > 0)
             {

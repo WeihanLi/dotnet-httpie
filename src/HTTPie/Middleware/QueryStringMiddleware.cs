@@ -3,6 +3,7 @@
 
 using HTTPie.Abstractions;
 using HTTPie.Models;
+using HTTPie.Utilities;
 using Microsoft.Extensions.Primitives;
 
 namespace HTTPie.Middleware;
@@ -14,7 +15,7 @@ public sealed class QueryStringMiddleware : IRequestMiddleware
         foreach (var item in requestModel.RequestItems)
         {
             var index = item.IndexOf("==", StringComparison.Ordinal);
-            if (index > 0 && item[..index].IsMatch(@"[\w_\-]+"))
+            if (index > 0 && item[..index].IsMatch(Constants.ParamNameRegex))
             {
                 var queryKey = item[..index];
                 var queryValue = item[(index + 2)..];
