@@ -11,17 +11,19 @@ public sealed class QueryStringMiddleware : IRequestMiddleware
 {
     public Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
-        foreach (var query in
-            requestModel.RequestItems.Where(x => x.IndexOf("==", StringComparison.Ordinal) > 0))
+        foreach (var item in requestModel.RequestItems)
         {
-            var arr = query.Split("==");
-            if (arr.Length == 2)
+            var index = item.IndexOf("==", StringComparison.Ordinal);
+            if (index > 0 && item[..index].IsMatch(@"[\w_\-]+"))
             {
-                if (requestModel.Query.TryGetValue(arr[0], out var values))
-                    requestModel.Query[arr[0]] =
-                        new StringValues(new[] { arr[1] }.Union(values.ToArray()).ToArray());
+                var queryKey = item[..index];
+                var queryValue = item[(index + 2)..];
+                if (requestModel.Query.TryGetValue(queryKey, out var values))
+                    requestModel.Query[queryKey] =
+                        new StringValues(values.ToArray().Append(queryValue).ToArray());
                 else
-                    requestModel.Query[arr[0]] = arr[1];
+                    requestModel.Query[queryKey] = new StringValues(queryValue);
+
             }
         }
 

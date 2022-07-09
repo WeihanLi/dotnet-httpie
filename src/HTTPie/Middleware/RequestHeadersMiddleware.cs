@@ -9,29 +9,23 @@ namespace HTTPie.Middleware;
 
 public sealed class RequestHeadersMiddleware : IRequestMiddleware
 {
-    public Task Invoke(HttpRequestModel model, Func<HttpRequestModel, Task> next)
+    public Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
-        foreach (var input in model.RequestItems
-            .Where(x => x.IndexOf(':') > 0
-              && x.IndexOf(":=", StringComparison.OrdinalIgnoreCase) < 0))
+        foreach (var item in requestModel.RequestItems
+            .Where(x => x.IndexOf(":=", StringComparison.OrdinalIgnoreCase) < 0))
         {
-            var arr = input.Split(':');
-            if (arr.Length == 2)
+            var index = item.IndexOf(':');
+            if (index > 0 && item[..index].IsMatch(@"[\w_\-]+"))
             {
-                var (headerName, headerValue) = (arr[0], arr[1]);
-                if (model.Headers.TryGetValue(headerName, out var values))
-                {
-                    var originalValues = values.ToArray();
-                    var newValues = new string[values.Count + 1];
-                    Array.Copy(originalValues, newValues, originalValues.Length);
-                    newValues[^1] = headerValue;
-                    model.Headers[headerName] = new StringValues(newValues);
-                }
+                var queryKey = item[..index];
+                var queryValue = item[(index + 1)..];
+                if (requestModel.Headers.TryGetValue(queryKey, out var values))
+                    requestModel.Headers[queryKey] =
+                        new StringValues(values.ToArray().Append(queryValue).ToArray());
                 else
-                    model.Headers[headerName] = headerValue;
+                    requestModel.Headers[queryKey] = new StringValues(queryValue);
             }
         }
-
-        return next(model);
+        return next(requestModel);
     }
 }
