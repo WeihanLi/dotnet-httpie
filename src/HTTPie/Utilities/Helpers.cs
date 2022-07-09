@@ -86,7 +86,7 @@ public static class Helpers
                 requestModel.ParseResult = invocationContext.ParseResult;
 
                 var method = requestModel.ParseResult.UnmatchedTokens
-                    .FirstOrDefault(x => HttpMethods.Contains(x));
+                    .FirstOrDefault(x => HttpMethods.Contains(x), string.Empty);
                 if (!string.IsNullOrEmpty(method))
                 {
                     requestModel.Method = new HttpMethod(method);
@@ -102,7 +102,6 @@ public static class Helpers
                 }
                 requestModel.RequestItems = requestModel.ParseResult.UnmatchedTokens
                     .Except(new[] { method, requestModel.Url })
-                    .WhereNotNull()
                     .Where(x => !x.StartsWith('-'))
                     .ToArray();
 

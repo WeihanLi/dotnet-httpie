@@ -22,7 +22,6 @@ public sealed class HttpRequestModel
     public IDictionary<string, StringValues> Query { get; set; } = new Dictionary<string, StringValues>();
     public string? Body { get; set; }
 
-    public string[] Options { get; set; } = Array.Empty<string>();
     public string[] RequestItems { get; set; } = Array.Empty<string>();
     public DateTimeOffset Timestamp { get; set; }
 

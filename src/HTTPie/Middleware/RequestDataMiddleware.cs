@@ -40,13 +40,21 @@ public sealed class RequestDataMiddleware : IRequestMiddleware
         else
         {
             var dataInput = requestModel.RequestItems
-            .Where(x => x.IndexOf('=') > 0
-                        && x.IndexOf("==", StringComparison.Ordinal) < 0
-                        )
+                .Where(x =>
+            {
+                var index = x.IndexOf('=');
+                if (index > 0 && x[..index].IsMatch(Constants.ParamNameRegex))
+                {
+                    return index == x.Length - 1 || x[index + 1] != '=';
+                }
+                return false;
+            })
             .ToArray();
             if (dataInput.Length > 0)
             {
-                if (requestModel.Method == HttpMethod.Get) requestModel.Method = HttpMethod.Post;
+                if (requestModel.Method == HttpMethod.Get)
+                    requestModel.Method = HttpMethod.Post;
+
                 if (isFormData)
                 {
                     requestModel.Body = string.Join("&", dataInput);

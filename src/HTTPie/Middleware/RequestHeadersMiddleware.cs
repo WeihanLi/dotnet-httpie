@@ -3,35 +3,31 @@
 
 using HTTPie.Abstractions;
 using HTTPie.Models;
+using HTTPie.Utilities;
 using Microsoft.Extensions.Primitives;
 
 namespace HTTPie.Middleware;
 
 public sealed class RequestHeadersMiddleware : IRequestMiddleware
 {
-    public Task Invoke(HttpRequestModel model, Func<HttpRequestModel, Task> next)
+    public Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
-        foreach (var input in model.RequestItems
-            .Where(x => x.IndexOf(':') > 0
-              && x.IndexOf(":=", StringComparison.OrdinalIgnoreCase) < 0))
+        foreach (var item in requestModel.RequestItems)
         {
-            var arr = input.Split(':');
-            if (arr.Length == 2)
+            var index = item.IndexOf(':');
+            if (index > 0 && item.Length > (index + 1)
+                          && item[(index + 1)] != '='
+                          && item[..index].IsMatch(Constants.ParamNameRegex))
             {
-                var (headerName, headerValue) = (arr[0], arr[1]);
-                if (model.Headers.TryGetValue(headerName, out var values))
-                {
-                    var originalValues = values.ToArray();
-                    var newValues = new string[values.Count + 1];
-                    Array.Copy(originalValues, newValues, originalValues.Length);
-                    newValues[^1] = headerValue;
-                    model.Headers[headerName] = new StringValues(newValues);
-                }
+                var key = item[..index];
+                var value = item[(index + 1)..];
+                if (requestModel.Headers.TryGetValue(key, out var values))
+                    requestModel.Headers[key] =
+                        new StringValues(values.ToArray().Append(value).ToArray());
                 else
-                    model.Headers[headerName] = headerValue;
+                    requestModel.Headers[key] = new StringValues(value);
             }
         }
-
-        return next(model);
+        return next(requestModel);
     }
 }
