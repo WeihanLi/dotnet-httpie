@@ -17,13 +17,13 @@ public sealed class QueryStringMiddleware : IRequestMiddleware
             var index = item.IndexOf("==", StringComparison.Ordinal);
             if (index > 0 && item[..index].IsMatch(Constants.ParamNameRegex))
             {
-                var queryKey = item[..index];
-                var queryValue = item[(index + 2)..];
-                if (requestModel.Query.TryGetValue(queryKey, out var values))
-                    requestModel.Query[queryKey] =
-                        new StringValues(values.ToArray().Append(queryValue).ToArray());
+                var key = item[..index];
+                var value = item[(index + 2)..];
+                if (requestModel.Query.TryGetValue(key, out var values))
+                    requestModel.Query[key] =
+                        new StringValues(values.ToArray().Append(value).ToArray());
                 else
-                    requestModel.Query[queryKey] = new StringValues(queryValue);
+                    requestModel.Query[key] = new StringValues(value);
 
             }
         }

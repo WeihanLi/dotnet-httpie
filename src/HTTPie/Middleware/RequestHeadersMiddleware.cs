@@ -19,13 +19,13 @@ public sealed class RequestHeadersMiddleware : IRequestMiddleware
                           && item[(index + 1)] != '='
                           && item[..index].IsMatch(Constants.ParamNameRegex))
             {
-                var queryKey = item[..index];
-                var queryValue = item[(index + 1)..];
-                if (requestModel.Headers.TryGetValue(queryKey, out var values))
-                    requestModel.Headers[queryKey] =
-                        new StringValues(values.ToArray().Append(queryValue).ToArray());
+                var key = item[..index];
+                var value = item[(index + 1)..];
+                if (requestModel.Headers.TryGetValue(key, out var values))
+                    requestModel.Headers[key] =
+                        new StringValues(values.ToArray().Append(value).ToArray());
                 else
-                    requestModel.Headers[queryKey] = new StringValues(queryValue);
+                    requestModel.Headers[key] = new StringValues(value);
             }
         }
         return next(requestModel);
