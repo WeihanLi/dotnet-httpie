@@ -12,15 +12,15 @@
     <Description>dotnet httpie, a command-line HTTP client</Description>
   </PropertyGroup>
   <ItemGroup>
-    <Using Include="System.CommandLine" />
-    <Using Include="System.CommandLine.Parsing" />
+    <Using Include="System.CommandLine"/>
+    <Using Include="System.CommandLine.Parsing"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="JsonSchema.Net" />
-    <PackageReference Include="MathNet.Numerics.Signed" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
-    <PackageReference Include="System.CommandLine" />
-    <PackageReference Include="WeihanLi.Common" />
-    <PackageReference Include="WeihanLi.Npoi" />
+    <PackageReference Include="JsonSchema.Net"/>
+    <PackageReference Include="MathNet.Numerics.Signed"/>
+    <PackageReference Include="Microsoft.Extensions.Logging.Console"/>
+    <PackageReference Include="System.CommandLine"/>
+    <PackageReference Include="WeihanLi.Common"/>
+    <PackageReference Include="WeihanLi.Npoi"/>
   </ItemGroup>
 </Project>
