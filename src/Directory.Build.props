@@ -1,6 +1,5 @@
 <Project>
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))"/>
-  <Import Project="../build/sign.props"/>
   <Import Project="../build/version.props"/>
   <PropertyGroup>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
