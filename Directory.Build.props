@@ -1,22 +1,22 @@
 <Project>
-    <PropertyGroup>
-        <LangVersion>preview</LangVersion>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <PackageIcon>icon.png</PackageIcon>
-        <PackageTags>httpie http https curl rest</PackageTags>
-        <GenerateDocumentationFile>false</GenerateDocumentationFile>
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <RepositoryType>git</RepositoryType>
-        <RepositoryUrl>https://github.com/WeihanLi/dotnet-httpie</RepositoryUrl>
-        <Product>dotnet-httpie</Product>
-        <Authors>WeihanLi</Authors>
-        <Copyright>Copyright 2021-$([System.DateTime]::Now.Year) (c) WeihanLi</Copyright>
-        <NoWarn>NU1507;</NoWarn>
-    </PropertyGroup>
-    <ItemGroup>
-        <Using Include="WeihanLi.Common"/>
-        <Using Include="WeihanLi.Common.Helpers"/>
-        <Using Include="WeihanLi.Extensions"/>
-    </ItemGroup>
+  <PropertyGroup>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageTags>httpie http https curl rest</PackageTags>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/WeihanLi/dotnet-httpie</RepositoryUrl>
+    <Product>dotnet-httpie</Product>
+    <Authors>WeihanLi</Authors>
+    <Copyright>Copyright 2021-$([System.DateTime]::Now.Year) (c) WeihanLi</Copyright>
+    <NoWarn>NU1507;</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Using Include="WeihanLi.Common"/>
+    <Using Include="WeihanLi.Common.Helpers"/>
+    <Using Include="WeihanLi.Extensions"/>
+  </ItemGroup>
 </Project>
