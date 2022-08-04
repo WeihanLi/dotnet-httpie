@@ -11,10 +11,15 @@ namespace HTTPie.Middleware;
 public sealed class DownloadMiddleware : IResponseMiddleware
 {
     public static readonly Option<bool> DownloadOption = new(new[] { "-d", "--download" }, "Download file");
-    private static readonly Option<bool> ContinueOption = new(new[] { "-c", "--continue" }, "Download file using append mode");
+
+    private static readonly Option<bool> ContinueOption =
+        new(new[] { "-c", "--continue" }, "Download file using append mode");
+
     private static readonly Option<string> OutputOption = new(new[] { "-o", "--output" }, "Output file path");
     private static readonly Option<string> CheckSumOption = new(new[] { "--checksum" }, "Checksum to validate");
-    private static readonly Option<HashType> CheckSumAlgOption = new(new[] { "--checksum-alg" }, () => HashType.SHA1, "Checksum hash algorithm type");
+
+    private static readonly Option<HashType> CheckSumAlgOption =
+        new(new[] { "--checksum-alg" }, () => HashType.SHA1, "Checksum hash algorithm type");
 
     public Option[] SupportedOptions()
     {
@@ -29,6 +34,7 @@ public sealed class DownloadMiddleware : IResponseMiddleware
             await next(context);
             return;
         }
+
         var output = context.Request.ParseResult.GetValueForOption(OutputOption);
         if (string.IsNullOrWhiteSpace(output))
         {
@@ -45,6 +51,7 @@ public sealed class DownloadMiddleware : IResponseMiddleware
                 output = GetFileNameFromUrl(context.Request.Url, contentType.ToString());
             }
         }
+
         var fileName = output.GetValueOrDefault($"{DateTime.Now:yyyyMMdd-HHmmss}.tmp");
         if (context.Request.ParseResult.HasOption(ContinueOption))
         {
@@ -64,21 +71,22 @@ public sealed class DownloadMiddleware : IResponseMiddleware
             context.Response.Headers.TryAdd(Constants.ResponseCheckSumValueHeaderName, calculatedValue);
             context.Response.Headers.TryAdd(Constants.ResponseCheckSumValidHeaderName, checksumMatched.ToString());
         }
+
         await next(context);
     }
 
 
-    private static string? GetFileNameFromContentDispositionHeader(StringValues headerValues)
+    internal static string? GetFileNameFromContentDispositionHeader(StringValues headerValues)
     {
         const string filenameSeparator = "filename=";
 
-        var value = headerValues.ToString();
-        var index = value.IndexOf(filenameSeparator, StringComparison.OrdinalIgnoreCase);
-        if (index > 0 && value.Length > index + filenameSeparator.Length)
-        {
-            return value[(index + filenameSeparator.Length)..].Trim().Trim('.');
-        }
-        return null;
+        var value = headerValues.ToString().Split(new[] { ';' },
+                StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            .FirstOrDefault(x => x.StartsWith(filenameSeparator));
+        if (value is null || value.Length == filenameSeparator.Length)
+            return null;
+
+        return value[filenameSeparator.Length..].Trim('.', '"');
     }
 
     private static string GetFileNameFromUrl(string url, string responseContentType)
