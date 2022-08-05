@@ -10,7 +10,7 @@
 
 ## Intro
 
-dotnet tool version of HTTPie, Modern, user-friendly command-line HTTP client for the API era.
+dotnet tool version of [httpie](https://github.com/httpie/httpie), Modern, user-friendly command-line HTTP client for the API era.
 
 ![httpie](https://raw.githubusercontent.com/httpie/httpie/master/docs/httpie-animation.gif)
 
@@ -78,5 +78,6 @@ For detailed document: have a look at HTTPie documents <https://httpie.io/docs#e
 
 ## References
 
-- HTTPie docs: <https://httpie.io/docs>
+- httpie: <https://github.com/httpie/httpie>
+- httpie docs: <https://httpie.io/docs>
 - Curl to HTTPie request tool: <https://curlipie.now.sh/>
