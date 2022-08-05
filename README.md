@@ -21,13 +21,13 @@ HTTPie (pronounced aitch-tee-tee-pie) is a command-line HTTP client. Its goal is
 Install .NET SDK before you get started with this tool, when you had .NET SDK installed, run the command below to install the latest stable version tool
 
 ``` bash
-dotnet tool install --global dotnet-httpie
+dotnet tool update --global dotnet-httpie
 ```
 
 For latest preview version, run the following command instead:
 
 ``` bash
-dotnet tool install --global dotnet-httpie --prerelease
+dotnet tool update --global dotnet-httpie --prerelease
 ```
 
 ## GetStarted
@@ -54,7 +54,8 @@ More examples you may wanna have a look
 dotnet-http :5000/api/values
 dotnet-http localhost:5000/api/values
 dotnet-http get https://reservation.weihanli.xyz/api/notice --body
-dotnet-http post /api/notice title=test body=test-body
+dotnet-http /api/notice title=test body=test-body
+dotnet-http post http://localhost/api/notice title=test body=test-body
 ```
 
 ## Docker
