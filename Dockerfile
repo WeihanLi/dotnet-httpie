@@ -14,4 +14,5 @@ RUN dotnet publish -c Release --self-contained --use-current-runtime -p:Assembly
 
 FROM base AS final
 COPY --from=build-env /app/artifacts/http /root/.dotnet/tools/http
+RUN ln -s /root/.dotnet/tools/http /root/.dotnet/tools/dotnet-http
 ENV PATH="/root/.dotnet/tools:${PATH}"
