@@ -27,17 +27,19 @@ serviceCollection.AddLogging(builder =>
     {
         builder.AddConsole();
     }
+
     builder.SetMinimumLevel(debugEnabled ? LogLevel.Debug : LogLevel.Warning);
 });
 serviceCollection.RegisterApplicationServices();
 await using var services = serviceCollection.BuildServiceProvider();
 
 // output helps when no argument or there's only "-h"/"/h"
-if (args is not { Length: > 0 } ||
-    (args.Length == 1 && args[0] is "-h" or "/h"))
+args = args switch
 {
-    args = new[] { "--help" };
-}
+    [] => new[] { "--help" },
+    ["-h"] or ["/h"] => new[] { "--help" },
+    _ => args
+};
 if (args.Contains("--version"))
 {
     Console.WriteLine(Constants.DefaultUserAgent);

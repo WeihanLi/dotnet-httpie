@@ -68,7 +68,7 @@ public sealed class OutputFormatter : IOutputFormatter
             return outputFormat;
         }
 
-        outputFormat = OutputFormat.ResponseInfoWithTimestamp;
+        outputFormat = OutputFormat.ResponseInfo;
 
         var requestModel = httpContext.Request;
         if (requestModel.ParseResult.HasOption(QuietOption))
