@@ -18,14 +18,15 @@ public sealed class RequestDataMiddleware : IRequestMiddleware
         _httpContext = httpContext;
     }
 
-    private static readonly Option<bool> FormOption = new(new[] { "-f", "--form" }, $"The request is form data, and content type is '{Constants.FormContentType}'");
-    private static readonly Option<bool> JsonOption = new(new[] { "-j", "--json" }, $"The request body is json by default, and content type is '{Constants.JsonContentType}'");
+    private static readonly Option<bool> FormOption = new(new[] { "-f", "--form" },
+        $"The request is form data, and content type is '{Constants.FormContentType}'");
+
+    private static readonly Option<bool> JsonOption = new(new[] { "-j", "--json" },
+        $"The request body is json by default, and content type is '{Constants.JsonContentType}'");
+
     private static readonly Option<string> RawDataOption = new("--raw", $"The raw request body");
 
-    public Option[] SupportedOptions() => new Option[]
-    {
-            FormOption, JsonOption, RawDataOption
-        };
+    public Option[] SupportedOptions() => new Option[] { FormOption, JsonOption, RawDataOption };
 
     public Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
@@ -41,20 +42,18 @@ public sealed class RequestDataMiddleware : IRequestMiddleware
         {
             var dataInput = requestModel.RequestItems
                 .Where(x =>
-            {
-                var index = x.IndexOf('=');
-                if (index > 0 && x[..index].IsMatch(Constants.ParamNameRegex))
                 {
-                    return index == x.Length - 1 || x[index + 1] != '=';
-                }
-                return false;
-            })
-            .ToArray();
+                    var index = x.IndexOf('=');
+                    if (index > 0 && x[..index].IsMatch(Constants.ParamNameRegex))
+                    {
+                        return index == x.Length - 1 || x[index + 1] != '=';
+                    }
+
+                    return false;
+                })
+                .ToArray();
             if (dataInput.Length > 0)
             {
-                if (requestModel.Method == HttpMethod.Get)
-                    requestModel.Method = HttpMethod.Post;
-
                 if (isFormData)
                 {
                     requestModel.Body = string.Join("&", dataInput);
@@ -95,13 +94,10 @@ public sealed class RequestDataMiddleware : IRequestMiddleware
         if (requestModel.Body.IsNotNullOrEmpty())
         {
             requestModel.Headers[Constants.ContentTypeHeaderName] = isFormData
-                 ? new StringValues(Constants.FormContentType)
-                 : new StringValues(Constants.JsonContentType);
-            if (requestModel.Method == HttpMethod.Get)
-            {
-                requestModel.Method = HttpMethod.Post;
-            }
+                ? new StringValues(Constants.FormContentType)
+                : new StringValues(Constants.JsonContentType);
         }
+
         return next(requestModel);
     }
 }
