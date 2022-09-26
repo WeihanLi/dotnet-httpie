@@ -1,6 +1,6 @@
 FROM mcr.microsoft.com/dotnet/runtime-deps:7.0-alpine AS base
 LABEL Maintainer="WeihanLi"
-RUN apk add clang gcc lld musl-dev build-base zlib-dev
+# RUN apk add clang gcc lld musl-dev build-base zlib-dev
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS build-env
 
