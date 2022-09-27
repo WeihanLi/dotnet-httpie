@@ -17,6 +17,7 @@ public static class Constants
     public const string FormContentType = "application/x-www-form-urlencoded;charset=utf-8";
     public const string JsonContentType = "application/json;charset=utf-8";
 
+    public const string RequestMethodExistsPropertyName = "RequestMethodExists";
     public const string ResponseOutputFormatPropertyName = "OutputFormat";
     public const string ResponseListPropertyName = "ResponseList";
 
