@@ -2,6 +2,7 @@
 
 ## [0.6.1](https://nuget.org/packages/dotnet-httpie/0.6.1)
 
+- Add `net7.0` support
 - Remove timestamp by default
 - Allow get request with body
 
