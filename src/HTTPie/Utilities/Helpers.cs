@@ -13,6 +13,7 @@ using System.CommandLine.Invocation;
 using System.CommandLine.IO;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using WeihanLi.Common.Extensions;
 
 namespace HTTPie.Utilities;
 
@@ -62,7 +63,8 @@ public static class Helpers
         return serviceCollection;
     }
 
-    private static Parser ConstructCommand(this IServiceProvider serviceProvider, Func<InvocationContext, Task>? handler = null)
+    private static Parser ConstructCommand(this IServiceProvider serviceProvider,
+        Func<InvocationContext, Task>? handler = null)
     {
         var command = InitializeCommandInternal(serviceProvider, handler);
         var builder = new CommandLineBuilder(command);
@@ -90,7 +92,13 @@ public static class Helpers
                 if (!string.IsNullOrEmpty(method))
                 {
                     requestModel.Method = new HttpMethod(method);
+                    context.SetProperty(Constants.RequestMethodExistsPropertyName, true);
                 }
+                else
+                {
+                    context.SetProperty(Constants.RequestMethodExistsPropertyName, false);
+                }
+
                 // Url
                 requestModel.Url = requestModel.ParseResult.UnmatchedTokens.FirstOrDefault(x =>
                                        !x.StartsWith("-", StringComparison.Ordinal)
@@ -100,6 +108,7 @@ public static class Helpers
                 {
                     throw new InvalidOperationException("The request url can not be null");
                 }
+
                 requestModel.RequestItems = requestModel.ParseResult.UnmatchedTokens
                     .Except(new[] { method, requestModel.Url })
                     .Where(x => !x.StartsWith('-'))
@@ -111,12 +120,10 @@ public static class Helpers
         return builder.Build();
     }
 
-    private static Command InitializeCommandInternal(IServiceProvider serviceProvider, Func<InvocationContext, Task>? handler = null)
+    private static Command InitializeCommandInternal(IServiceProvider serviceProvider,
+        Func<InvocationContext, Task>? handler = null)
     {
-        var command = new RootCommand()
-        {
-            Name = "http",
-        };
+        var command = new RootCommand() { Name = "http", };
 
         // var methodArgument = new Argument<HttpMethod>("method")
         // {
@@ -140,7 +147,8 @@ public static class Helpers
                  serviceProvider
                      .GetServices<IHttpHandlerMiddleware>().SelectMany(x => x.SupportedOptions())
                      .Union(serviceProvider.GetServices<IRequestMiddleware>().SelectMany(x => x.SupportedOptions())
-                         .Union(serviceProvider.GetServices<IResponseMiddleware>().SelectMany(x => x.SupportedOptions()))
+                         .Union(serviceProvider.GetServices<IResponseMiddleware>()
+                             .SelectMany(x => x.SupportedOptions()))
                          .Union(serviceProvider.GetRequiredService<IOutputFormatter>().SupportedOptions())
                          .Union(serviceProvider.GetRequiredService<IRequestExecutor>().SupportedOptions()))
                      .Union(serviceProvider.GetRequiredService<ILoadTestExporterSelector>().SupportedOptions())
@@ -149,6 +157,7 @@ public static class Helpers
         {
             command.AddOption(option);
         }
+
         command.TreatUnmatchedTokensAsErrors = false;
 
         handler ??= async invocationContext =>
@@ -179,7 +188,7 @@ public static class Helpers
             {
                 var pipelineBuilder = PipelineBuilder.CreateAsync<HttpRequestModel>();
                 foreach (var middleware in
-                    sp.GetServices<IRequestMiddleware>())
+                         sp.GetServices<IRequestMiddleware>())
                     pipelineBuilder.Use(middleware.Invoke);
                 return pipelineBuilder.Build();
             })
@@ -188,7 +197,7 @@ public static class Helpers
             {
                 var pipelineBuilder = PipelineBuilder.CreateAsync<HttpContext>();
                 foreach (var middleware in
-                    sp.GetServices<IResponseMiddleware>())
+                         sp.GetServices<IResponseMiddleware>())
                     pipelineBuilder.Use(middleware.Invoke);
                 return pipelineBuilder.Build();
             })
@@ -224,9 +233,9 @@ public static class Helpers
             ;
         // ResponseMiddleware
         return serviceCollection
-            .AddResponseMiddleware<DefaultResponseMiddleware>()
-            .AddResponseMiddleware<DownloadMiddleware>()
-            .AddResponseMiddleware<JsonSchemaValidationMiddleware>()
+                .AddResponseMiddleware<DefaultResponseMiddleware>()
+                .AddResponseMiddleware<DownloadMiddleware>()
+                .AddResponseMiddleware<JsonSchemaValidationMiddleware>()
             ;
     }
 
@@ -236,7 +245,8 @@ public static class Helpers
         return await commandParser.InvokeAsync(args);
     }
 
-    public static async Task<int> Handle(this IServiceProvider services, string commandLine, Func<InvocationContext, Task>? handler = null)
+    public static async Task<int> Handle(this IServiceProvider services, string commandLine,
+        Func<InvocationContext, Task>? handler = null)
     {
         var commandParser = services.ConstructCommand(handler);
         return await commandParser.InvokeAsync(commandLine);

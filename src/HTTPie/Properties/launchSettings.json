@@ -4,13 +4,17 @@
       "commandName": "Project",
       "commandLineArgs": "--help"
     },
-    "HTTPie": {
+    "HTTPie-raw-json": {
       "commandName": "Project",
       "commandLineArgs": "-v --schema=https httpbin.org/post test==hello Api-Version:1.2 --raw={\\\"Id\\\":1,\\\"Name\\\":\\\"Alice\\\"} --debug"
     },
+    "HTTPie-get-with-body": {
+      "commandName": "Project",
+      "commandLineArgs": "get -v https://httpbin.org/get test==hello Api-Version:1.2 hello=world --debug"
+    },
     "HTTPie-pretty-test": {
       "commandName": "Project",
-      "commandLineArgs": "-v --schema=https reservation.weihanli.xyz/api/notice --pretty=none --debug"
+      "commandLineArgs": "--schema=https reservation.weihanli.xyz/api/notice --pretty=none --debug"
     },
     "HTTPie-load-test-iteration": {
       "commandName": "Project",

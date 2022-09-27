@@ -6,6 +6,7 @@ using HTTPie.Models;
 using HTTPie.Utilities;
 using Microsoft.Extensions.Primitives;
 using System.Text;
+using WeihanLi.Common.Extensions;
 
 namespace HTTPie.Middleware;
 
@@ -96,6 +97,12 @@ public sealed class RequestDataMiddleware : IRequestMiddleware
             requestModel.Headers[Constants.ContentTypeHeaderName] = isFormData
                 ? new StringValues(Constants.FormContentType)
                 : new StringValues(Constants.JsonContentType);
+
+            var requestMethodExists = _httpContext.GetProperty<bool>(Constants.RequestMethodExistsPropertyName);
+            if (!requestMethodExists)
+            {
+                requestModel.Method = HttpMethod.Post;
+            }
         }
 
         return next(requestModel);
