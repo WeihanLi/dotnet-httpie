@@ -12,8 +12,9 @@ public sealed class RequestHeadersMiddleware : IRequestMiddleware
 {
     public Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
-        foreach (var item in requestModel.RequestItems)
+        for (var i = requestModel.RequestItems.Count - 1; i >= 0; i--)
         {
+            var item = requestModel.RequestItems[i];
             var index = item.IndexOf(':');
             if (index > 0 && item.Length > (index + 1)
                           && item[(index + 1)] != '='
@@ -26,8 +27,11 @@ public sealed class RequestHeadersMiddleware : IRequestMiddleware
                         new StringValues(values.ToArray().Append(value).ToArray());
                 else
                     requestModel.Headers[key] = new StringValues(value);
+
+                requestModel.RequestItems.RemoveAt(i);
             }
         }
+
         return next(requestModel);
     }
 }

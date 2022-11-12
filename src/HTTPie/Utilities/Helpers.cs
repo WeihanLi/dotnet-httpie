@@ -112,7 +112,7 @@ public static class Helpers
                 requestModel.RequestItems = requestModel.ParseResult.UnmatchedTokens
                     .Except(new[] { method, requestModel.Url })
                     .Where(x => !x.StartsWith('-'))
-                    .ToArray();
+                    .ToList();
 
                 await next(invocationContext);
             })

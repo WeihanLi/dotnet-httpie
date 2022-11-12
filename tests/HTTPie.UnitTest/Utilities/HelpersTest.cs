@@ -34,7 +34,7 @@ public class HelpersTest
         var httpContext = services.GetRequiredService<HttpContext>();
         httpContext.Request.Url.Should().Be("reservation.weihanli.xyz/health");
         httpContext.Request.RequestItems.Should().NotBeEmpty();
-        httpContext.Request.RequestItems.Length.Should().Be(4);
+        httpContext.Request.RequestItems.Count.Should().Be(4);
     }
 
     [Theory(Skip = "https://github.com/dotnet/command-line-api/issues/1755")]
