@@ -112,7 +112,7 @@ public static class Helpers
                 requestModel.RequestItems = requestModel.ParseResult.UnmatchedTokens
                     .Except(new[] { method, requestModel.Url })
                     .Where(x => !x.StartsWith('-'))
-                    .ToArray();
+                    .ToList();
 
                 await next(invocationContext);
             })
@@ -239,12 +239,17 @@ public static class Helpers
             ;
     }
 
+#if NET7_0_OR_GREATER
+    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("Using Microsoft.Extensions.DependencyInjection requires generating code dynamically at runtime. For example, when using enumerable and generic ValueType services.")]
+# endif
     public static async Task<int> Handle(this IServiceProvider services, string[] args)
     {
         var commandParser = services.ConstructCommand();
         return await commandParser.InvokeAsync(args);
     }
-
+#if NET7_0_OR_GREATER
+    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("Using Microsoft.Extensions.DependencyInjection requires generating code dynamically at runtime. For example, when using enumerable and generic ValueType services.")]
+# endif
     public static async Task<int> Handle(this IServiceProvider services, string commandLine,
         Func<InvocationContext, Task>? handler = null)
     {

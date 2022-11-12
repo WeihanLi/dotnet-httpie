@@ -22,7 +22,7 @@ public sealed class HttpRequestModel
     public IDictionary<string, StringValues> Query { get; set; } = new Dictionary<string, StringValues>();
     public string? Body { get; set; }
 
-    public string[] RequestItems { get; set; } = Array.Empty<string>();
+    public List<string> RequestItems { get; set; } = new();
     public DateTimeOffset Timestamp { get; set; }
 
     [Newtonsoft.Json.JsonIgnore]

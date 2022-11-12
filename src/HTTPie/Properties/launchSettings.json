@@ -55,6 +55,10 @@
     "HTTPie-download-with-checksum-alg": {
       "commandName": "Project",
       "commandLineArgs": "-v https://www.nuget.org/profiles/weihanli/avatar?imageSize=512 -d --checksum 1234 --checksum-alg=md5"
+    },
+    "dotnet-httpie-issue-58": {
+      "commandName": "Project",
+      "commandLineArgs": "https://auth.docker.io/token X-Docker-Token:true service==registry.docker.io scope==\"repository:weihanli/mdnice:pull\" -v"
     }
   }
 }
