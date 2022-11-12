@@ -239,12 +239,14 @@ public static class Helpers
             ;
     }
 
+    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("Using Microsoft.Extensions.DependencyInjection requires generating code dynamically at runtime. For example, when using enumerable and generic ValueType services.")]
     public static async Task<int> Handle(this IServiceProvider services, string[] args)
     {
         var commandParser = services.ConstructCommand();
         return await commandParser.InvokeAsync(args);
     }
 
+    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("Using Microsoft.Extensions.DependencyInjection requires generating code dynamically at runtime. For example, when using enumerable and generic ValueType services.")]
     public static async Task<int> Handle(this IServiceProvider services, string commandLine,
         Func<InvocationContext, Task>? handler = null)
     {
