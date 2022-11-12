@@ -12,7 +12,7 @@ COPY ./Directory.Build.props ./
 COPY ./Directory.Build.targets ./
 COPY ./Directory.Packages.props ./
 WORKDIR /app/src/HTTPie/
-RUN dotnet publish -f net7.0 -c Release --use-current-runtime --sc -p:AssemblyName=http -p:TargetFrameworks=net7.0 -o /app/artifacts
+RUN dotnet publish -f net7.0 -c Release --use-current-runtime --sc -p:PublishSingleFile=true -p:PublishTrimmed=true -p:EnableCompressionInSingleFile=true -p:AssemblyName=http -p:TargetFrameworks=net7.0 -o /app/artifacts
 
 FROM base AS final
 COPY --from=build-env /app/artifacts/http /root/.dotnet/tools/http
