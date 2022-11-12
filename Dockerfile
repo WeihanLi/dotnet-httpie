@@ -2,8 +2,9 @@ FROM mcr.microsoft.com/dotnet/runtime-deps:7.0-alpine AS base
 LABEL Maintainer="WeihanLi"
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS build-env
+
 # Install NativeAOT build prerequisites 
-RUN apk update && apk add clang gcc lld musl-dev build-base zlib-dev
+# RUN apk update && apk add clang gcc lld musl-dev build-base zlib-dev
 
 WORKDIR /app
 COPY ./src/ ./src/
