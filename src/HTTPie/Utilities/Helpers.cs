@@ -1,4 +1,4 @@
-﻿// Copyright (c) Weihan Li. All rights reserved.
+﻿// Copyright (c) Weihan Li.All rights reserved.
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
@@ -9,15 +9,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using System.CommandLine.Builder;
+using System.CommandLine.Invocation;
 using System.CommandLine.IO;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using WeihanLi.Common.Extensions;
 
 namespace HTTPie.Utilities;
 
 public static class Helpers
 {
-    private static readonly HashSet<string> HttpMethods = new(StringComparer.OrdinalIgnoreCase)
+    internal static readonly HashSet<string> HttpMethods = new(StringComparer.OrdinalIgnoreCase)
     {
         HttpMethod.Head.Method,
         HttpMethod.Get.Method,
@@ -33,8 +35,6 @@ public static class Helpers
         WriteIndented = true,
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
-
-    private static readonly HashSet<Option> SupportedOptions = new();
 
     private static IServiceCollection AddHttpHandlerMiddleware<THttpHandlerMiddleware>(
         this IServiceCollection serviceCollection)
@@ -63,95 +63,131 @@ public static class Helpers
         return serviceCollection;
     }
 
-    public static void InitializeSupportOptions(IServiceProvider serviceProvider)
+    private static Parser ConstructCommand(this IServiceProvider serviceProvider,
+        Func<InvocationContext, Task>? handler = null)
     {
-        if (SupportedOptions.Count == 0)
-        {
-            foreach (var option in
-                serviceProvider
-                    .GetServices<IHttpHandlerMiddleware>().SelectMany(x => x.SupportedOptions())
-                    .Union(serviceProvider.GetServices<IRequestMiddleware>().SelectMany(x => x.SupportedOptions())
-                    .Union(serviceProvider.GetServices<IResponseMiddleware>().SelectMany(x => x.SupportedOptions()))
-                    .Union(serviceProvider.GetRequiredService<IOutputFormatter>().SupportedOptions())
-                    .Union(serviceProvider.GetRequiredService<IRequestExecutor>().SupportedOptions()))
-                    .Union(serviceProvider.GetRequiredService<ILoadTestExporterSelector>().SupportedOptions())
-                    .Union(serviceProvider.GetServices<ILoadTestExporter>().SelectMany(x => x.SupportedOptions()))
-                    )
-            {
-                SupportedOptions.Add(option);
-            }
-        }
-        var command = InitializeCommand();
+        var command = InitializeCommandInternal(serviceProvider, handler);
         var builder = new CommandLineBuilder(command);
-        builder.UseDefaults();
-        _commandParser = builder.Build();
+        // builder.UseDefaults();
+        builder
+            .UseHelp("--help", "-?", "/?")
+            .UseEnvironmentVariableDirective()
+            .UseParseDirective()
+            .UseSuggestDirective()
+            .RegisterWithDotnetSuggest()
+            .UseTypoCorrections()
+            .UseParseErrorReporting()
+            .UseExceptionHandler()
+            .CancelOnProcessTermination()
+            .AddMiddleware(async (invocationContext, next) =>
+            {
+                var context = serviceProvider.GetRequiredService<HttpContext>();
+                context.InvocationContext = invocationContext;
+
+                var requestModel = context.Request;
+                requestModel.ParseResult = invocationContext.ParseResult;
+
+                var method = requestModel.ParseResult.UnmatchedTokens
+                    .FirstOrDefault(x => HttpMethods.Contains(x), string.Empty);
+                if (!string.IsNullOrEmpty(method))
+                {
+                    requestModel.Method = new HttpMethod(method);
+                    context.SetProperty(Constants.RequestMethodExistsPropertyName, true);
+                }
+                else
+                {
+                    context.SetProperty(Constants.RequestMethodExistsPropertyName, false);
+                }
+
+                // Url
+                requestModel.Url = requestModel.ParseResult.UnmatchedTokens.FirstOrDefault(x =>
+                                       !x.StartsWith("-", StringComparison.Ordinal)
+                                       && !HttpMethods.Contains(x))
+                                   ?? string.Empty;
+                if (string.IsNullOrEmpty(requestModel.Url))
+                {
+                    throw new InvalidOperationException("The request url can not be null");
+                }
+
+                await serviceProvider.GetRequiredService<IRequestItemParser>()
+                    .ParseAsync(requestModel);
+
+                await next(invocationContext);
+            })
+            ;
+        return builder.Build();
     }
 
-    private static Parser _commandParser = null!;
-
-    private static Command InitializeCommand()
+    private static Command InitializeCommandInternal(IServiceProvider serviceProvider,
+        Func<InvocationContext, Task>? handler = null)
     {
-        var command = new RootCommand()
-        {
-            Name = "http",
-        };
-        //var methodArgument = new Argument<HttpMethod>("method")
-        //{
-        //    Description = "Request method",
-        //    Arity = ArgumentArity.ZeroOrOne,
-        //};
-        //methodArgument.SetDefaultValue(HttpMethod.Get.Method);
-        //var allowedMethods = HttpMethods.ToArray();
-        //methodArgument.AddSuggestions(allowedMethods);
+        var command = new RootCommand() { Name = "http", };
 
-        //command.AddArgument(methodArgument);
-        //var urlArgument = new Argument<string>("url")
-        //{
-        //    Description = "Request url",
-        //    Arity = ArgumentArity.ExactlyOne
-        //};
-        //command.AddArgument(urlArgument);
+        // var methodArgument = new Argument<HttpMethod>("method")
+        // {
+        //     Description = "Request method",
+        //     Arity = ArgumentArity.ZeroOrOne,
+        // };
+        // methodArgument.SetDefaultValue(HttpMethod.Get.Method);
+        // var allowedMethods = HttpMethods.ToArray();
+        // methodArgument.AddCompletions(allowedMethods);
+        // command.AddArgument(methodArgument);
 
-        foreach (var option in SupportedOptions)
+        // var urlArgument = new Argument<string>("url")
+        // {
+        //     Description = "Request url",
+        //     Arity = ArgumentArity.ExactlyOne
+        // };
+        // command.AddArgument(urlArgument);
+
+        // options
+        foreach (var option in
+                 serviceProvider
+                     .GetServices<IHttpHandlerMiddleware>().SelectMany(x => x.SupportedOptions())
+                     .Union(serviceProvider.GetServices<IRequestMiddleware>().SelectMany(x => x.SupportedOptions())
+                         .Union(serviceProvider.GetServices<IResponseMiddleware>()
+                             .SelectMany(x => x.SupportedOptions()))
+                         .Union(serviceProvider.GetRequiredService<IOutputFormatter>().SupportedOptions())
+                         .Union(serviceProvider.GetRequiredService<IRequestExecutor>().SupportedOptions()))
+                     .Union(serviceProvider.GetRequiredService<ILoadTestExporterSelector>().SupportedOptions())
+                     .Union(serviceProvider.GetServices<ILoadTestExporter>().SelectMany(x => x.SupportedOptions()))
+                )
         {
             command.AddOption(option);
         }
-        command.SetHandler(async (ParseResult _, IConsole console) =>
-        {
-            try
-            {
-                var context = DependencyResolver.ResolveRequiredService<HttpContext>();
-                await DependencyResolver.ResolveRequiredService<IRequestExecutor>()
-                    .ExecuteAsync(context);
-                var output = await DependencyResolver.ResolveRequiredService<IOutputFormatter>()
-                    .GetOutput(context);
-                console.Out.WriteLine(output.Trim());
-            }
-            catch (Exception e)
-            {
-                console.Error.WriteLine($"Unhandled exception: {e}");
-            }
-        });
+
         command.TreatUnmatchedTokensAsErrors = false;
+
+        handler ??= async invocationContext =>
+        {
+            var context = serviceProvider.ResolveRequiredService<HttpContext>();
+            await serviceProvider.ResolveRequiredService<IRequestExecutor>()
+                .ExecuteAsync(context);
+            var output = await serviceProvider.ResolveRequiredService<IOutputFormatter>()
+                .GetOutput(context);
+            invocationContext.Console.Out.WriteLine(output.Trim());
+        };
+        command.SetHandler(handler);
         return command;
     }
 
-    // ReSharper disable once InconsistentNaming
-    public static IServiceCollection RegisterHTTPieServices(this IServiceCollection serviceCollection)
+    public static IServiceCollection RegisterApplicationServices(this IServiceCollection serviceCollection)
     {
         serviceCollection
+            .AddSingleton<IRequestItemParser, RequestItemParser>()
             .AddSingleton<IRequestExecutor, RequestExecutor>()
             .AddSingleton<IRequestMapper, RequestMapper>()
             .AddSingleton<IResponseMapper, ResponseMapper>()
             .AddSingleton<IOutputFormatter, OutputFormatter>()
             .AddSingleton<ILoadTestExporterSelector, LoadTestExporterSelector>()
             .AddSingleton<ILoadTestExporter, JsonLoadTestExporter>()
+            .AddSingleton<ILoadTestExporter, CsvLoadTestExporter>()
             // request pipeline
             .AddSingleton(sp =>
             {
                 var pipelineBuilder = PipelineBuilder.CreateAsync<HttpRequestModel>();
                 foreach (var middleware in
-                    sp.GetServices<IRequestMiddleware>())
+                         sp.GetServices<IRequestMiddleware>())
                     pipelineBuilder.Use(middleware.Invoke);
                 return pipelineBuilder.Build();
             })
@@ -160,7 +196,7 @@ public static class Helpers
             {
                 var pipelineBuilder = PipelineBuilder.CreateAsync<HttpContext>();
                 foreach (var middleware in
-                    sp.GetServices<IResponseMiddleware>())
+                         sp.GetServices<IResponseMiddleware>())
                     pipelineBuilder.Use(middleware.Invoke);
                 return pipelineBuilder.Build();
             })
@@ -183,6 +219,7 @@ public static class Helpers
         serviceCollection
             .AddHttpHandlerMiddleware<FollowRedirectMiddleware>()
             .AddHttpHandlerMiddleware<HttpSslMiddleware>()
+            .AddHttpHandlerMiddleware<ProxyMiddleware>()
             ;
         // RequestMiddleware
         serviceCollection
@@ -191,61 +228,31 @@ public static class Helpers
             .AddRequestMiddleware<RequestDataMiddleware>()
             .AddRequestMiddleware<DefaultRequestMiddleware>()
             .AddRequestMiddleware<AuthorizationMiddleware>()
+            .AddRequestMiddleware<RequestCacheMiddleware>()
             ;
         // ResponseMiddleware
         return serviceCollection
-            .AddResponseMiddleware<DefaultResponseMiddleware>()
-            .AddResponseMiddleware<DownloadMiddleware>()
-            .AddResponseMiddleware<JsonSchemaValidationMiddleware>()
+                .AddResponseMiddleware<DefaultResponseMiddleware>()
+                .AddResponseMiddleware<DownloadMiddleware>()
+                .AddResponseMiddleware<JsonSchemaValidationMiddleware>()
             ;
     }
 
-    public static void InitRequestModel(HttpContext httpContext, string commandLine)
-        => InitRequestModel(httpContext, CommandLineStringSplitter.Instance.Split(commandLine).ToArray());
-
-    public static void InitRequestModel(HttpContext httpContext, string[] args)
-    {
-        if (args.Contains("--help"))
-        {
-            return;
-        }
-        var requestModel = httpContext.Request;
-        requestModel.ParseResult = _commandParser.Parse(args);
-
-        var method = requestModel.ParseResult.UnmatchedTokens.FirstOrDefault(x => HttpMethods.Contains(x));
-        if (!string.IsNullOrEmpty(method))
-        {
-            requestModel.Method = new HttpMethod(method);
-        }
-        // Url
-        requestModel.Url = requestModel.ParseResult.UnmatchedTokens.FirstOrDefault(x =>
-              !x.StartsWith("-", StringComparison.Ordinal)
-              && !HttpMethods.Contains(x))
-            ?? string.Empty;
-        if (string.IsNullOrEmpty(requestModel.Url))
-        {
-            throw new InvalidOperationException("The request url can not be null");
-        }
-        requestModel.Options = args
-            .Where(x => x.StartsWith('-'))
-            .ToArray();
-#nullable disable
-        requestModel.RequestItems = requestModel.ParseResult.UnmatchedTokens
-            .Except(new[] { method, requestModel.Url })
-            .Where(x => !x.StartsWith('-'))
-            .ToArray();
-#nullable restore
-    }
-
+#if NET7_0_OR_GREATER
+    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("Using Microsoft.Extensions.DependencyInjection requires generating code dynamically at runtime. For example, when using enumerable and generic ValueType services.")]
+# endif
     public static async Task<int> Handle(this IServiceProvider services, string[] args)
     {
-        InitRequestModel(services.GetRequiredService<HttpContext>(), args);
-        return await _commandParser.InvokeAsync(args);
+        var commandParser = services.ConstructCommand();
+        return await commandParser.InvokeAsync(args);
     }
-
-    public static async Task<int> Handle(this IServiceProvider services, string commandLine)
+#if NET7_0_OR_GREATER
+    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("Using Microsoft.Extensions.DependencyInjection requires generating code dynamically at runtime. For example, when using enumerable and generic ValueType services.")]
+# endif
+    public static async Task<int> Handle(this IServiceProvider services, string commandLine,
+        Func<InvocationContext, Task>? handler = null)
     {
-        InitRequestModel(services.GetRequiredService<HttpContext>(), commandLine);
-        return await _commandParser.InvokeAsync(commandLine);
+        var commandParser = services.ConstructCommand(handler);
+        return await commandParser.InvokeAsync(commandLine);
     }
 }

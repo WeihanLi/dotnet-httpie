@@ -1,4 +1,4 @@
-﻿// Copyright (c) Weihan Li. All rights reserved.
+﻿// Copyright (c) Weihan Li.All rights reserved.
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
@@ -17,10 +17,8 @@ public abstract class HttpTestBase : IDisposable
     {
         Services = new ServiceCollection()
             .AddLogging()
-            .RegisterHTTPieServices()
+            .RegisterApplicationServices()
             .BuildServiceProvider();
-        DependencyResolver.SetDependencyResolver(Services);
-        Helpers.InitializeSupportOptions(Services);
     }
 
     protected IServiceProvider Services { get; }
@@ -42,12 +40,7 @@ public abstract class HttpTestBase : IDisposable
 
     protected async Task<int> Handle(string input)
     {
-        return await Helpers.Handle(Services, input);
-    }
-
-    protected async Task<int> Handle(string[] args)
-    {
-        return await Services.Handle(args);
+        return await Services.Handle(input);
     }
 
     protected async Task<string> GetOutput(string input)

@@ -1,30 +1,37 @@
-﻿// Copyright (c) Weihan Li. All rights reserved.
+﻿// Copyright (c) Weihan Li.All rights reserved.
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
 using HTTPie.Models;
+using HTTPie.Utilities;
 using Microsoft.Extensions.Primitives;
 
 namespace HTTPie.Middleware;
 
-public class RequestHeadersMiddleware : IRequestMiddleware
+public sealed class RequestHeadersMiddleware : IRequestMiddleware
 {
-    public Task Invoke(HttpRequestModel model, Func<Task> next)
+    public Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
-        foreach (var input in model.RequestItems
-            .Where(x => x.IndexOf(':') > 0
-              && x.IndexOf(":=", StringComparison.OrdinalIgnoreCase) < 0))
+        for (var i = requestModel.RequestItems.Count - 1; i >= 0; i--)
         {
-            var arr = input.Split(':');
-            if (arr.Length == 2)
+            var item = requestModel.RequestItems[i];
+            var index = item.IndexOf(':');
+            if (index > 0 && item.Length > (index + 1)
+                          && item[(index + 1)] != '='
+                          && item[..index].IsMatch(Constants.ParamNameRegex))
             {
-                if (model.Headers.TryGetValue(arr[0], out var values))
-                    model.Headers[arr[0]] = new StringValues(values.ToArray().Union(new[] { arr[1] }).ToArray());
+                var key = item[..index];
+                var value = item[(index + 1)..].Trim();
+                if (requestModel.Headers.TryGetValue(key, out var values))
+                    requestModel.Headers[key] =
+                        new StringValues(values.ToArray().Append(value).ToArray());
                 else
-                    model.Headers[arr[0]] = arr[1];
+                    requestModel.Headers[key] = new StringValues(value);
+
+                requestModel.RequestItems.RemoveAt(i);
             }
         }
 
-        return next();
+        return next(requestModel);
     }
 }

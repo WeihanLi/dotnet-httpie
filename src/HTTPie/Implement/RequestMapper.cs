@@ -1,4 +1,4 @@
-﻿// Copyright (c) Weihan Li. All rights reserved.
+﻿// Copyright (c) Weihan Li.All rights reserved.
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
@@ -9,7 +9,7 @@ using System.Text;
 
 namespace HTTPie.Implement;
 
-public class RequestMapper : IRequestMapper
+public sealed class RequestMapper : IRequestMapper
 {
     public Task<HttpRequestMessage> ToRequestMessage(HttpContext httpContext)
     {

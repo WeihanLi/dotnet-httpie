@@ -1,4 +1,4 @@
-﻿// Copyright (c) Weihan Li. All rights reserved.
+﻿// Copyright (c) Weihan Li.All rights reserved.
 // Licensed under the MIT license.
 
 using HTTPie.Utilities;
@@ -27,16 +27,19 @@ serviceCollection.AddLogging(builder =>
     {
         builder.AddConsole();
     }
+
     builder.SetMinimumLevel(debugEnabled ? LogLevel.Debug : LogLevel.Warning);
 });
-serviceCollection.RegisterHTTPieServices();
+serviceCollection.RegisterApplicationServices();
 await using var services = serviceCollection.BuildServiceProvider();
-DependencyResolver.SetDependencyResolver(services);
-Helpers.InitializeSupportOptions(services);
-if (args is not { Length: > 0 })
+
+// output helps when no argument or there's only "-h"/"/h"
+args = args switch
 {
-    args = new[] { "--help" };
-}
+    [] => new[] { "--help" },
+    ["-h"] or ["/h"] => new[] { "--help" },
+    _ => args
+};
 if (args.Contains("--version"))
 {
     Console.WriteLine(Constants.DefaultUserAgent);
@@ -45,13 +48,4 @@ if (args.Contains("--version"))
 
 var logger = services.GetRequiredService<ILogger>();
 logger.PrintInputParameters(args.StringJoin(";"));
-try
-{
-    return await services.Handle(args);
-}
-catch (Exception e)
-{
-    logger.InvokeRequestException(e);
-    return -1;
-}
-
+return await services.Handle(args);

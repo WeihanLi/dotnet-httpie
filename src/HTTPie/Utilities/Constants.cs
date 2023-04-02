@@ -1,11 +1,14 @@
-﻿// Copyright (c) Weihan Li. All rights reserved.
+﻿// Copyright (c) Weihan Li.All rights reserved.
 // Licensed under the MIT license.
 
 namespace HTTPie.Utilities;
 
 public static class Constants
 {
-    public const string ApplicationName = "dotnet-HTTPie";
+    public const string ApplicationName = "dotnet-httpie";
+
+    public const string ParamNameRegex = @"[\w_\-]+";
+
     public const string PlainTextMediaType = "plain/text";
     public const string JsonMediaType = "application/json";
 
@@ -14,6 +17,7 @@ public static class Constants
     public const string FormContentType = "application/x-www-form-urlencoded;charset=utf-8";
     public const string JsonContentType = "application/json;charset=utf-8";
 
+    public const string RequestMethodExistsPropertyName = "RequestMethodExists";
     public const string ResponseOutputFormatPropertyName = "OutputFormat";
     public const string ResponseListPropertyName = "ResponseList";
 
@@ -22,6 +26,9 @@ public static class Constants
     public const string RequestTimestampHeaderName = $"X-{ApplicationName}-RequestTimestamp";
     public const string ResponseTimestampHeaderName = $"X-{ApplicationName}-ResponseTimestamp";
     public const string RequestDurationHeaderName = $"X-{ApplicationName}-Duration";
+
+    public const string ResponseCheckSumValueHeaderName = $"X-{ApplicationName}-CheckSum-Value";
+    public const string ResponseCheckSumValidHeaderName = $"X-{ApplicationName}-CheckSum-Valid";
 
 #pragma warning disable 8602
     private static readonly string AppVersion = typeof(Constants).Assembly.GetName().Version.ToString(3);

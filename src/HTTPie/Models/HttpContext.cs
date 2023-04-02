@@ -1,11 +1,13 @@
-﻿// Copyright (c) Weihan Li. All rights reserved.
+﻿// Copyright (c) Weihan Li.All rights reserved.
 // Licensed under the MIT license.
 
+using Newtonsoft.Json;
+using System.CommandLine.Invocation;
 using WeihanLi.Common.Abstractions;
 
 namespace HTTPie.Models;
 
-public class HttpContext : IProperties
+public sealed class HttpContext : IProperties
 {
     private readonly Dictionary<string, bool> _featureFlags = new();
 
@@ -21,6 +23,15 @@ public class HttpContext : IProperties
 
     public HttpRequestModel Request { get; }
     public HttpResponseModel Response { get; set; }
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    [JsonIgnore]
+    public CancellationToken CancellationToken => InvocationContext.GetCancellationToken();
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    [JsonIgnore]
+    public InvocationContext InvocationContext { get; set; } = null!;
+
     public IDictionary<string, object?> Properties { get; } = new Dictionary<string, object?>();
 
     public void UpdateFlag(string flagName, bool value)

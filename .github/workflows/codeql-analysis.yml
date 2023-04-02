@@ -13,10 +13,10 @@ name: "code-ql analysis"
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [ dev ]
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ main, dev ]
+    branches: [ dev ]
   schedule:
     - cron: '20 7 * * *'
 
@@ -38,11 +38,11 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
+      uses: github/codeql-action/init@v2
       with:
         languages: ${{ matrix.language }}
         # If you wish to specify custom queries, you can do so here or in a config file.
@@ -50,10 +50,15 @@ jobs:
         # Prefix the list here with "+" to use these queries and those in the config file.
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
-    - name: Setup .NET 6.0
-      uses: actions/setup-dotnet@v1
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: |
+          6.0.x
+          7.0.x
+        include-prerelease: true
+    - name: dotnet info
+      run: dotnet --info
 
     - name: Install dependencies
       run: dotnet restore
@@ -62,4 +67,4 @@ jobs:
       run: |
         dotnet build ./dotnet-httpie.sln -c Release
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v1
+      uses: github/codeql-action/analyze@v2

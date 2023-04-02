@@ -1,4 +1,4 @@
-﻿// Copyright (c) Weihan Li. All rights reserved.
+﻿// Copyright (c) Weihan Li.All rights reserved.
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace HTTPie.Middleware;
 
-public class DefaultRequestMiddleware : IRequestMiddleware
+public sealed class DefaultRequestMiddleware : IRequestMiddleware
 {
     private readonly ILogger _logger;
 
@@ -17,18 +17,13 @@ public class DefaultRequestMiddleware : IRequestMiddleware
         _logger = logger;
     }
 
-    private static readonly Option DebugOption = new("--debug", "Enable debug mode, output debug log");
+    private static readonly Option<bool> DebugOption = new("--debug", "Enable debug mode, output debug log");
     private static readonly Option<string> SchemaOption = new("--schema", "The HTTP request schema");
     private static readonly Option<Version> HttpVersionOption = new("--httpVersion", "The HTTP request HTTP version");
 
-    public ICollection<Option> SupportedOptions() => new HashSet<Option>()
-        {
-            DebugOption,
-            SchemaOption,
-            HttpVersionOption,
-        };
+    public Option[] SupportedOptions() => new Option[] { DebugOption, SchemaOption, HttpVersionOption, };
 
-    public async Task Invoke(HttpRequestModel requestModel, Func<Task> next)
+    public Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
         var schema = requestModel.ParseResult.GetValueForOption(SchemaOption);
         if (!string.IsNullOrEmpty(schema)) requestModel.Schema = schema;
@@ -42,6 +37,7 @@ public class DefaultRequestMiddleware : IRequestMiddleware
             if (requestModel.Url.StartsWith(":/")) requestModel.Url = $"localhost{requestModel.Url[1..]}";
             if (requestModel.Url.StartsWith(':')) requestModel.Url = $"localhost{requestModel.Url}";
         }
+
         if (requestModel.Url.IndexOf("://", StringComparison.Ordinal) < 0)
             requestModel.Url = $"{requestModel.Schema}://{requestModel.Url}";
         if (requestModel.Url.StartsWith("://", StringComparison.Ordinal))
@@ -66,6 +62,7 @@ public class DefaultRequestMiddleware : IRequestMiddleware
         }
 
         requestModel.Headers.TryAdd("User-Agent", Constants.DefaultUserAgent);
-        await next();
+
+        return next(requestModel);
     }
 }

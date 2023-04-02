@@ -1,4 +1,4 @@
-﻿// Copyright (c) Weihan Li. All rights reserved.
+﻿// Copyright (c) Weihan Li.All rights reserved.
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
@@ -10,7 +10,7 @@ using OutputFormat = Json.Schema.OutputFormat;
 
 namespace HTTPie.Middleware;
 
-public class JsonSchemaValidationMiddleware : IResponseMiddleware
+public sealed class JsonSchemaValidationMiddleware : IResponseMiddleware
 {
     private readonly ILogger<JsonSchemaValidationMiddleware> _logger;
     private const string JsonSchemaValidationResultHeader = "X-JsonSchema-ValidationResult";
@@ -27,16 +27,17 @@ public class JsonSchemaValidationMiddleware : IResponseMiddleware
         _logger = logger;
     }
 
-    public ICollection<Option> SupportedOptions()
+    public Option[] SupportedOptions()
     {
         return new Option[] { JsonSchemaPathOption, JsonSchemaValidationOutputFormatOption };
     }
 
-    public async Task Invoke(HttpContext context, Func<Task> next)
+    public async Task Invoke(HttpContext context, Func<HttpContext, Task> next)
     {
         var schemaPath = context.Request.ParseResult.GetValueForOption(JsonSchemaPathOption)?.Trim();
         if (string.IsNullOrEmpty(schemaPath))
         {
+            await next(context);
             return;
         }
 
@@ -78,5 +79,7 @@ public class JsonSchemaValidationMiddleware : IResponseMiddleware
             }
         }
         context.Response.Headers.TryAdd(JsonSchemaValidationResultHeader, validationResultMessage);
+
+        await next(context);
     }
 }

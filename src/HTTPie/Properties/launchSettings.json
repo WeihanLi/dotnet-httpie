@@ -1,12 +1,20 @@
 {
   "profiles": {
-    "HTTPie": {
+    "HTTPie-help": {
+      "commandName": "Project",
+      "commandLineArgs": "--help"
+    },
+    "HTTPie-raw-json": {
       "commandName": "Project",
       "commandLineArgs": "-v --schema=https httpbin.org/post test==hello Api-Version:1.2 --raw={\\\"Id\\\":1,\\\"Name\\\":\\\"Alice\\\"} --debug"
     },
+    "HTTPie-get-with-body": {
+      "commandName": "Project",
+      "commandLineArgs": "get -v https://httpbin.org/get test==hello Api-Version:1.2 hello=world --debug"
+    },
     "HTTPie-pretty-test": {
       "commandName": "Project",
-      "commandLineArgs": "-v --schema=https reservation.weihanli.xyz/api/notice --pretty=none --debug"
+      "commandLineArgs": "--schema=https reservation.weihanli.xyz/api/notice --pretty=none --debug"
     },
     "HTTPie-load-test-iteration": {
       "commandName": "Project",
@@ -16,9 +24,41 @@
       "commandName": "Project",
       "commandLineArgs": "-v --schema=https reservation.weihanli.xyz/health --vu=10 --duration=10s"
     },
+    "HTTPie-load-test-json-exporter": {
+      "commandName": "Project",
+      "commandLineArgs": "-v --schema=https reservation.weihanli.xyz/health --vu=10 --duration=10s --exporter-type=json --export-json-path=result.json"
+    },
+    "HTTPie-load-test-csv-exporter": {
+      "commandName": "Project",
+      "commandLineArgs": "-v --schema=https reservation.weihanli.xyz/health --vu=10 --duration=10s --exporter-type=csv --export-csv-path=result.csv"
+    },
     "HTTPie-download-test": {
       "commandName": "Project",
-      "commandLineArgs": "-v --schema=https https://reservation.weihanli.xyz/api/notice -d"
+      "commandLineArgs": "-v https://reservation.weihanli.xyz/api/notice -d -c"
+    },
+    "HTTPie-download-test-2": {
+      "commandName": "Project",
+      "commandLineArgs": "-v https://www.nuget.org/profiles/weihanli/avatar?imageSize=512 -d"
+    },
+    "no-cache-test": {
+      "commandName": "Project",
+      "commandLineArgs": "https://www.nuget.org/profiles/weihanli/avatar?imageSize=512 --no-cache --offline"
+    },
+    "proxy-test": {
+      "commandName": "Project",
+      "commandLineArgs": "https://www.nuget.org/profiles/weihanli/avatar?imageSize=512 --proxy=socks5://172.16.80.136:3389 -v"
+    },
+    "HTTPie-download-with-checksum": {
+      "commandName": "Project",
+      "commandLineArgs": "-v https://www.nuget.org/profiles/weihanli/avatar?imageSize=512 -d --checksum 1234"
+    },
+    "HTTPie-download-with-checksum-alg": {
+      "commandName": "Project",
+      "commandLineArgs": "-v https://www.nuget.org/profiles/weihanli/avatar?imageSize=512 -d --checksum 1234 --checksum-alg=md5"
+    },
+    "dotnet-httpie-issue-58": {
+      "commandName": "Project",
+      "commandLineArgs": "https://auth.docker.io/token X-Docker-Token:true service==registry.docker.io scope==\"repository:weihanli/mdnice:pull\" -v"
     }
   }
 }

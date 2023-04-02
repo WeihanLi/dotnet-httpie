@@ -5,7 +5,7 @@ using HTTPie.Models;
 
 namespace HTTPie.Abstractions;
 
-public interface IRequestMiddleware : IPlugin
+public interface IRequestItemParser
 {
-    Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next);
+    Task ParseAsync(HttpRequestModel request);
 }

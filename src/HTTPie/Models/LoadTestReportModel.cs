@@ -1,8 +1,8 @@
-﻿// Copyright (c) Weihan Li. All rights reserved.
+﻿// Copyright (c) Weihan Li.All rights reserved.
 // Licensed under the MIT license.
 
 namespace HTTPie.Models;
-public record LoadTestReportModel
+public sealed class LoadTestReportModel
 {
     public int TotalRequestCount { get; init; }
     public int SuccessRequestCount { get; init; }

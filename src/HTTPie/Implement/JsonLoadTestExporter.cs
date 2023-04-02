@@ -1,4 +1,4 @@
-﻿// Copyright (c) Weihan Li. All rights reserved.
+﻿// Copyright (c) Weihan Li.All rights reserved.
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
@@ -7,16 +7,16 @@ using System.Text.Json;
 
 namespace HTTPie.Implement;
 
-public class JsonLoadTestExporter : ILoadTestExporter
+public sealed class JsonLoadTestExporter : ILoadTestExporter
 {
-    private static readonly Option<string> OutputJsonPathOption = new("--output-json-path", "output json file path");
+    private static readonly Option<string> OutputJsonPathOption = new("--export-json-path", "Expected export json file path");
 
-    public ICollection<Option> SupportedOptions()
+    public Option[] SupportedOptions()
     {
         return new[] { OutputJsonPathOption };
     }
 
-    public string Type => "Json";
+    public string Type => "json";
 
     public async ValueTask Export(HttpContext context, HttpResponseModel[] responseList)
     {

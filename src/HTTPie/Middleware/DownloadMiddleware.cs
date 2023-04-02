@@ -1,4 +1,4 @@
-﻿// Copyright (c) Weihan Li. All rights reserved.
+﻿// Copyright (c) Weihan Li.All rights reserved.
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
@@ -10,17 +10,31 @@ namespace HTTPie.Middleware;
 
 public sealed class DownloadMiddleware : IResponseMiddleware
 {
-    public static readonly Option DownloadOption = new(new[] { "-d", "--download" }, "Download file");
-    private static readonly Option ContinueOption = new(new[] { "-c", "--continue" }, "Download file using append mode");
-    private static readonly Option<string> OutputOption = new(new[] { "-o", "--output" }, "Output file path");
+    public static readonly Option<bool> DownloadOption = new(new[] { "-d", "--download" }, "Download file");
 
-    public ICollection<Option> SupportedOptions()
+    private static readonly Option<bool> ContinueOption =
+        new(new[] { "-c", "--continue" }, "Download file using append mode");
+
+    private static readonly Option<string> OutputOption = new(new[] { "-o", "--output" }, "Output file path");
+    private static readonly Option<string> CheckSumOption = new(new[] { "--checksum" }, "Checksum to validate");
+
+    private static readonly Option<HashType> CheckSumAlgOption =
+        new(new[] { "--checksum-alg" }, () => HashType.SHA1, "Checksum hash algorithm type");
+
+    public Option[] SupportedOptions()
     {
-        return new[] { DownloadOption, ContinueOption, OutputOption };
+        return new Option[] { DownloadOption, ContinueOption, OutputOption, CheckSumOption, CheckSumAlgOption };
     }
 
-    public async Task Invoke(HttpContext context, Func<Task> next)
+    public async Task Invoke(HttpContext context, Func<HttpContext, Task> next)
     {
+        var download = context.Request.ParseResult.HasOption(DownloadOption);
+        if (!download)
+        {
+            await next(context);
+            return;
+        }
+
         var output = context.Request.ParseResult.GetValueForOption(OutputOption);
         if (string.IsNullOrWhiteSpace(output))
         {
@@ -34,9 +48,10 @@ public sealed class DownloadMiddleware : IResponseMiddleware
             {
                 // guess a file name
                 context.Response.Headers.TryGetValue(Constants.ContentTypeHeaderName, out var contentType);
-                output = GetFileNameFromUrl(context.Request.Url, contentType);
+                output = GetFileNameFromUrl(context.Request.Url, contentType.ToString());
             }
         }
+
         var fileName = output.GetValueOrDefault($"{DateTime.Now:yyyyMMdd-HHmmss}.tmp");
         if (context.Request.ParseResult.HasOption(ContinueOption))
         {
@@ -46,29 +61,42 @@ public sealed class DownloadMiddleware : IResponseMiddleware
         {
             await File.WriteAllBytesAsync(fileName, context.Response.Bytes).ConfigureAwait(false);
         }
-        await next();
+
+        var checksum = context.Request.ParseResult.GetValueForOption(CheckSumOption);
+        if (checksum.IsNotNullOrWhiteSpace())
+        {
+            var checksumAlgType = context.Request.ParseResult.GetValueForOption(CheckSumAlgOption);
+            var calculatedValue = HashHelper.GetHashedString(checksumAlgType, context.Response.Bytes);
+            var checksumMatched = calculatedValue.EqualsIgnoreCase(checksum);
+            context.Response.Headers.TryAdd(Constants.ResponseCheckSumValueHeaderName, calculatedValue);
+            context.Response.Headers.TryAdd(Constants.ResponseCheckSumValidHeaderName, checksumMatched.ToString());
+        }
+
+        await next(context);
     }
 
 
-    private static string? GetFileNameFromContentDispositionHeader(StringValues headerValues)
+    internal static string? GetFileNameFromContentDispositionHeader(StringValues headerValues)
     {
         const string filenameSeparator = "filename=";
 
-        var value = headerValues.ToString();
-        var index = value.IndexOf(filenameSeparator, StringComparison.OrdinalIgnoreCase);
-        if (index > 0 && value.Length > index + filenameSeparator.Length)
-        {
-            return value[(index + filenameSeparator.Length)..].Trim().Trim('.');
-        }
-        return null;
+        var value = headerValues.ToString().Split(new[] { ';' },
+                StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            .FirstOrDefault(x => x.StartsWith(filenameSeparator));
+        if (value is null || value.Length == filenameSeparator.Length)
+            return null;
+
+        return value[filenameSeparator.Length..].Trim('.', '"');
     }
 
     private static string GetFileNameFromUrl(string url, string responseContentType)
     {
         var contentType = responseContentType.Split(';')[0].Trim();
-        var fileNameWithoutExt = Path.GetFileNameWithoutExtension(url);
-        var fileExtension = Path.GetExtension(url);
-        var extension = fileExtension.GetValueOrDefault(MimeTypeMap.GetExtension(contentType));
+        // https://www.nuget.org/profiles/weihanli/avatar?imageSize=512
+        var uri = new Uri(url);
+        var fileNameWithoutExt = Path.GetFileNameWithoutExtension(uri.AbsolutePath);
+        var fileExtension = Path.GetExtension(uri.AbsolutePath);
+        var extension = fileExtension.GetValueOrDefault(() => MimeTypeMap.GetExtension(contentType));
         return $"{fileNameWithoutExt}{extension}";
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Weihan Li. All rights reserved.
+﻿// Copyright (c) Weihan Li.All rights reserved.
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
@@ -6,13 +6,13 @@ using HTTPie.Models;
 
 namespace HTTPie.Implement;
 
-public class LoadTestExporterSelector : ILoadTestExporterSelector
+public sealed class LoadTestExporterSelector : ILoadTestExporterSelector
 {
     private readonly HttpContext _context;
     private readonly Dictionary<string, ILoadTestExporter> _exporters;
     private static readonly Option<string> ExporterTypeOption = new("--exporter-type", "Load test result exporter type");
 
-    public ICollection<Option> SupportedOptions()
+    public Option[] SupportedOptions()
     {
         return new[] { ExporterTypeOption };
     }

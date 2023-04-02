@@ -1,30 +1,35 @@
-﻿// Copyright (c) Weihan Li. All rights reserved.
+﻿// Copyright (c) Weihan Li.All rights reserved.
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
 using HTTPie.Models;
+using HTTPie.Utilities;
 using Microsoft.Extensions.Primitives;
 
 namespace HTTPie.Middleware;
 
-public class QueryStringMiddleware : IRequestMiddleware
+public sealed class QueryStringMiddleware : IRequestMiddleware
 {
-    public Task Invoke(HttpRequestModel requestModel, Func<Task> next)
+    public Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
-        foreach (var query in
-            requestModel.RequestItems.Where(x => x.IndexOf("==", StringComparison.Ordinal) > 0))
+        for (var i = requestModel.RequestItems.Count - 1; i >= 0; i--)
         {
-            var arr = query.Split("==");
-            if (arr.Length == 2)
+            var item = requestModel.RequestItems[i];
+            var index = item.IndexOf("==", StringComparison.Ordinal);
+            if (index > 0 && item[..index].IsMatch(Constants.ParamNameRegex))
             {
-                if (requestModel.Query.TryGetValue(arr[0], out var values))
-                    requestModel.Query[arr[0]] =
-                        new StringValues(new[] { arr[1] }.Union(values.ToArray()).ToArray());
+                var key = item[..index];
+                var value = item[(index + 2)..];
+                if (requestModel.Query.TryGetValue(key, out var values))
+                    requestModel.Query[key] =
+                        new StringValues(values.ToArray().Prepend(value).ToArray());
                 else
-                    requestModel.Query[arr[0]] = arr[1];
+                    requestModel.Query[key] = new StringValues(value);
+
+                requestModel.RequestItems.RemoveAt(i);
             }
         }
 
-        return next();
+        return next(requestModel);
     }
 }

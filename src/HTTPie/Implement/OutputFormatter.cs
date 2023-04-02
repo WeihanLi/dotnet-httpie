@@ -1,4 +1,4 @@
-﻿// Copyright (c) Weihan Li. All rights reserved.
+﻿// Copyright (c) Weihan Li.All rights reserved.
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
@@ -23,18 +23,30 @@ public enum PrettyOptions
     All = 3
 }
 
-public class OutputFormatter : IOutputFormatter
+public sealed class OutputFormatter : IOutputFormatter
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<OutputFormatter> _logger;
-    private static readonly Option<PrettyOptions> PrettyOption = new("--pretty", () => PrettyOptions.All, "pretty output");
 
-    private static readonly Option QuietOption = new(new[] { "--quiet", "-q" }, "quiet mode, output nothing");
-    public static readonly Option OfflineOption = new("--offline", "offline mode, would not send the request, just print request info");
-    private static readonly Option OutputHeadersOption = new(new[] { "-h", "--headers" }, "output response headers only");
-    private static readonly Option OutputBodyOption = new(new[] { "-b", "--body" }, "output response headers and response body only");
-    private static readonly Option OutputVerboseOption = new(new[] { "-v", "--verbose" }, "output request/response, response headers and response body");
-    private static readonly Option<string> OutputPrintModeOption = new(new[] { "-p", "--print" }, "print mode, output specific info,H:request headers,B:request body,h:response headers,b:response body");
+    private static readonly Option<PrettyOptions> PrettyOption = new("--pretty", () => PrettyOptions.All,
+        "pretty output");
+
+    private static readonly Option<bool> QuietOption = new(new[] { "--quiet", "-q" }, "quiet mode, output nothing");
+
+    public static readonly Option<bool> OfflineOption =
+        new("--offline", "offline mode, would not send the request, just print request info");
+
+    private static readonly Option<bool> OutputHeadersOption =
+        new(new[] { "-h", "--headers" }, "output response headers only");
+
+    private static readonly Option<bool> OutputBodyOption =
+        new(new[] { "-b", "--body" }, "output response headers and response body only");
+
+    private static readonly Option<bool> OutputVerboseOption = new(new[] { "-v", "--verbose" },
+        "output request/response, response headers and response body");
+
+    private static readonly Option<string> OutputPrintModeOption = new(new[] { "-p", "--print" },
+        "print mode, output specific info,H:request headers,B:request body,h:response headers,b:response body");
 
 
     public OutputFormatter(IServiceProvider serviceProvider, ILogger<OutputFormatter> logger)
@@ -43,17 +55,11 @@ public class OutputFormatter : IOutputFormatter
         _logger = logger;
     }
 
-    public ICollection<Option> SupportedOptions() => new HashSet<Option>()
-        {
-            OfflineOption,
-            QuietOption,
-            OutputHeadersOption,
-            OutputBodyOption,
-            OutputVerboseOption,
-            OutputPrintModeOption,
-
-            PrettyOption,
-        };
+    public Option[] SupportedOptions() => new Option[]
+    {
+        OfflineOption, QuietOption, OutputHeadersOption, OutputBodyOption, OutputVerboseOption,
+        OutputPrintModeOption, PrettyOption,
+    };
 
     public static OutputFormat GetOutputFormat(HttpContext httpContext)
     {
@@ -61,7 +67,8 @@ public class OutputFormatter : IOutputFormatter
         {
             return outputFormat;
         }
-        outputFormat = OutputFormat.ResponseInfoWithTimestamp;
+
+        outputFormat = OutputFormat.ResponseInfo;
 
         var requestModel = httpContext.Request;
         if (requestModel.ParseResult.HasOption(QuietOption))
@@ -89,16 +96,17 @@ public class OutputFormatter : IOutputFormatter
             var mode = requestModel.ParseResult.GetValueForOption(OutputPrintModeOption);
             if (!string.IsNullOrEmpty(mode))
                 outputFormat = mode.Select(m => m switch
-                {
-                    'H' => OutputFormat.RequestHeaders,
-                    'B' => OutputFormat.RequestBody,
-                    'h' => OutputFormat.ResponseHeaders,
-                    'b' => OutputFormat.ResponseBody,
-                    't' => OutputFormat.Timestamp,
-                    _ => OutputFormat.None
-                })
+                    {
+                        'H' => OutputFormat.RequestHeaders,
+                        'B' => OutputFormat.RequestBody,
+                        'h' => OutputFormat.ResponseHeaders,
+                        'b' => OutputFormat.ResponseBody,
+                        't' => OutputFormat.Timestamp,
+                        _ => OutputFormat.None
+                    })
                     .Aggregate(OutputFormat.None, (current, format) => current | format);
         }
+
         httpContext.SetProperty(Constants.ResponseOutputFormatPropertyName, outputFormat);
         return outputFormat;
     }
@@ -122,6 +130,7 @@ public class OutputFormatter : IOutputFormatter
             output.AppendLine(GetRequestVersionAndStatus(requestModel));
             output.AppendLine(GetHeadersString(requestModel.Headers));
         }
+
         if (outputFormat.HasFlag(OutputFormat.RequestBody) && !string.IsNullOrEmpty(requestModel.Body))
         {
             output.AppendLineIf(string.Empty, output.Length > 0);
@@ -137,6 +146,7 @@ public class OutputFormatter : IOutputFormatter
             output.AppendLine(GetResponseVersionAndStatus(responseModel));
             output.AppendLine(GetHeadersString(responseModel.Headers));
         }
+
         if (outputFormat.HasFlag(OutputFormat.ResponseBody) && !string.IsNullOrEmpty(responseModel.Body))
         {
             output.AppendLineIf(string.Empty, output.Length > requestLength);
@@ -178,8 +188,9 @@ public class OutputFormatter : IOutputFormatter
 
         try
         {
-            var exporter = _serviceProvider.GetService<ILoadTestExporter>();
-            if (exporter != null)
+            var exporterSelector = _serviceProvider.GetRequiredService<ILoadTestExporterSelector>();
+            var exporter = exporterSelector.Select();
+            if (exporter is not null)
                 await exporter.Export(httpContext, responseList);
         }
         catch (Exception ex)
@@ -241,4 +252,3 @@ Schema: {uri.Scheme}";
             $"{headers.Select(h => $"{h.Key}: {h.Value}").OrderBy(h => h).StringJoin(Environment.NewLine)}";
     }
 }
-

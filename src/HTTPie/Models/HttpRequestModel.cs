@@ -1,13 +1,15 @@
-﻿// Copyright (c) Weihan Li. All rights reserved.
+﻿// Copyright (c) Weihan Li.All rights reserved.
 // Licensed under the MIT license.
 
 using Microsoft.Extensions.Primitives;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 
 namespace HTTPie.Models;
 
-public record HttpRequestModel
+[DebuggerDisplay("{Method} {Url}")]
+public sealed class HttpRequestModel
 {
     [Required] public string Schema { get; set; } = "http";
 
@@ -20,8 +22,7 @@ public record HttpRequestModel
     public IDictionary<string, StringValues> Query { get; set; } = new Dictionary<string, StringValues>();
     public string? Body { get; set; }
 
-    public string[] Options { get; set; } = Array.Empty<string>();
-    public string[] RequestItems { get; set; } = Array.Empty<string>();
+    public List<string> RequestItems { get; set; } = new();
     public DateTimeOffset Timestamp { get; set; }
 
     [Newtonsoft.Json.JsonIgnore]

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Weihan Li. All rights reserved.
+﻿// Copyright (c) Weihan Li.All rights reserved.
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
@@ -8,9 +8,9 @@ using HTTPie.Utilities;
 
 namespace HTTPie.Middleware;
 
-public class DefaultResponseMiddleware : IResponseMiddleware
+public sealed class DefaultResponseMiddleware : IResponseMiddleware
 {
-    public Task Invoke(HttpContext context, Func<Task> next)
+    public Task Invoke(HttpContext context, Func<HttpContext, Task> next)
     {
         var outputFormat = OutputFormatter.GetOutputFormat(context);
         if ((outputFormat & OutputFormat.Timestamp) != 0)
@@ -22,6 +22,6 @@ public class DefaultResponseMiddleware : IResponseMiddleware
                 context.Response.Headers.TryAdd(Constants.RequestDurationHeaderName, $"{context.Response.Elapsed.TotalMilliseconds}ms");
             }
         }
-        return next();
+        return next(context);
     }
 }
