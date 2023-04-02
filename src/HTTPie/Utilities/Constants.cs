@@ -5,7 +5,7 @@ namespace HTTPie.Utilities;
 
 public static class Constants
 {
-    public const string ApplicationName = "dotnet-HTTPie";
+    public const string ApplicationName = "dotnet-httpie";
 
     public const string ParamNameRegex = @"[\w_\-]+";
 
