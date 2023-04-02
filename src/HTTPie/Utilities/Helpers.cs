@@ -19,7 +19,7 @@ namespace HTTPie.Utilities;
 
 public static class Helpers
 {
-    private static readonly HashSet<string> HttpMethods = new(StringComparer.OrdinalIgnoreCase)
+    internal static readonly HashSet<string> HttpMethods = new(StringComparer.OrdinalIgnoreCase)
     {
         HttpMethod.Head.Method,
         HttpMethod.Get.Method,
@@ -109,10 +109,8 @@ public static class Helpers
                     throw new InvalidOperationException("The request url can not be null");
                 }
 
-                requestModel.RequestItems = requestModel.ParseResult.UnmatchedTokens
-                    .Except(new[] { method, requestModel.Url })
-                    .Where(x => !x.StartsWith('-'))
-                    .ToList();
+                await serviceProvider.GetRequiredService<IRequestItemParser>()
+                    .ParseAsync(requestModel);
 
                 await next(invocationContext);
             })
@@ -176,6 +174,7 @@ public static class Helpers
     public static IServiceCollection RegisterApplicationServices(this IServiceCollection serviceCollection)
     {
         serviceCollection
+            .AddSingleton<IRequestItemParser, RequestItemParser>()
             .AddSingleton<IRequestExecutor, RequestExecutor>()
             .AddSingleton<IRequestMapper, RequestMapper>()
             .AddSingleton<IResponseMapper, ResponseMapper>()

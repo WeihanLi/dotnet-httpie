@@ -16,9 +16,9 @@ public sealed class QueryStringMiddleware : IRequestMiddleware
         {
             var item = requestModel.RequestItems[i];
             var index = item.IndexOf("==", StringComparison.Ordinal);
-            if (index > 0 && item[..index].IsMatch(Constants.ParamNameRegex))
+            var key = item[..index];
+            if (index > 0 && key.IsMatch(Constants.ParamNameRegex))
             {
-                var key = item[..index];
                 var value = item[(index + 2)..];
                 if (requestModel.Query.TryGetValue(key, out var values))
                     requestModel.Query[key] =

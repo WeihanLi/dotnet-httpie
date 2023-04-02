@@ -23,6 +23,9 @@ public sealed class HttpRequestModel
     public string? Body { get; set; }
 
     public List<string> RequestItems { get; set; } = new();
+
+    [Newtonsoft.Json.JsonIgnore]
+    [JsonIgnore]
     public DateTimeOffset Timestamp { get; set; }
 
     [Newtonsoft.Json.JsonIgnore]

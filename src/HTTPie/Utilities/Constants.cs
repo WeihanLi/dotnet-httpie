@@ -5,9 +5,9 @@ namespace HTTPie.Utilities;
 
 public static class Constants
 {
-    public const string ApplicationName = "dotnet-HTTPie";
+    public const string ApplicationName = "dotnet-httpie";
 
-    public const string ParamNameRegex = @"[\w_\-]+";
+    public const string ParamNameRegex = @"^[a-zA-Z_][\w_\-]*$";
 
     public const string PlainTextMediaType = "plain/text";
     public const string JsonMediaType = "application/json";
