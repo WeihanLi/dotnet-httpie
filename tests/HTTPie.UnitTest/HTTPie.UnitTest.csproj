@@ -6,18 +6,18 @@
     <DefineConstants>$(DefineConstants);UnitTest</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <Using Include="HTTPie"/>
-    <Using Include="HTTPie.Implement"/>
-    <Using Include="HTTPie.Middleware"/>
-    <Using Include="HTTPie.Models"/>
-    <Using Include="HTTPie.Utilities"/>
+    <Using Include="HTTPie" />
+    <Using Include="HTTPie.Implement" />
+    <Using Include="HTTPie.Middleware" />
+    <Using Include="HTTPie.Models" />
+    <Using Include="HTTPie.Utilities" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk"/>
-    <PackageReference Include="FluentAssertions"/>
-    <PackageReference Include="Moq"/>
-    <PackageReference Include="xunit"/>
-    <PackageReference Include="Xunit.DependencyInjection"/>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="Xunit.DependencyInjection" />
     <PackageReference Include="xunit.runner.visualstudio">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\HTTPie\HTTPie.csproj"/>
+    <ProjectReference Include="..\..\src\HTTPie\HTTPie.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="xunit.runner.json">
