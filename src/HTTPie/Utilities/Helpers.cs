@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
+using HTTPie.Commands;
 using HTTPie.Implement;
 using HTTPie.Middleware;
 using HTTPie.Models;
@@ -32,8 +33,7 @@ public static class Helpers
 
     public static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
-        WriteIndented = true,
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
 
     private static IServiceCollection AddHttpHandlerMiddleware<THttpHandlerMiddleware>(
@@ -122,6 +122,10 @@ public static class Helpers
         Func<InvocationContext, Task>? handler = null)
     {
         var command = new RootCommand() { Name = "http", };
+        var executeCommand = new ExecuteCommand();
+        executeCommand.SetHandler((invocationContext) =>
+            executeCommand.InvokeAsync(invocationContext, serviceProvider));
+        command.AddCommand(executeCommand);
 
         // var methodArgument = new Argument<HttpMethod>("method")
         // {
@@ -176,6 +180,7 @@ public static class Helpers
         serviceCollection
             .AddSingleton<IRequestItemParser, RequestItemParser>()
             .AddSingleton<IRequestExecutor, RequestExecutor>()
+            .AddSingleton<IHttpRequestMessageExecutor, HttpRequestMessageExecutor>()
             .AddSingleton<IRequestMapper, RequestMapper>()
             .AddSingleton<IResponseMapper, ResponseMapper>()
             .AddSingleton<IOutputFormatter, OutputFormatter>()
