@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
-using System.Collections.Concurrent;
 
 namespace HTTPie.Implement;
 
