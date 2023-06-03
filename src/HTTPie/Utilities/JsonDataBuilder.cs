@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Weihan Li.All rights reserved.
 // Licensed under the MIT license.
 
-using System.Text.Json.Nodes;
-
 namespace HTTPie.Utilities;
 
 public sealed class JsonDataBuilder

@@ -33,7 +33,8 @@ public static class Helpers
 
     public static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
-        WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        WriteIndented = true,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
 
     private static IServiceCollection AddHttpHandlerMiddleware<THttpHandlerMiddleware>(
