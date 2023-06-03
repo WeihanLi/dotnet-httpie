@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using System.Diagnostics;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -88,7 +89,13 @@ public sealed class HttpParser : IHttpParser
         if (requestBodyBuilder is { Length: > 0 })
         {
             var contentHeaders = requestMessage.Content?.Headers;
-            requestMessage.Content = new StringContent(requestBodyBuilder.ToString());
+            if (contentHeaders is { ContentType: null })
+            {
+                contentHeaders.ContentType = MediaTypeHeaderValue.Parse(HttpHelper.JsonContentType);
+            }
+
+            requestMessage.Content = new StringContent(requestBodyBuilder.ToString(), Encoding.UTF8,
+                contentHeaders?.ContentType?.MediaType ?? "application/json");
             if (contentHeaders != null)
             {
                 foreach (var header in contentHeaders)
