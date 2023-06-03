@@ -26,7 +26,7 @@ public sealed class HttpContext : IProperties
 
     [System.Text.Json.Serialization.JsonIgnore]
     [JsonIgnore]
-    public CancellationToken CancellationToken => InvocationContext.GetCancellationToken();
+    public CancellationToken RequestCancelled => InvocationContext.GetCancellationToken();
 
     [System.Text.Json.Serialization.JsonIgnore]
     [JsonIgnore]
@@ -56,6 +56,7 @@ public static class HttpContextExtensions
             propertyValue = (T?)value;
             return true;
         }
+
         propertyValue = default;
         return false;
     }
