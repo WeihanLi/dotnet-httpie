@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
-using HTTPie.Implement;
 using HTTPie.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using System.CommandLine.Invocation;
@@ -12,6 +11,9 @@ namespace HTTPie.Commands;
 public sealed class ExecuteCommand : Command
 {
     private static readonly Argument<string> FilePathArgument = new("path", "The script path to execute");
+
+    private static readonly Option<ExecuteScriptType> ExecuteScriptTypeOption =
+        new("--type", "The script type to execute");
 
     public ExecuteCommand() : base("execute", "execute http request related scripts")
     {
@@ -38,4 +40,11 @@ public sealed class ExecuteCommand : Command
             Console.WriteLine();
         }
     }
+}
+
+public enum ExecuteScriptType
+{
+    Http,
+    // Curl,
+    // Har,
 }
