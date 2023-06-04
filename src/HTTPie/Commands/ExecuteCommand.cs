@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
+using HTTPie.Implement;
 using HTTPie.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using System.CommandLine.Invocation;

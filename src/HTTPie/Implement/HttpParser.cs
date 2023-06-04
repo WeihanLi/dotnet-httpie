@@ -1,17 +1,14 @@
 ﻿// Copyright (c) Weihan Li.All rights reserved.
 // Licensed under the MIT license.
 
+using HTTPie.Abstractions;
+using HTTPie.Utilities;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace HTTPie.Utilities;
-
-public interface IHttpParser
-{
-    IAsyncEnumerable<HttpRequestMessage> ParseAsync(string filePath);
-}
+namespace HTTPie.Implement;
 
 public sealed class HttpParser : IHttpParser
 {

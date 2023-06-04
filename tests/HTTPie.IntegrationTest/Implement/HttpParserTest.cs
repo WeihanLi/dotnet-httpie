@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Weihan Li.All rights reserved.
 // Licensed under the MIT license.
 
-using HTTPie.Utilities;
+using HTTPie.Implement;
 
-namespace HTTPie.IntegrationTest.Utilities;
+namespace HTTPie.IntegrationTest.Implement;
 
 public class HttpParserTest
 {
