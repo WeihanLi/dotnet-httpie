@@ -59,6 +59,10 @@
     "dotnet-httpie-issue-58": {
       "commandName": "Project",
       "commandLineArgs": "https://auth.docker.io/token X-Docker-Token:true service==registry.docker.io scope==\"repository:weihanli/mdnice:pull\" -v"
+    },
+    "http-execution": {
+      "commandName": "Project",
+      "commandLineArgs": "execute C:\\projects\\sources\\dotnet-httpie\\tests\\HTTPie.IntegrationTest\\TestAssets\\HttpSample.http"
     }
   }
 }

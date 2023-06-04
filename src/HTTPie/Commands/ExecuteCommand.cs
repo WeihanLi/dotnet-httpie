@@ -26,14 +26,14 @@ public sealed class ExecuteCommand : Command
         }
 
         var httpParser = serviceProvider.GetRequiredService<IHttpParser>();
-        var httpExecutor = serviceProvider.GetRequiredService<IHttpRequestMessageExecutor>();
+        var httpExecutor = serviceProvider.GetRequiredService<IRawHttpRequestExecutor>();
         await foreach (var request in httpParser.ParseAsync(filePath))
         {
             Console.WriteLine("Request message:");
-            Console.WriteLine(request.ToRawMessageAsync());
+            Console.WriteLine(await request.ToRawMessageAsync());
             using var response = await httpExecutor.Execute(request, invocationContext.GetCancellationToken());
             Console.WriteLine("Response message:");
-            Console.WriteLine(response.ToRawMessageAsync());
+            Console.WriteLine(await response.ToRawMessageAsync());
             Console.WriteLine();
         }
     }

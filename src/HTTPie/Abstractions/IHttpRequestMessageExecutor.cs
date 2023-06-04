@@ -3,7 +3,7 @@
 
 namespace HTTPie.Abstractions;
 
-public interface IHttpRequestMessageExecutor
+public interface IRawHttpRequestExecutor
 {
     Task<HttpResponseMessage> Execute(HttpRequestMessage httpRequestMessage, CancellationToken cancellationToken);
 }
