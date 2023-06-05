@@ -12,6 +12,9 @@ public sealed class ExecuteCommand : Command
 {
     private static readonly Argument<string> FilePathArgument = new("path", "The script path to execute");
 
+    private static readonly Option<ExecuteScriptType> ExecuteScriptTypeOption =
+        new("--type", "The script type to execute");
+
     public ExecuteCommand() : base("execute", "execute http request related scripts")
     {
         AddArgument(FilePathArgument);
@@ -29,12 +32,20 @@ public sealed class ExecuteCommand : Command
         var httpExecutor = serviceProvider.GetRequiredService<IRawHttpRequestExecutor>();
         await foreach (var request in httpParser.ParseAsync(filePath))
         {
+            Console.WriteLine(request.Name);
             Console.WriteLine("Request message:");
-            Console.WriteLine(await request.ToRawMessageAsync());
+            Console.WriteLine(await request.RequestMessage.ToRawMessageAsync());
             using var response = await httpExecutor.Execute(request, invocationContext.GetCancellationToken());
             Console.WriteLine("Response message:");
             Console.WriteLine(await response.ToRawMessageAsync());
             Console.WriteLine();
         }
     }
+}
+
+public enum ExecuteScriptType
+{
+    Http,
+    // Curl,
+    // Har,
 }
