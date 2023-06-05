@@ -32,8 +32,9 @@ public sealed class ExecuteCommand : Command
         var httpExecutor = serviceProvider.GetRequiredService<IRawHttpRequestExecutor>();
         await foreach (var request in httpParser.ParseAsync(filePath))
         {
+            Console.WriteLine(request.Name);
             Console.WriteLine("Request message:");
-            Console.WriteLine(await request.ToRawMessageAsync());
+            Console.WriteLine(await request.RequestMessage.ToRawMessageAsync());
             using var response = await httpExecutor.Execute(request, invocationContext.GetCancellationToken());
             Console.WriteLine("Response message:");
             Console.WriteLine(await response.ToRawMessageAsync());

@@ -1,0 +1,19 @@
+@baseUrl = https://reservation.weihanli.xyz
+
+###
+
+# @name notice
+GET {{baseUrl}}/api/notice
+Accept: application/json
+
+###
+
+# @name reservationPlaces 
+@acceptMediaType = application/json
+GET {{baseUrl}}/api/ReservationPlaces
+Accept: {{acceptMediaType}}
+
+###
+# @name reservationPlacesWithTimestamp
+@acceptMediaType = application/json
+GET {{baseUrl}}/api/ReservationPlaces?t={{$env timestamp}}
