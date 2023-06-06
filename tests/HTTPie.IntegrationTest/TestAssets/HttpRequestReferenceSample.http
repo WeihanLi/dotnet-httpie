@@ -1,0 +1,42 @@
+@baseUrl = sparktodo.weihanli.xyz
+
+###
+# @name login
+POST https://sparktodo.weihanli.xyz/api/v2/Account/SignIn
+Content-Type: application/json; charset=utf-8
+
+{
+  "email": "weihanli@outlook.com",
+  "password": "Test1234"
+}
+
+### getVersion
+
+POST https://sparktodo.weihanli.xyz/api/v2/Sync
+Authorization: Bearer {{login.response.body.$.data.accessToken}}
+
+###
+# @name createTodoCategory
+POST https://sparktodo.weihanli.xyz/api/v1/Category
+Authorization: Bearer {{login.response.body.$.data.accessToken}}
+Content-Type: application/json
+
+{
+  "categoryName": "test",
+  "parentId": 0
+}
+
+###
+# @name createTodo
+
+POST https://sparktodo.weihanli.xyz/api/v1/Todo
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.data.accessToken}}
+
+{
+  "todoTitle": "test",
+  "todoContent": "test....",
+  "isCompleted": false,
+  "categoryId": {{createTodoCategory.response.body.$.categoryId}},
+  "userId": 0
+}

@@ -15,8 +15,8 @@ public sealed class HttpParser : IHttpParser
 {
     public async IAsyncEnumerable<HttpRequestMessageWrapper> ParseAsync(string filePath)
     {
-        var globalVariables = new Dictionary<string, string>();
-        var globalVariablesEnded = false;
+        var fileScopedVariables = new Dictionary<string, string>();
+        var fileScopedVariablesEnded = false;
 
         using var reader = File.OpenText(filePath);
         HttpRequestMessage? requestMessage = null;
@@ -40,14 +40,14 @@ public sealed class HttpParser : IHttpParser
                 }
 
                 var (variableName, variableValue) = (splits[0], splits[1]);
-                if (globalVariablesEnded)
+                if (fileScopedVariablesEnded)
                 {
                     requestVariables ??= new();
                     requestVariables[variableName] = variableValue;
                 }
                 else
                 {
-                    globalVariables[variableName] = variableValue;
+                    fileScopedVariables[variableName] = variableValue;
                 }
 
                 continue;
@@ -56,16 +56,38 @@ public sealed class HttpParser : IHttpParser
             // request end
             if ("###" == line || line.StartsWith("### "))
             {
-                globalVariablesEnded = true;
+                fileScopedVariablesEnded = true;
                 if (requestMessage != null)
                 {
                     requestNumber++;
-                    requestName ??= $"request_{requestNumber}";
+                    requestName ??= $"__request_{requestNumber}";
+                    // attach request body and copy request headers
+                    if (requestBodyBuilder?.Length > 0)
+                    {
+                        var contentHeaders = requestMessage.Content?.Headers;
+                        requestMessage.Content = new StringContent(requestBodyBuilder.ToString(), Encoding.UTF8,
+                            requestMessage.Content?.Headers.ContentType?.MediaType ?? Constants.JsonMediaType);
+                        if (contentHeaders != null)
+                        {
+                            foreach (var header in contentHeaders)
+                            {
+                                requestMessage.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        requestMessage.Content = null;
+                    }
+
                     yield return new HttpRequestMessageWrapper(requestName, requestMessage);
                     requestMessage = null;
                     requestBodyBuilder = null;
                     requestVariables = null;
+                    requestName = null;
                 }
+
+                continue;
             }
 
             if (line.StartsWith("#") || line.StartsWith("//"))
@@ -77,14 +99,14 @@ public sealed class HttpParser : IHttpParser
                    )
                 {
                     requestName = line["# @name ".Length..].TrimStart(new[] { '=' }).Trim();
-                    globalVariablesEnded = true;
+                    fileScopedVariablesEnded = true;
                 }
 
                 continue;
             }
 
             //
-            var normalizedLine = EnsureVariableReplaced(line, globalVariables, requestVariables);
+            var normalizedLine = EnsureVariableReplaced(line, requestVariables, fileScopedVariables);
             if (requestMessage is null)
             {
                 var splits = normalizedLine.Split(' ');
@@ -147,7 +169,7 @@ public sealed class HttpParser : IHttpParser
             var requestBody = requestBodyBuilder.ToString();
             // TODO: use constant defined from common, HttpHelper.ApplicationJsonMediaType
             requestMessage.Content = new StringContent(requestBody, Encoding.UTF8,
-                contentHeaders?.ContentType?.MediaType ?? "application/json");
+                contentHeaders?.ContentType?.MediaType ?? Constants.JsonMediaType);
             if (contentHeaders != null)
             {
                 foreach (var header in contentHeaders)
@@ -171,8 +193,7 @@ public sealed class HttpParser : IHttpParser
 
     internal static string EnsureVariableReplaced(
         string rawText,
-        Dictionary<string, string> globalVariables,
-        Dictionary<string, string>? requestVariables
+        params Dictionary<string, string>?[] variables
     )
     {
         if (string.IsNullOrEmpty(rawText)) return rawText;
@@ -184,10 +205,13 @@ public sealed class HttpParser : IHttpParser
         while (match.Success)
         {
             var variableName = match.Groups["variableName"].Value;
-            if (requestVariables?.TryGetValue(variableName, out var variableValue) == true
-                || globalVariables.TryGetValue(variableName, out variableValue))
+            foreach (var variable in variables)
             {
-                textReplaced = textReplaced.Replace(match.Value, variableValue ?? string.Empty);
+                if (variable?.TryGetValue(variableName, out var variableValue) == true)
+                {
+                    textReplaced = textReplaced.Replace(match.Value, variableValue ?? string.Empty);
+                    break;
+                }
             }
 
             match = VariableNameReferenceRegex.Match(textReplaced);

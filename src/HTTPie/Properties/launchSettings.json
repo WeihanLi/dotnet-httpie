@@ -63,6 +63,10 @@
     "http-execution": {
       "commandName": "Project",
       "commandLineArgs": "execute C:\\projects\\sources\\dotnet-httpie\\tests\\HTTPie.IntegrationTest\\TestAssets\\HttpStartedSample.http"
+    },
+    "http-execution-2": {
+      "commandName": "Project",
+      "commandLineArgs": "execute C:\\projects\\sources\\dotnet-httpie\\tests\\HTTPie.IntegrationTest\\TestAssets\\HttpRequestReferenceSample.http"
     }
   }
 }

@@ -29,10 +29,11 @@ public class HttpParserTest
     public void VariableReplacementTest_VariableReplacement(string text)
     {
         var replacedText = HttpParser.EnsureVariableReplaced(text,
+            new() { { "host", "https://sparktodo.weihanli.xyz" } },
             new()
             {
-                { "baseUrl", "https://reservation.weihanli.xyz" }, { "host", "https://reservation.weihanli.xyz" },
-            }, new() { { "host", "https://sparktodo.weihanli.xyz" }, });
+                { "baseUrl", "https://reservation.weihanli.xyz" }, { "host", "https://reservation.weihanli.xyz" }
+            });
         Assert.NotEqual(text, replacedText);
         Assert.DoesNotContain("{{", replacedText);
         Assert.DoesNotContain("}}", replacedText);
