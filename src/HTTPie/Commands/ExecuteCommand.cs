@@ -15,12 +15,12 @@ namespace HTTPie.Commands;
 
 public sealed class ExecuteCommand : Command
 {
-    private static readonly Argument<string> FilePathArgument = new("path", "The script path to execute");
+    private static readonly Argument<string> FilePathArgument = new("script", "The script to execute");
 
     private static readonly Option<ExecuteScriptType> ExecuteScriptTypeOption =
         new("--type", "The script type to execute");
 
-    public ExecuteCommand() : base("execute", "execute http request related scripts")
+    public ExecuteCommand() : base("exec", "execute http request")
     {
         AddArgument(FilePathArgument);
     }
