@@ -60,7 +60,7 @@ public sealed class HttpParser : IHttpParser
                 if (requestMessage != null)
                 {
                     requestNumber++;
-                    requestName ??= $"__request_{requestNumber}";
+                    requestName ??= $"request#{requestNumber}";
                     // attach request body and copy request headers
                     if (requestBodyBuilder?.Length > 0)
                     {
@@ -180,7 +180,7 @@ public sealed class HttpParser : IHttpParser
         }
 
         requestNumber++;
-        requestName ??= $"request_{requestNumber}";
+        requestName ??= $"request#{requestNumber}";
         yield return new HttpRequestMessageWrapper(requestName, requestMessage);
     }
 
