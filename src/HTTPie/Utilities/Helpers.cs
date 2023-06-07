@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
+using HTTPie.Commands;
 using HTTPie.Implement;
 using HTTPie.Middleware;
 using HTTPie.Models;
@@ -79,41 +80,8 @@ public static class Helpers
             .UseParseErrorReporting()
             .UseExceptionHandler()
             .CancelOnProcessTermination()
-            .AddMiddleware(async (invocationContext, next) =>
-            {
-                var context = serviceProvider.GetRequiredService<HttpContext>();
-                context.InvocationContext = invocationContext;
-
-                var requestModel = context.Request;
-                requestModel.ParseResult = invocationContext.ParseResult;
-
-                var method = requestModel.ParseResult.UnmatchedTokens
-                    .FirstOrDefault(x => HttpMethods.Contains(x), string.Empty);
-                if (!string.IsNullOrEmpty(method))
-                {
-                    requestModel.Method = new HttpMethod(method);
-                    context.SetProperty(Constants.RequestMethodExistsPropertyName, true);
-                }
-                else
-                {
-                    context.SetProperty(Constants.RequestMethodExistsPropertyName, false);
-                }
-
-                // Url
-                requestModel.Url = requestModel.ParseResult.UnmatchedTokens.FirstOrDefault(x =>
-                                       !x.StartsWith("-", StringComparison.Ordinal)
-                                       && !HttpMethods.Contains(x))
-                                   ?? string.Empty;
-                if (string.IsNullOrEmpty(requestModel.Url))
-                {
-                    throw new InvalidOperationException("The request url can not be null");
-                }
-
-                await serviceProvider.GetRequiredService<IRequestItemParser>()
-                    .ParseAsync(requestModel);
-
-                await next(invocationContext);
-            })
+            // required when try to resolve IServiceProvider from invocationContext
+            .AddMiddleware(invocationContext => invocationContext.BindingContext.AddService(_ => serviceProvider))
             ;
         return builder.Build();
     }
@@ -122,6 +90,9 @@ public static class Helpers
         Func<InvocationContext, Task>? handler = null)
     {
         var command = new RootCommand() { Name = "http", };
+        var executeCommand = new ExecuteCommand();
+        executeCommand.SetHandler(invocationContext => executeCommand.InvokeAsync(invocationContext, serviceProvider));
+        command.AddCommand(executeCommand);
 
         // var methodArgument = new Argument<HttpMethod>("method")
         // {
@@ -157,17 +128,7 @@ public static class Helpers
         }
 
         command.TreatUnmatchedTokensAsErrors = false;
-
-        handler ??= async invocationContext =>
-        {
-            var context = serviceProvider.ResolveRequiredService<HttpContext>();
-            await serviceProvider.ResolveRequiredService<IRequestExecutor>()
-                .ExecuteAsync(context);
-            var output = await serviceProvider.ResolveRequiredService<IOutputFormatter>()
-                .GetOutput(context);
-            invocationContext.Console.Out.WriteLine(output.Trim());
-        };
-        command.SetHandler(handler);
+        command.SetHandler(invocationContext => HttpCommandHandler(invocationContext, serviceProvider, handler));
         return command;
     }
 
@@ -176,6 +137,8 @@ public static class Helpers
         serviceCollection
             .AddSingleton<IRequestItemParser, RequestItemParser>()
             .AddSingleton<IRequestExecutor, RequestExecutor>()
+            .AddSingleton<IHttpParser, HttpParser>()
+            .AddSingleton<IRawHttpRequestExecutor, RawHttpRequestExecutor>()
             .AddSingleton<IRequestMapper, RequestMapper>()
             .AddSingleton<IResponseMapper, ResponseMapper>()
             .AddSingleton<IOutputFormatter, OutputFormatter>()
@@ -254,5 +217,53 @@ public static class Helpers
     {
         var commandParser = services.ConstructCommand(handler);
         return await commandParser.InvokeAsync(commandLine);
+    }
+
+    private static async Task HttpCommandHandler(InvocationContext invocationContext, IServiceProvider serviceProvider,
+        Func<InvocationContext, Task>? internalHandler = null)
+    {
+        var context = serviceProvider.GetRequiredService<HttpContext>();
+        context.InvocationContext = invocationContext;
+
+        var requestModel = context.Request;
+        requestModel.ParseResult = invocationContext.ParseResult;
+
+        var method = requestModel.ParseResult.UnmatchedTokens
+            .FirstOrDefault(x => HttpMethods.Contains(x), string.Empty);
+        if (!string.IsNullOrEmpty(method))
+        {
+            requestModel.Method = new HttpMethod(method);
+            context.SetProperty(Constants.RequestMethodExistsPropertyName, true);
+        }
+        else
+        {
+            context.SetProperty(Constants.RequestMethodExistsPropertyName, false);
+        }
+
+        // Url
+        requestModel.Url = requestModel.ParseResult.UnmatchedTokens.FirstOrDefault(x =>
+                               !x.StartsWith("-", StringComparison.Ordinal)
+                               && !HttpMethods.Contains(x))
+                           ?? string.Empty;
+        if (string.IsNullOrEmpty(requestModel.Url))
+        {
+            throw new InvalidOperationException("The request url can not be null");
+        }
+
+        await serviceProvider.GetRequiredService<IRequestItemParser>()
+            .ParseAsync(requestModel);
+
+        if (internalHandler is null)
+        {
+            await serviceProvider.ResolveRequiredService<IRequestExecutor>()
+                .ExecuteAsync(context);
+            var output = await serviceProvider.ResolveRequiredService<IOutputFormatter>()
+                .GetOutput(context);
+            invocationContext.Console.Out.WriteLine(output.Trim());
+        }
+        else
+        {
+            await internalHandler(invocationContext);
+        }
     }
 }

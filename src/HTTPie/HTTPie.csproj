@@ -16,6 +16,7 @@
     <Using Include="System.CommandLine.Parsing" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="JsonPath.Net" />
     <PackageReference Include="JsonSchema.Net" />
     <PackageReference Include="MathNet.Numerics.Signed" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />

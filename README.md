@@ -58,6 +58,20 @@ dotnet-http /api/notice title=test body=test-body
 dotnet-http post http://localhost/api/notice title=test body=test-body
 ```
 
+## Execute
+
+You can execute `*.http`/`*.rest` http requests with the `exec` command
+
+``` sh
+dotnet-http exec HttpStartedSample.http
+
+dotnet-http exec ".\tests\HTTPie.IntegrationTest\TestAssets\HttpStartedSample.http"
+dotnet-http exec ".\tests\HTTPie.IntegrationTest\TestAssets\HttpVariableSample.http"
+dotnet-http exec ".\tests\HTTPie.IntegrationTest\TestAssets\HttpRequestReferenceSample.http"
+```
+
+see http request sample here: <https://github.com/WeihanLi/dotnet-httpie/tree/dev/tests/HTTPie.IntegrationTest/TestAssets>
+
 ## Docker
 
 There's a docker image(weihanli/dotnet-httpie) that you could use directly without installing the tool, use sample:
