@@ -1,5 +1,9 @@
 # dotnet-httpie release notes
 
+## [0.7.0](https://nuget.org/packages/dotnet-httpie/0.7.0)
+
+- Add `exec` command for executing http request
+
 ## [0.6.3](https://nuget.org/packages/dotnet-httpie/0.6.3)
 
 - Add `net7.0` support
