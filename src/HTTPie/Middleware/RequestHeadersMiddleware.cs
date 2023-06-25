@@ -16,11 +16,11 @@ public sealed class RequestHeadersMiddleware : IRequestMiddleware
         {
             var item = requestModel.RequestItems[i];
             var index = item.IndexOf(':');
-            var key = item[..index];
             if (index > 0 && item.Length > (index + 1)
-                          && item[(index + 1)] != '='
-                          && key.IsMatch(Constants.ParamNameRegex))
+                          && item[(index + 1)] != '=')
             {
+                var key = item[..index];
+                if (!key.IsMatch(Constants.ParamNameRegex)) continue;
                 var value = item[(index + 1)..].Trim();
                 if (requestModel.Headers.TryGetValue(key, out var values))
                     requestModel.Headers[key] =

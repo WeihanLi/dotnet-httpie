@@ -45,10 +45,10 @@ public sealed class RequestDataMiddleware : IRequestMiddleware
                 .Where(x =>
                 {
                     var index = x.IndexOf('=');
-                    if (index > 0 && x[..index].IsMatch(Constants.ParamNameRegex))
-                    {
+                    if (index <= 0) return false;
+
+                    if (x[..index].IsMatch(Constants.ParamNameRegex))
                         return index == x.Length - 1 || x[index + 1] != '=';
-                    }
 
                     return false;
                 })
