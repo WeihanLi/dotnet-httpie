@@ -47,6 +47,9 @@ public sealed class RequestDataMiddleware : IRequestMiddleware
                     var index = x.IndexOf('=');
                     if (index <= 0) return false;
 
+                    if (x[index - 1] == ':')
+                        return x[..(index - 1)].IsMatch(Constants.ParamNameRegex);
+
                     if (x[..index].IsMatch(Constants.ParamNameRegex))
                         return index == x.Length - 1 || x[index + 1] != '=';
 
