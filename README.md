@@ -49,7 +49,7 @@ Request-Data | name`=`test, raw data field example(Only effective for JSON): age
 Here's a sample:
 
 ``` sh
-dotnet-http  https://reservation.weihanli.xyz/health test==1234 name=test age:=10 flag:=true job:='{"id": 1, "name": "test"}' --offline
+dotnet-http https://reservation.weihanli.xyz/health test==1234 name=test age:=10 flag:=true job:='{"id": 1, "name": "test"}' api-key:Abc12345 --offline
 ```
 
 ![sample](./images/sample.png)
