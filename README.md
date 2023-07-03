@@ -44,7 +44,7 @@ Type | Grammar
 -----|-------
 Query| name`==`test
 Header| X-Api-Key`:`test
-Request-Data | name`=`test, raw data field example(Only effective for JSON): age`:=`10, job`:=`'{"Id":1,"Name":"test"}'(Escape needed for Windows)
+Request-Data | name`=`test, raw data field example(Only effective for JSON): age`:=`10, job`:=`'{"Id":1,"Name":"test"}'(Escape may needed for Windows cmd or Windows PowerShell)
 
 Here's a sample:
 
