@@ -3,7 +3,6 @@
 
 namespace HTTPie.Abstractions;
 
-public interface IHttpHandlerMiddleware : IPlugin
+public interface IHttpHandlerMiddleware : IPlugin, IAsyncPipelineMiddleware<HttpClientHandler>
 {
-    Task Invoke(HttpClientHandler httpClientHandler, Func<HttpClientHandler, Task> next);
 }

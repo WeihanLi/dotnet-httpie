@@ -24,7 +24,7 @@ public sealed class HttpSslMiddleware : IHttpHandlerMiddleware
 
     public Option[] SupportedOptions() => new Option[] { DisableSslVerifyOption, SslProtocalOption, };
 
-    public Task Invoke(HttpClientHandler httpClientHandler, Func<HttpClientHandler, Task> next)
+    public Task InvokeAsync(HttpClientHandler httpClientHandler, Func<HttpClientHandler, Task> next)
     {
         if (_requestModel.ParseResult.HasOption(DisableSslVerifyOption))
         {

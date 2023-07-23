@@ -18,7 +18,7 @@ public sealed class FollowRedirectMiddleware : IHttpHandlerMiddleware
         _requestModel = requestModel;
     }
 
-    public Task Invoke(HttpClientHandler httpClientHandler, Func<HttpClientHandler, Task> next)
+    public Task InvokeAsync(HttpClientHandler httpClientHandler, Func<HttpClientHandler, Task> next)
     {
         if (_requestModel.ParseResult.HasOption(FollowOption)
             || _requestModel.ParseResult.HasOption(DownloadMiddleware.DownloadOption))
