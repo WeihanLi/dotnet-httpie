@@ -158,9 +158,8 @@ public static class Helpers
             .AddSingleton(sp =>
             {
                 var pipelineBuilder = PipelineBuilder.CreateAsync<HttpContext>();
-                foreach (var middleware in
-                         sp.GetServices<IResponseMiddleware>())
-                    pipelineBuilder.Use(middleware.Invoke);
+                foreach (var middleware in sp.GetServices<IResponseMiddleware>())
+                    pipelineBuilder.UseMiddleware(middleware);
                 return pipelineBuilder.Build();
             })
             // httpHandler pipeline

@@ -26,7 +26,7 @@ public sealed class DownloadMiddleware : IResponseMiddleware
         return new Option[] { DownloadOption, ContinueOption, OutputOption, CheckSumOption, CheckSumAlgOption };
     }
 
-    public async Task Invoke(HttpContext context, Func<HttpContext, Task> next)
+    public async Task InvokeAsync(HttpContext context, Func<HttpContext, Task> next)
     {
         var download = context.Request.ParseResult.HasOption(DownloadOption);
         if (!download)

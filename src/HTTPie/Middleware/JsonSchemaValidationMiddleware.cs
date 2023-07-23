@@ -32,7 +32,7 @@ public sealed class JsonSchemaValidationMiddleware : IResponseMiddleware
         return new Option[] { JsonSchemaPathOption, JsonSchemaValidationOutputFormatOption };
     }
 
-    public async Task Invoke(HttpContext context, Func<HttpContext, Task> next)
+    public async Task InvokeAsync(HttpContext context, Func<HttpContext, Task> next)
     {
         var schemaPath = context.Request.ParseResult.GetValueForOption(JsonSchemaPathOption)?.Trim();
         if (string.IsNullOrEmpty(schemaPath))

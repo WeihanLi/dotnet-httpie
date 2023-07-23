@@ -5,7 +5,6 @@ using HTTPie.Models;
 
 namespace HTTPie.Abstractions;
 
-public interface IResponseMiddleware : IPlugin
+public interface IResponseMiddleware : IPlugin, IAsyncPipelineMiddleware<HttpContext>
 {
-    Task Invoke(HttpContext context, Func<HttpContext, Task> next);
 }
