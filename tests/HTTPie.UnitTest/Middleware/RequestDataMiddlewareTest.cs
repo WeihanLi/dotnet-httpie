@@ -22,7 +22,7 @@ public class RequestDataMiddlewareTest
         await _serviceProvider.Handle(url, _ => Task.CompletedTask);
         var httpContext = _serviceProvider.GetRequiredService<HttpContext>();
         var middleware = new RequestDataMiddleware(httpContext);
-        await middleware.Invoke(httpContext.Request, _ => Task.CompletedTask);
+        await middleware.InvokeAsync(httpContext.Request, _ => Task.CompletedTask);
         Assert.Null(httpContext.Request.Body);
     }
 
@@ -34,7 +34,7 @@ public class RequestDataMiddlewareTest
         await _serviceProvider.Handle(input, _ => Task.CompletedTask);
         var httpContext = _serviceProvider.GetRequiredService<HttpContext>();
         var middleware = new RequestDataMiddleware(httpContext);
-        await middleware.Invoke(httpContext.Request, _ => Task.CompletedTask);
+        await middleware.InvokeAsync(httpContext.Request, _ => Task.CompletedTask);
         Assert.Null(httpContext.Request.Body);
     }
 
@@ -47,7 +47,7 @@ public class RequestDataMiddlewareTest
         await _serviceProvider.Handle(input, _ => Task.CompletedTask);
         var httpContext = _serviceProvider.GetRequiredService<HttpContext>();
         var middleware = new RequestDataMiddleware(httpContext);
-        await middleware.Invoke(httpContext.Request, _ => Task.CompletedTask);
+        await middleware.InvokeAsync(httpContext.Request, _ => Task.CompletedTask);
         Assert.Null(httpContext.Request.Body);
     }
 
@@ -60,7 +60,7 @@ public class RequestDataMiddlewareTest
         await _serviceProvider.Handle(input, _ => Task.CompletedTask);
         var httpContext = _serviceProvider.GetRequiredService<HttpContext>();
         var middleware = new RequestDataMiddleware(httpContext);
-        await middleware.Invoke(httpContext.Request, _ => Task.CompletedTask);
+        await middleware.InvokeAsync(httpContext.Request, _ => Task.CompletedTask);
         Assert.Null(httpContext.Request.Body);
     }
 
@@ -77,7 +77,7 @@ public class RequestDataMiddlewareTest
         await services.Handle(input, _ => Task.CompletedTask);
         var httpContext = services.GetRequiredService<HttpContext>();
         var middleware = new RequestDataMiddleware(httpContext);
-        await middleware.Invoke(httpContext.Request, _ => Task.CompletedTask);
+        await middleware.InvokeAsync(httpContext.Request, _ => Task.CompletedTask);
         Assert.NotNull(httpContext.Request.Body);
         Assert.Equal(@"{""Id"":1,""Name"":""Alice""}", httpContext.Request.Body);
     }

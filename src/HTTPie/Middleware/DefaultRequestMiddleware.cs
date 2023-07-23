@@ -23,7 +23,7 @@ public sealed class DefaultRequestMiddleware : IRequestMiddleware
 
     public Option[] SupportedOptions() => new Option[] { DebugOption, SchemaOption, HttpVersionOption, };
 
-    public Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
+    public Task InvokeAsync(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
         var schema = requestModel.ParseResult.GetValueForOption(SchemaOption);
         if (!string.IsNullOrEmpty(schema)) requestModel.Schema = schema;

@@ -29,7 +29,7 @@ public sealed class RequestDataMiddleware : IRequestMiddleware
 
     public Option[] SupportedOptions() => new Option[] { FormOption, JsonOption, RawDataOption };
 
-    public Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
+    public Task InvokeAsync(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
         var isFormData = requestModel.ParseResult.HasOption(FormOption);
         _httpContext.UpdateFlag(Constants.FlagNames.IsFormContentType, isFormData);

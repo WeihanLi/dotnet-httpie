@@ -24,7 +24,7 @@ public sealed class AuthorizationMiddleware : IRequestMiddleware
 
     public Option[] SupportedOptions() => new Option[] { AuthenticationTypeOption, AuthenticationValueOption };
 
-    public Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
+    public Task InvokeAsync(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
         if (requestModel.ParseResult.HasOption(AuthenticationValueOption))
         {

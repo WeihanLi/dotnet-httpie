@@ -10,7 +10,7 @@ namespace HTTPie.Middleware;
 
 public sealed class RequestHeadersMiddleware : IRequestMiddleware
 {
-    public Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
+    public Task InvokeAsync(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
         for (var i = requestModel.RequestItems.Count - 1; i >= 0; i--)
         {
