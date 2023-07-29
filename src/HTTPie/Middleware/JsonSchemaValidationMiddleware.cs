@@ -20,7 +20,9 @@ public sealed class JsonSchemaValidationMiddleware : IResponseMiddleware
 
 
     private static readonly Option<string> JsonSchemaPathOption = new("--json-schema-path", "Json schema path");
-    private static readonly Option<OutputFormat> JsonSchemaValidationOutputFormatOption = new("--json-schema-out-format", () => OutputFormat.Detailed, "Json schema validation result output format");
+
+    private static readonly Option<OutputFormat> JsonSchemaValidationOutputFormatOption =
+        new("--json-schema-out-format", () => OutputFormat.List, "Json schema validation result output format");
 
     public JsonSchemaValidationMiddleware(ILogger<JsonSchemaValidationMiddleware> logger)
     {
@@ -61,16 +63,19 @@ public sealed class JsonSchemaValidationMiddleware : IResponseMiddleware
             _logger.LogWarning(e, JsonSchemaLoadFailed);
             validationResultMessage = JsonSchemaLoadFailed;
         }
+
         if (jsonSchema is not null)
         {
             try
             {
-                var options = new ValidationOptions
+                var options = new EvaluationOptions()
                 {
-                    OutputFormat = context.Request.ParseResult.GetValueForOption(JsonSchemaValidationOutputFormatOption)
+                    OutputFormat =
+                        context.Request.ParseResult.GetValueForOption(JsonSchemaValidationOutputFormatOption)
                 };
-                var validateResult = jsonSchema.Validate(context.Response.Body, options);
-                validationResultMessage = $"{validateResult.IsValid},{validateResult.Message}".Trim(',');
+
+                var validateResult = jsonSchema.Evaluate(context.Response.Body, options);
+                validationResultMessage = $"{validateResult.IsValid},{validateResult.Errors.ToJson()}".Trim(',');
             }
             catch (Exception e)
             {
@@ -78,6 +83,7 @@ public sealed class JsonSchemaValidationMiddleware : IResponseMiddleware
                 validationResultMessage = JsonSchemaValidateFailed;
             }
         }
+
         context.Response.Headers.TryAdd(JsonSchemaValidationResultHeader, validationResultMessage);
 
         await next(context);
