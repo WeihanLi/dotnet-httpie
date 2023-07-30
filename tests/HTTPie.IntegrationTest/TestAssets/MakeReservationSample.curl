@@ -1,0 +1,4 @@
+curl -X 'POST' 'https://reservation.weihanli.xyz/api/Reservations'
+  -H 'accept:*/*'
+  -H 'Content-Type:application/json'
+  -d '{"ReservationForDate":"2023-07-30T01:27:12.457Z","ReservationPlaceId":"3fa85f64-5717-4562-b3fc-2c963f66afa6"}'
