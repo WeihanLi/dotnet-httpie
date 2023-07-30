@@ -9,13 +9,8 @@ public static class Constants
 
     public const string ParamNameRegex = @"^[a-zA-Z_][\w_\-]*$";
 
-    public const string PlainTextMediaType = "plain/text";
-    public const string JsonMediaType = "application/json";
-
     public const string ContentTypeHeaderName = "Content-Type";
     public const string ContentDispositionHeaderName = "Content-Disposition";
-    public const string FormContentType = "application/x-www-form-urlencoded;charset=utf-8";
-    public const string JsonContentType = "application/json;charset=utf-8";
 
     public const string RequestMethodExistsPropertyName = "RequestMethodExists";
     public const string ResponseOutputFormatPropertyName = "OutputFormat";

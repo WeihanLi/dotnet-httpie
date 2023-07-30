@@ -21,8 +21,8 @@ public sealed class RequestMapper : IRequestMapper
         if (!string.IsNullOrEmpty(requestModel.Body))
             request.Content = new StringContent(requestModel.Body, Encoding.UTF8,
                 httpContext.GetFlag(Constants.FlagNames.IsFormContentType)
-                    ? Constants.PlainTextMediaType
-                    : Constants.JsonMediaType);
+                    ? HttpHelper.TextPlainMediaType
+                    : HttpHelper.ApplicationJsonMediaType);
         if (requestModel.Headers is { Count: > 0 })
             foreach (var header in requestModel.Headers)
             {

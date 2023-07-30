@@ -20,10 +20,10 @@ public sealed class RequestDataMiddleware : IRequestMiddleware
     }
 
     private static readonly Option<bool> FormOption = new(new[] { "-f", "--form" },
-        $"The request is form data, and content type is '{Constants.FormContentType}'");
+        $"The request is form data, and content type is '{HttpHelper.FormDataContentType}'");
 
     private static readonly Option<bool> JsonOption = new(new[] { "-j", "--json" },
-        $"The request body is json by default, and content type is '{Constants.JsonContentType}'");
+        $"The request body is json by default, and content type is '{HttpHelper.JsonContentType}'");
 
     private static readonly Option<string> RawDataOption = new("--raw", $"The raw request body");
 
@@ -98,8 +98,8 @@ public sealed class RequestDataMiddleware : IRequestMiddleware
         if (requestModel.Body.IsNotNullOrEmpty())
         {
             requestModel.Headers[Constants.ContentTypeHeaderName] = isFormData
-                ? new StringValues(Constants.FormContentType)
-                : new StringValues(Constants.JsonContentType);
+                ? new StringValues(HttpHelper.FormDataContentType)
+                : new StringValues(HttpHelper.JsonContentType);
 
             var requestMethodExists = _httpContext.GetProperty<bool>(Constants.RequestMethodExistsPropertyName);
             if (!requestMethodExists)
