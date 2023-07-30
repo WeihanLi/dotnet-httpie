@@ -19,7 +19,8 @@ serviceCollection.AddLogging(builder =>
         {
             options.JsonWriterOptions = new JsonWriterOptions()
             {
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, Indented = true
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                Indented = true
             };
         });
     }
