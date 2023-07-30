@@ -5,6 +5,7 @@ using HTTPie.Abstractions;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -12,7 +13,8 @@ namespace HTTPie.Implement;
 
 public sealed class HttpParser : IHttpParser
 {
-    public async IAsyncEnumerable<HttpRequestMessageWrapper> ParseAsync(string filePath)
+    public async IAsyncEnumerable<HttpRequestMessageWrapper> ParseAsync(string filePath,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var fileScopedVariables = new Dictionary<string, string>();
         var fileScopedVariablesEnded = false;
@@ -26,7 +28,11 @@ public sealed class HttpParser : IHttpParser
 
         while (!reader.EndOfStream)
         {
+#if NET7_0_OR_GREATER
+            var line = await reader.ReadLineAsync(cancellationToken);
+#else
             var line = await reader.ReadLineAsync();
+#endif
             if (line.IsNullOrWhiteSpace()) continue;
             // variable definition handling
             if (line.StartsWith("@"))
@@ -190,7 +196,7 @@ public sealed class HttpParser : IHttpParser
             {
                 if (variable?.TryGetValue(variableName, out var variableValue) == true)
                 {
-                    textReplaced = textReplaced.Replace(match.Value, variableValue ?? string.Empty);
+                    textReplaced = textReplaced.Replace(match.Value, variableValue);
                     break;
                 }
             }

@@ -15,13 +15,14 @@ namespace HTTPie.Commands;
 
 public sealed class ExecuteCommand : Command
 {
-    private static readonly Argument<string> FilePathArgument = new("script", "The script to execute");
+    private static readonly Argument<string> FilePathArgument = new("scriptPath", "The script to execute");
 
     private static readonly Option<ExecuteScriptType> ExecuteScriptTypeOption =
-        new("--type", "The script type to execute");
+        new(new[] { "-t", "--type" }, "The script type to execute");
 
     public ExecuteCommand() : base("exec", "execute http request")
     {
+        AddOption(ExecuteScriptTypeOption);
         AddArgument(FilePathArgument);
     }
 
@@ -33,32 +34,39 @@ public sealed class ExecuteCommand : Command
             throw new InvalidOperationException("Invalid filePath");
         }
 
+        var requestExecutor = serviceProvider.GetRequiredService<IRawHttpRequestExecutor>();
+        var cancellationToken = invocationContext.GetCancellationToken();
+        var type = invocationContext.ParseResult.GetValueForOption(ExecuteScriptTypeOption);
+        var executeTask = type switch
+        {
+            ExecuteScriptType.Http => HandleHttpRequest(serviceProvider, requestExecutor, filePath, cancellationToken),
+            ExecuteScriptType.Curl => HandleCurlRequest(serviceProvider, requestExecutor, filePath, cancellationToken),
+            _ => throw new InvalidOperationException($"Not supported request type: {type}")
+        };
+        await executeTask;
+    }
+
+
+    private async Task HandleHttpRequest(IServiceProvider serviceProvider, IRawHttpRequestExecutor requestExecutor,
+        string filePath,
+        CancellationToken cancellationToken)
+    {
         var httpParser = serviceProvider.GetRequiredService<IHttpParser>();
-        var httpExecutor = serviceProvider.GetRequiredService<IRawHttpRequestExecutor>();
-        var requests = new Dictionary<string, HttpResponseMessage>();
+        var responseList = new Dictionary<string, HttpResponseMessage>();
         try
         {
-            await foreach (var request in httpParser.ParseAsync(filePath))
+            await foreach (var request in httpParser.ParseAsync(filePath, cancellationToken))
             {
-                await EnsureRequestVariableReferenceReplaced(request, requests);
-                if (!request.RequestMessage.Headers.TryGetValues("User-Agent", out _))
-                {
-                    request.RequestMessage.Headers.TryAddWithoutValidation("User-Agent", Constants.DefaultUserAgent);
-                }
+                await EnsureRequestVariableReferenceReplaced(request, responseList);
 
-                Console.WriteLine(request.Name);
-                Console.WriteLine("Request message:");
-                Console.WriteLine(await request.RequestMessage.ToRawMessageAsync());
-                var response = await httpExecutor.Execute(request, invocationContext.GetCancellationToken());
-                Console.WriteLine("Response message:");
-                Console.WriteLine(await response.ToRawMessageAsync());
-                Console.WriteLine();
-                requests[request.Name] = response;
+                var response = await ExecuteRequest(requestExecutor, request.RequestMessage, cancellationToken,
+                    request.Name);
+                responseList[request.Name] = response;
             }
         }
         finally
         {
-            foreach (var responseMessage in requests.Values)
+            foreach (var responseMessage in responseList.Values)
             {
                 try
                 {
@@ -70,10 +78,42 @@ public sealed class ExecuteCommand : Command
                 }
             }
 
-            requests.Clear();
+            responseList.Clear();
         }
     }
 
+    private async Task HandleCurlRequest(IServiceProvider serviceProvider, IRawHttpRequestExecutor requestExecutor,
+        string filePath, CancellationToken cancellationToken)
+    {
+        var curlParser = serviceProvider.GetRequiredService<ICurlParser>();
+        var curlScript = await File.ReadAllTextAsync(filePath, cancellationToken);
+        using var requestMessage = curlParser.Parse(curlScript);
+        using var response = await ExecuteRequest(requestExecutor, requestMessage, cancellationToken);
+    }
+
+    private async Task<HttpResponseMessage> ExecuteRequest(
+        IRawHttpRequestExecutor requestExecutor,
+        HttpRequestMessage requestMessage,
+        CancellationToken cancellationToken,
+        string? requestName = null)
+    {
+        await requestExecutor.ExecuteAsync(requestMessage, cancellationToken);
+        if (!requestMessage.Headers.TryGetValues("User-Agent", out _))
+        {
+            requestMessage.Headers.TryAddWithoutValidation("User-Agent", Constants.DefaultUserAgent);
+        }
+
+        if (!string.IsNullOrEmpty(requestName)) Console.WriteLine(requestName);
+
+        Console.WriteLine("Request message:");
+        Console.WriteLine(await requestMessage.ToRawMessageAsync(cancellationToken));
+        var response = await requestExecutor.ExecuteAsync(requestMessage, cancellationToken);
+        Console.WriteLine("Response message:");
+        Console.WriteLine(await response.ToRawMessageAsync(cancellationToken));
+        Console.WriteLine();
+
+        return response;
+    }
 
     private static readonly Regex RequestVariableNameReferenceRegex =
         new(@"\{\{(?<requestName>\s?[a-zA-Z_]\w*)\.(request|response)\.(headers|body).*\s?\}\}",
@@ -160,7 +200,6 @@ public sealed class ExecuteCommand : Command
         }
     }
 
-
     private async Task<string> GetRequestVariableValue(Match match,
         Dictionary<string, HttpResponseMessage> responseMessages)
     {
@@ -230,7 +269,7 @@ public sealed class ExecuteCommand : Command
 
 public enum ExecuteScriptType
 {
-    Http,
-    // Curl,
-    // Har,
+    Http = 0,
+    Curl = 1,
+    // Har = 2,
 }

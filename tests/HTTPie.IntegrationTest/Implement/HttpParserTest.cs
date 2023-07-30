@@ -26,7 +26,7 @@ public class HttpParserTest
         var parser = new HttpParser();
         var count = 0;
 
-        await foreach (var request in parser.ParseAsync(path))
+        await foreach (var request in parser.ParseAsync(path, new CancellationToken()))
         {
             Assert.NotNull(request);
             count++;
