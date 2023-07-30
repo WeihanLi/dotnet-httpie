@@ -13,7 +13,7 @@ public sealed class CurlParser : ICurlParser
         Guard.NotNullOrEmpty(curlScript);
         var normalizedScript = curlScript
             .Replace("\\\n", " ")
-            .Replace($"\\\r\n", " ")
+            .Replace("\\\r\n", " ")
             .Replace("\r\n", " ")
             .Replace("\n ", " ")
             .Trim();
@@ -94,7 +94,10 @@ public sealed class CurlParser : ICurlParser
         // headers
         foreach (var headerGroup in headers.GroupBy(x => x.Key))
         {
-            request.Headers.TryAddWithoutValidation(headerGroup.Key, headers.Select(x => x.Value));
+            request.TryAddHeader(
+                headerGroup.Key,
+                headerGroup.Select(x => x.Value).StringJoin(",")
+            );
         }
 
         return request;
