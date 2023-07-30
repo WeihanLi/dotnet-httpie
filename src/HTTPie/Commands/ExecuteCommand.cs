@@ -97,7 +97,6 @@ public sealed class ExecuteCommand : Command
         CancellationToken cancellationToken,
         string? requestName = null)
     {
-        await requestExecutor.ExecuteAsync(requestMessage, cancellationToken);
         if (!requestMessage.Headers.TryGetValues("User-Agent", out _))
         {
             requestMessage.Headers.TryAddWithoutValidation("User-Agent", Constants.DefaultUserAgent);
