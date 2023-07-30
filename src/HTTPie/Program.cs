@@ -4,6 +4,7 @@
 using HTTPie.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 
@@ -18,8 +19,7 @@ serviceCollection.AddLogging(builder =>
         {
             options.JsonWriterOptions = new JsonWriterOptions()
             {
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                Indented = true
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, Indented = true
             };
         });
     }
@@ -48,4 +48,9 @@ if (args.Contains("--version"))
 
 var logger = services.GetRequiredService<ILogger>();
 logger.PrintInputParameters(args.StringJoin(";"));
+
+#if DEBUG
+if (debugEnabled && !Debugger.IsAttached) Debugger.Launch();
+#endif
+
 return await services.Handle(args);
