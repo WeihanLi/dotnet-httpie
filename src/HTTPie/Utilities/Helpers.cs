@@ -33,8 +33,7 @@ public static class Helpers
 
     public static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
-        WriteIndented = true,
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
 
     private static IServiceCollection AddHttpHandlerMiddleware<THttpHandlerMiddleware>(
@@ -138,6 +137,7 @@ public static class Helpers
             .AddSingleton<IRequestItemParser, RequestItemParser>()
             .AddSingleton<IRequestExecutor, RequestExecutor>()
             .AddSingleton<IHttpParser, HttpParser>()
+            .AddSingleton<ICurlParser, CurlParser>()
             .AddSingleton<IRawHttpRequestExecutor, RawHttpRequestExecutor>()
             .AddSingleton<IRequestMapper, RequestMapper>()
             .AddSingleton<IResponseMapper, ResponseMapper>()
@@ -199,7 +199,8 @@ public static class Helpers
     }
 
 #if NET7_0_OR_GREATER
-    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("Using Microsoft.Extensions.DependencyInjection requires generating code dynamically at runtime. For example, when using enumerable and generic ValueType services.")]
+    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(
+        "Using Microsoft.Extensions.DependencyInjection requires generating code dynamically at runtime. For example, when using enumerable and generic ValueType services.")]
 # endif
     public static async Task<int> Handle(this IServiceProvider services, string[] args)
     {
@@ -207,7 +208,8 @@ public static class Helpers
         return await commandParser.InvokeAsync(args);
     }
 #if NET7_0_OR_GREATER
-    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("Using Microsoft.Extensions.DependencyInjection requires generating code dynamically at runtime. For example, when using enumerable and generic ValueType services.")]
+    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(
+        "Using Microsoft.Extensions.DependencyInjection requires generating code dynamically at runtime. For example, when using enumerable and generic ValueType services.")]
 # endif
     public static async Task<int> Handle(this IServiceProvider services, string commandLine,
         Func<InvocationContext, Task>? handler = null)
