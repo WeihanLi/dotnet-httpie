@@ -26,17 +26,7 @@ public sealed class RequestMapper : IRequestMapper
         if (requestModel.Headers is { Count: > 0 })
             foreach (var header in requestModel.Headers)
             {
-                if (Constants.ContentTypeHeaderName.EqualsIgnoreCase(header.Key))
-                {
-                    if (request.Content != null)
-                        request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse(header.Value);
-                    continue;
-                }
-
-                if (HttpHelper.IsWellKnownContentHeader(header.Key) && request.Content != null)
-                    request.Content.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
-                else
-                    request.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
+                request.TryAddHeader(header.Key, header.Value.ToString());
             }
         return Task.FromResult(request);
     }
