@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using WeihanLi.Common.Http;
 
 namespace HTTPie.Commands;
 
@@ -97,12 +98,8 @@ public sealed class ExecuteCommand : Command
         CancellationToken cancellationToken,
         string? requestName = null)
     {
-        if (!requestMessage.Headers.TryGetValues("User-Agent", out _))
-        {
-            requestMessage.Headers.TryAddWithoutValidation("User-Agent", Constants.DefaultUserAgent);
-        }
-
-        if (!string.IsNullOrEmpty(requestName)) Console.WriteLine(requestName);
+        requestMessage.TryAddHeaderIfNotExists(HttpHeaderNames.UserAgent, Constants.DefaultUserAgent);
+        ConsoleHelper.WriteLineIf(requestName!, !string.IsNullOrEmpty(requestName));
 
         Console.WriteLine("Request message:");
         Console.WriteLine(await requestMessage.ToRawMessageAsync(cancellationToken));
