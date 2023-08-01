@@ -4,7 +4,6 @@
 using HTTPie.Abstractions;
 using HTTPie.Models;
 using HTTPie.Utilities;
-using System.Net.Http.Headers;
 using System.Text;
 
 namespace HTTPie.Implement;
