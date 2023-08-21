@@ -4,21 +4,21 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="JsonPath.Net" Version="0.6.3" />
-    <PackageVersion Include="JsonSchema.Net" Version="4.1.8" />
+    <PackageVersion Include="JsonPath.Net" Version="0.6.4" />
+    <PackageVersion Include="JsonSchema.Net" Version="5.1.3" />
     <PackageVersion Include="MathNet.Numerics.Signed" Version="5.0.0" />
     <PackageVersion Condition="'$(TargetFramework)'=='net6.0'" Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
     <PackageVersion Condition="'$(TargetFramework)'=='net7.0'" Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-    <PackageVersion Include="WeihanLi.Common" Version="1.0.60-preview-20230730-064409" />
+    <PackageVersion Include="WeihanLi.Common" Version="1.0.60-preview-20230820-145922" />
     <PackageVersion Include="WeihanLi.Npoi" Version="2.4.2" />
   </ItemGroup>
   <ItemGroup>
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.6.3" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.7.1" />
     <PackageVersion Include="FluentAssertions" Version="6.11.0" />
-    <PackageVersion Include="Moq" Version="4.18.4" />
+    <PackageVersion Include="Moq" Version="4.20.69" />
     <PackageVersion Include="xunit" Version="2.5.0" />
-    <PackageVersion Include="Xunit.DependencyInjection" Version="8.7.2" />
+    <PackageVersion Include="Xunit.DependencyInjection" Version="8.8.0" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
   </ItemGroup>
