@@ -3,7 +3,6 @@
 
 using HTTPie.Abstractions;
 using HTTPie.Utilities;
-using System.Text;
 
 namespace HTTPie.Implement;
 
