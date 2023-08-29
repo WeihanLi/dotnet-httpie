@@ -10,9 +10,9 @@ using OutputFormat = Json.Schema.OutputFormat;
 
 namespace HTTPie.Middleware;
 
-public sealed class JsonSchemaValidationMiddleware : IResponseMiddleware
+public sealed class JsonSchemaValidationMiddleware(ILogger<JsonSchemaValidationMiddleware> logger) : IResponseMiddleware
 {
-    private readonly ILogger<JsonSchemaValidationMiddleware> _logger;
+    private readonly ILogger<JsonSchemaValidationMiddleware> _logger = logger;
     private const string JsonSchemaValidationResultHeader = "X-JsonSchema-ValidationResult";
 
     private const string JsonSchemaLoadFailed = "JsonSchema fail to load";
@@ -23,11 +23,6 @@ public sealed class JsonSchemaValidationMiddleware : IResponseMiddleware
 
     private static readonly Option<OutputFormat> JsonSchemaValidationOutputFormatOption =
         new("--json-schema-out-format", () => OutputFormat.List, "Json schema validation result output format");
-
-    public JsonSchemaValidationMiddleware(ILogger<JsonSchemaValidationMiddleware> logger)
-    {
-        _logger = logger;
-    }
 
     public Option[] SupportedOptions()
     {

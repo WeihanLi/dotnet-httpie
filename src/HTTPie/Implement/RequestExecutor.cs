@@ -12,14 +12,21 @@ using WeihanLi.Common.Extensions;
 
 namespace HTTPie.Implement;
 
-public sealed partial class RequestExecutor : IRequestExecutor
+public sealed partial class RequestExecutor(
+    IRequestMapper requestMapper,
+    IResponseMapper responseMapper,
+    Func<HttpClientHandler, Task> httpHandlerPipeline,
+    Func<HttpRequestModel, Task> requestPipeline,
+    Func<HttpContext, Task> responsePipeline,
+    ILogger logger
+    ) : IRequestExecutor
 {
-    private readonly Func<HttpClientHandler, Task> _httpHandlerPipeline;
-    private readonly ILogger _logger;
-    private readonly IRequestMapper _requestMapper;
-    private readonly Func<HttpRequestModel, Task> _requestPipeline;
-    private readonly IResponseMapper _responseMapper;
-    private readonly Func<HttpContext, Task> _responsePipeline;
+    private readonly Func<HttpClientHandler, Task> _httpHandlerPipeline = httpHandlerPipeline;
+    private readonly ILogger _logger = logger;
+    private readonly IRequestMapper _requestMapper = requestMapper;
+    private readonly Func<HttpRequestModel, Task> _requestPipeline = requestPipeline;
+    private readonly IResponseMapper _responseMapper = responseMapper;
+    private readonly Func<HttpContext, Task> _responsePipeline = responsePipeline;
 
     private static readonly Option<double> TimeoutOption = new("--timeout", "Request timeout in seconds");
 
@@ -34,23 +41,6 @@ public sealed partial class RequestExecutor : IRequestExecutor
     public Option[] SupportedOptions()
     {
         return new Option[] { TimeoutOption, IterationOption, DurationOption, VirtualUserOption };
-    }
-
-    public RequestExecutor(
-        IRequestMapper requestMapper,
-        IResponseMapper responseMapper,
-        Func<HttpClientHandler, Task> httpHandlerPipeline,
-        Func<HttpRequestModel, Task> requestPipeline,
-        Func<HttpContext, Task> responsePipeline,
-        ILogger logger
-    )
-    {
-        _requestMapper = requestMapper;
-        _responseMapper = responseMapper;
-        _httpHandlerPipeline = httpHandlerPipeline;
-        _requestPipeline = requestPipeline;
-        _responsePipeline = responsePipeline;
-        _logger = logger;
     }
 
     public async ValueTask ExecuteAsync(HttpContext httpContext)

@@ -7,15 +7,9 @@ using System.Security.Authentication;
 
 namespace HTTPie.Middleware;
 
-public sealed class HttpSslMiddleware : IHttpHandlerMiddleware
+public sealed class HttpSslMiddleware(HttpRequestModel requestModel) : IHttpHandlerMiddleware
 {
-    private readonly HttpRequestModel _requestModel;
-
-    public HttpSslMiddleware(HttpRequestModel requestModel)
-    {
-        _requestModel = requestModel;
-    }
-
+    private readonly HttpRequestModel _requestModel = requestModel;
     private static readonly Option<bool> DisableSslVerifyOption =
         new(new[] { "--no-verify", "--verify=no" }, "disable ssl cert check");
 

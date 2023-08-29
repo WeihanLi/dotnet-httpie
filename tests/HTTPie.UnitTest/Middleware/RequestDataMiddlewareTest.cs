@@ -5,14 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace HTTPie.UnitTest.Middleware;
 
-public class RequestDataMiddlewareTest
+public class RequestDataMiddlewareTest(IServiceProvider serviceProvider)
 {
-    private readonly IServiceProvider _serviceProvider;
-
-    public RequestDataMiddlewareTest(IServiceProvider serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
-    }
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
 
     [Theory]
     [InlineData("http://localhost:5000/api/values?name=test&hello=world")]

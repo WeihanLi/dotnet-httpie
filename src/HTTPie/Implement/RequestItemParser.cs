@@ -8,14 +8,9 @@ using Microsoft.Extensions.Logging;
 
 namespace HTTPie.Implement;
 
-public sealed class RequestItemParser : IRequestItemParser
+public sealed class RequestItemParser(ILogger logger) : IRequestItemParser
 {
-    private readonly ILogger _logger;
-
-    public RequestItemParser(ILogger logger)
-    {
-        _logger = logger;
-    }
+    private readonly ILogger _logger = logger;
 
     public Task ParseAsync(HttpRequestModel request)
     {

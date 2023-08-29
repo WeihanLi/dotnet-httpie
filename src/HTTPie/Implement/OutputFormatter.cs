@@ -23,10 +23,10 @@ public enum PrettyOptions
     All = 3
 }
 
-public sealed class OutputFormatter : IOutputFormatter
+public sealed class OutputFormatter(IServiceProvider serviceProvider, ILogger<OutputFormatter> logger) : IOutputFormatter
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly ILogger<OutputFormatter> _logger;
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
+    private readonly ILogger<OutputFormatter> _logger = logger;
 
     private static readonly Option<PrettyOptions> PrettyOption = new("--pretty", () => PrettyOptions.All,
         "pretty output");
@@ -47,13 +47,6 @@ public sealed class OutputFormatter : IOutputFormatter
 
     private static readonly Option<string> OutputPrintModeOption = new(new[] { "-p", "--print" },
         "print mode, output specific info,H:request headers,B:request body,h:response headers,b:response body");
-
-
-    public OutputFormatter(IServiceProvider serviceProvider, ILogger<OutputFormatter> logger)
-    {
-        _serviceProvider = serviceProvider;
-        _logger = logger;
-    }
 
     public Option[] SupportedOptions() => new Option[]
     {

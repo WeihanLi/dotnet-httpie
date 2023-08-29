@@ -10,15 +10,9 @@ using WeihanLi.Common.Extensions;
 
 namespace HTTPie.Middleware;
 
-public sealed class RequestDataMiddleware : IRequestMiddleware
+public sealed class RequestDataMiddleware(HttpContext httpContext) : IRequestMiddleware
 {
-    private readonly HttpContext _httpContext;
-
-    public RequestDataMiddleware(HttpContext httpContext)
-    {
-        _httpContext = httpContext;
-    }
-
+    private readonly HttpContext _httpContext = httpContext;
     private static readonly Option<bool> FormOption = new(new[] { "-f", "--form" },
         $"The request is form data, and content type is '{HttpHelper.FormDataContentType}'");
 
