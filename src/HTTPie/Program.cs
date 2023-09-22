@@ -7,33 +7,14 @@ using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using WeihanLi.Common.Helpers.Hosting;
 
 var debugEnabled = args.Contains("--debug", StringComparer.OrdinalIgnoreCase);
-var logAsJson = args.Contains("--logAsJson", StringComparer.OrdinalIgnoreCase);
-var serviceCollection = new ServiceCollection();
-serviceCollection.AddLogging(builder =>
-{
-    if (logAsJson)
-    {
-        builder.AddJsonConsole(options =>
-        {
-            options.JsonWriterOptions = new JsonWriterOptions()
-            {
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                Indented = true
-            };
-        });
-    }
-    else
-    {
-        builder.AddConsole();
-    }
-
-    builder.SetMinimumLevel(debugEnabled ? LogLevel.Debug : LogLevel.Warning);
-});
-serviceCollection.RegisterApplicationServices();
-await using var services = serviceCollection.BuildServiceProvider();
-
+var appBuilder = AppHost.CreateBuilder();
+appBuilder.Logging.AddConsole();
+appBuilder.Logging.SetMinimumLevel(debugEnabled ? LogLevel.Debug : LogLevel.Warning);
+appBuilder.Services.RegisterApplicationServices();
+var app = appBuilder.Build();
 // output helps when no argument or there's only "-h"/"/h"
 args = args switch
 {
@@ -47,11 +28,12 @@ if (args.Contains("--version"))
     return 0;
 }
 
-var logger = services.GetRequiredService<ILogger>();
-logger.PrintInputParameters(args.StringJoin(";"));
-
+if (debugEnabled)
+{
+    app.Logger.PrintInputParameters(args.StringJoin(";"));
 #if DEBUG
-if (debugEnabled && !Debugger.IsAttached) Debugger.Launch();
+    if (!Debugger.IsAttached) Debugger.Launch();
 #endif
+}
 
-return await services.Handle(args);
+return await app.Services.Handle(args);
