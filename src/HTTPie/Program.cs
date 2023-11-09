@@ -2,11 +2,8 @@
 // Licensed under the MIT license.
 
 using HTTPie.Utilities;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
-using System.Text.Encodings.Web;
-using System.Text.Json;
 using WeihanLi.Common.Helpers.Hosting;
 
 var debugEnabled = args.Contains("--debug", StringComparer.OrdinalIgnoreCase);
