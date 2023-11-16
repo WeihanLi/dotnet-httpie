@@ -9,8 +9,9 @@
     <PackageVersion Include="MathNet.Numerics.Signed" Version="5.0.0" />
     <PackageVersion Condition="'$(TargetFramework)'=='net6.0'" Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
     <PackageVersion Condition="'$(TargetFramework)'=='net7.0'" Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
+    <PackageVersion Condition="'$(TargetFramework)'=='net8.0'" Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-    <PackageVersion Include="WeihanLi.Common" Version="1.0.60-preview-20231105-053855" />
+    <PackageVersion Include="WeihanLi.Common" Version="1.0.60" />
     <PackageVersion Include="WeihanLi.Npoi" Version="2.4.2" />
   </ItemGroup>
   <ItemGroup>
@@ -19,11 +20,9 @@
     <PackageVersion Include="Moq" Version="4.20.69" />
     <PackageVersion Include="xunit" Version="2.6.1" />
     <PackageVersion Include="Xunit.DependencyInjection" Version="8.9.0" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.3" />
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
   </ItemGroup>
   <ItemGroup>
     <GlobalPackageReference Include="PolySharp" Version="1.13.2" />
-    <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
   </ItemGroup>
 </Project>
