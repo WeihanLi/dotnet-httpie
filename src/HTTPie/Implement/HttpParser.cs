@@ -13,7 +13,12 @@ namespace HTTPie.Implement;
 
 public sealed class HttpParser : IHttpParser
 {
-    public async IAsyncEnumerable<HttpRequestMessageWrapper> ParseAsync(string filePath,
+    public Task<HttpRequestMessage> ParseScriptAsync(string script, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async IAsyncEnumerable<HttpRequestMessageWrapper> ParseFileAsync(string filePath,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var fileScopedVariables = new Dictionary<string, string>();

@@ -2,13 +2,14 @@
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
+using HTTPie.Models;
 using HTTPie.Utilities;
 
 namespace HTTPie.Implement;
 
 public sealed class CurlParser : ICurlParser
 {
-    public HttpRequestMessage Parse(string curlScript)
+    public Task<HttpRequestMessage> ParseScriptAsync(string curlScript, CancellationToken cancellationToken = default)
     {
         Guard.NotNullOrEmpty(curlScript);
         var normalizedScript = curlScript
@@ -100,6 +101,12 @@ public sealed class CurlParser : ICurlParser
             );
         }
 
-        return request;
+        return request.WrapTask();
+    }
+
+    public IAsyncEnumerable<HttpRequestMessageWrapper> ParseFileAsync(string filePath,
+        CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 }

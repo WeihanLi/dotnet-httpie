@@ -9,19 +9,19 @@ public sealed class CurlParserTest
     [InlineData("")]
     [InlineData(null)]
     [InlineData("Hello World")]
-    public void InvalidParseTest(string script)
+    public async Task InvalidParseTest(string script)
     {
         var parser = new CurlParser();
-        Assert.ThrowsAny<ArgumentException>(() => parser.Parse(script));
+        await Assert.ThrowsAnyAsync<ArgumentException>(() => parser.ParseScriptAsync(script));
     }
 
 
     [Theory]
     [MemberData(nameof(CurlScriptTestData))]
-    public void ParseTest(string script)
+    public async Task ParseTest(string script)
     {
         var parser = new CurlParser();
-        var request = parser.Parse(script);
+        var request = await parser.ParseScriptAsync(script);
         Assert.NotNull(request);
     }
 

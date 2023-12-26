@@ -56,7 +56,7 @@ public sealed class ExecuteCommand : Command
         var responseList = new Dictionary<string, HttpResponseMessage>();
         try
         {
-            await foreach (var request in httpParser.ParseAsync(filePath, cancellationToken))
+            await foreach (var request in httpParser.ParseFileAsync(filePath, cancellationToken))
             {
                 await EnsureRequestVariableReferenceReplaced(request, responseList);
 
@@ -88,7 +88,7 @@ public sealed class ExecuteCommand : Command
     {
         var curlParser = serviceProvider.GetRequiredService<ICurlParser>();
         var curlScript = await File.ReadAllTextAsync(filePath, cancellationToken);
-        using var requestMessage = curlParser.Parse(curlScript);
+        using var requestMessage = await curlParser.ParseScriptAsync(curlScript, cancellationToken);
         using var response = await ExecuteRequest(requestExecutor, requestMessage, cancellationToken);
     }
 

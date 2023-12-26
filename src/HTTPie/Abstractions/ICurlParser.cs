@@ -3,7 +3,6 @@
 
 namespace HTTPie.Abstractions;
 
-public interface ICurlParser
+public interface ICurlParser : IHttpParser
 {
-    HttpRequestMessage Parse(string curlScript);
 }
