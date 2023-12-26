@@ -15,5 +15,4 @@ Accept: {{acceptMediaType}}
 
 ###
 # @name reservationPlacesWithTimestamp
-@acceptMediaType = application/json
 GET {{baseUrl}}/api/ReservationPlaces?t={{$env timestamp}}

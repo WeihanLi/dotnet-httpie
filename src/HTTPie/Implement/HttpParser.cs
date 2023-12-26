@@ -5,6 +5,7 @@ using HTTPie.Abstractions;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -12,7 +13,17 @@ namespace HTTPie.Implement;
 
 public sealed class HttpParser : IHttpParser
 {
-    public async IAsyncEnumerable<HttpRequestMessageWrapper> ParseAsync(string filePath)
+    private const string DotEnvFileName = ".env";
+    private const string HttpEnvFileName = "httpenv.json";
+    private const string UserHttpEnvFileName = "httpenv.json.user";
+
+    public Task<HttpRequestMessage> ParseScriptAsync(string script, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async IAsyncEnumerable<HttpRequestMessageWrapper> ParseFileAsync(string filePath,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var fileScopedVariables = new Dictionary<string, string>();
         var fileScopedVariablesEnded = false;
@@ -26,7 +37,11 @@ public sealed class HttpParser : IHttpParser
 
         while (!reader.EndOfStream)
         {
+#if NET7_0_OR_GREATER
+            var line = await reader.ReadLineAsync(cancellationToken);
+#else
             var line = await reader.ReadLineAsync();
+#endif
             if (line.IsNullOrWhiteSpace()) continue;
             // variable definition handling
             if (line.StartsWith("@"))
@@ -146,7 +161,7 @@ public sealed class HttpParser : IHttpParser
             {
                 var contentHeaders = requestMessage.Content?.Headers;
                 requestMessage.Content = new StringContent(requestBodyBuilder.ToString(), Encoding.UTF8,
-                    requestMessage.Content?.Headers.ContentType?.MediaType ?? Constants.JsonMediaType);
+                    requestMessage.Content?.Headers.ContentType?.MediaType ?? HttpHelper.ApplicationJsonMediaType);
                 if (contentHeaders != null)
                 {
                     foreach (var header in contentHeaders)
@@ -190,7 +205,7 @@ public sealed class HttpParser : IHttpParser
             {
                 if (variable?.TryGetValue(variableName, out var variableValue) == true)
                 {
-                    textReplaced = textReplaced.Replace(match.Value, variableValue ?? string.Empty);
+                    textReplaced = textReplaced.Replace(match.Value, variableValue);
                     break;
                 }
             }

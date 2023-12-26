@@ -10,7 +10,7 @@ namespace HTTPie.Middleware;
 
 public sealed class DefaultResponseMiddleware : IResponseMiddleware
 {
-    public Task Invoke(HttpContext context, Func<HttpContext, Task> next)
+    public Task InvokeAsync(HttpContext context, Func<HttpContext, Task> next)
     {
         var outputFormat = OutputFormatter.GetOutputFormat(context);
         if ((outputFormat & OutputFormat.Timestamp) != 0)

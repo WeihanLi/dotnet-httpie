@@ -7,14 +7,9 @@ using Xunit.Abstractions;
 
 namespace HTTPie.IntegrationTest.Implement;
 
-public class HttpParserTest
+public class HttpParserTest(ITestOutputHelper outputHelper)
 {
-    private readonly ITestOutputHelper _outputHelper;
-
-    public HttpParserTest(ITestOutputHelper outputHelper)
-    {
-        _outputHelper = outputHelper;
-    }
+    private readonly ITestOutputHelper _outputHelper = outputHelper;
 
     [Theory]
     [InlineData("HttpStartedSample.http")]
@@ -26,7 +21,7 @@ public class HttpParserTest
         var parser = new HttpParser();
         var count = 0;
 
-        await foreach (var request in parser.ParseAsync(path))
+        await foreach (var request in parser.ParseFileAsync(path, new CancellationToken()))
         {
             Assert.NotNull(request);
             count++;

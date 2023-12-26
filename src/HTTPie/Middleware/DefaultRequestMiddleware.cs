@@ -8,22 +8,16 @@ using Microsoft.Extensions.Logging;
 
 namespace HTTPie.Middleware;
 
-public sealed class DefaultRequestMiddleware : IRequestMiddleware
+public sealed class DefaultRequestMiddleware(ILogger logger) : IRequestMiddleware
 {
-    private readonly ILogger _logger;
-
-    public DefaultRequestMiddleware(ILogger logger)
-    {
-        _logger = logger;
-    }
-
+    private readonly ILogger _logger = logger;
     private static readonly Option<bool> DebugOption = new("--debug", "Enable debug mode, output debug log");
     private static readonly Option<string> SchemaOption = new("--schema", "The HTTP request schema");
     private static readonly Option<Version> HttpVersionOption = new("--httpVersion", "The HTTP request HTTP version");
 
     public Option[] SupportedOptions() => new Option[] { DebugOption, SchemaOption, HttpVersionOption, };
 
-    public Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
+    public Task InvokeAsync(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
         var schema = requestModel.ParseResult.GetValueForOption(SchemaOption);
         if (!string.IsNullOrEmpty(schema)) requestModel.Schema = schema;

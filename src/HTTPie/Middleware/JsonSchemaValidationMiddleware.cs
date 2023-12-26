@@ -10,9 +10,9 @@ using OutputFormat = Json.Schema.OutputFormat;
 
 namespace HTTPie.Middleware;
 
-public sealed class JsonSchemaValidationMiddleware : IResponseMiddleware
+public sealed class JsonSchemaValidationMiddleware(ILogger<JsonSchemaValidationMiddleware> logger) : IResponseMiddleware
 {
-    private readonly ILogger<JsonSchemaValidationMiddleware> _logger;
+    private readonly ILogger<JsonSchemaValidationMiddleware> _logger = logger;
     private const string JsonSchemaValidationResultHeader = "X-JsonSchema-ValidationResult";
 
     private const string JsonSchemaLoadFailed = "JsonSchema fail to load";
@@ -20,19 +20,16 @@ public sealed class JsonSchemaValidationMiddleware : IResponseMiddleware
 
 
     private static readonly Option<string> JsonSchemaPathOption = new("--json-schema-path", "Json schema path");
-    private static readonly Option<OutputFormat> JsonSchemaValidationOutputFormatOption = new("--json-schema-out-format", () => OutputFormat.Detailed, "Json schema validation result output format");
 
-    public JsonSchemaValidationMiddleware(ILogger<JsonSchemaValidationMiddleware> logger)
-    {
-        _logger = logger;
-    }
+    private static readonly Option<OutputFormat> JsonSchemaValidationOutputFormatOption =
+        new("--json-schema-out-format", () => OutputFormat.List, "Json schema validation result output format");
 
     public Option[] SupportedOptions()
     {
         return new Option[] { JsonSchemaPathOption, JsonSchemaValidationOutputFormatOption };
     }
 
-    public async Task Invoke(HttpContext context, Func<HttpContext, Task> next)
+    public async Task InvokeAsync(HttpContext context, Func<HttpContext, Task> next)
     {
         var schemaPath = context.Request.ParseResult.GetValueForOption(JsonSchemaPathOption)?.Trim();
         if (string.IsNullOrEmpty(schemaPath))
@@ -61,16 +58,19 @@ public sealed class JsonSchemaValidationMiddleware : IResponseMiddleware
             _logger.LogWarning(e, JsonSchemaLoadFailed);
             validationResultMessage = JsonSchemaLoadFailed;
         }
+
         if (jsonSchema is not null)
         {
             try
             {
-                var options = new ValidationOptions
+                var options = new EvaluationOptions()
                 {
-                    OutputFormat = context.Request.ParseResult.GetValueForOption(JsonSchemaValidationOutputFormatOption)
+                    OutputFormat =
+                        context.Request.ParseResult.GetValueForOption(JsonSchemaValidationOutputFormatOption)
                 };
-                var validateResult = jsonSchema.Validate(context.Response.Body, options);
-                validationResultMessage = $"{validateResult.IsValid},{validateResult.Message}".Trim(',');
+
+                var validateResult = jsonSchema.Evaluate(context.Response.Body, options);
+                validationResultMessage = $"{validateResult.IsValid},{validateResult.Errors.ToJson()}".Trim(',');
             }
             catch (Exception e)
             {
@@ -78,6 +78,7 @@ public sealed class JsonSchemaValidationMiddleware : IResponseMiddleware
                 validationResultMessage = JsonSchemaValidateFailed;
             }
         }
+
         context.Response.Headers.TryAdd(JsonSchemaValidationResultHeader, validationResultMessage);
 
         await next(context);

@@ -7,7 +7,8 @@ namespace HTTPie.Utilities;
 
 public static class HttpMessageExtensions
 {
-    public static async Task<string> ToRawMessageAsync(this HttpRequestMessage httpRequestMessage)
+    public static async Task<string> ToRawMessageAsync(this HttpRequestMessage httpRequestMessage,
+        CancellationToken cancellationToken = default)
     {
         var messageBuilder = new StringBuilder();
 
@@ -31,7 +32,7 @@ public static class HttpMessageExtensions
 
         if (httpRequestMessage.Content != null)
         {
-            var body = await httpRequestMessage.Content.ReadAsStringAsync();
+            var body = await httpRequestMessage.Content.ReadAsStringAsync(cancellationToken);
             if (!string.IsNullOrEmpty(body))
             {
                 messageBuilder.AppendLine();
@@ -43,7 +44,8 @@ public static class HttpMessageExtensions
     }
 
 
-    public static async Task<string> ToRawMessageAsync(this HttpResponseMessage httpResponseMessage)
+    public static async Task<string> ToRawMessageAsync(this HttpResponseMessage httpResponseMessage,
+        CancellationToken cancellationToken = default)
     {
         var messageBuilder = new StringBuilder();
 
@@ -52,7 +54,7 @@ public static class HttpMessageExtensions
         messageBuilder.AppendLine(headLine);
 
         var headersDictionary = httpResponseMessage.Headers.ToDictionary(x => x.Key, x => x.Value.StringJoin(", "));
-        if (httpResponseMessage.Content?.Headers != null)
+        if (httpResponseMessage is { Content.Headers: not null })
         {
             foreach (var header in httpResponseMessage.Content.Headers)
             {
@@ -67,7 +69,7 @@ public static class HttpMessageExtensions
 
         if (httpResponseMessage.Content != null)
         {
-            var body = await httpResponseMessage.Content.ReadAsStringAsync();
+            var body = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
             if (!string.IsNullOrEmpty(body))
             {
                 messageBuilder.AppendLine();

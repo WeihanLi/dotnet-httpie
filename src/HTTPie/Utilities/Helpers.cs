@@ -138,6 +138,7 @@ public static class Helpers
             .AddSingleton<IRequestItemParser, RequestItemParser>()
             .AddSingleton<IRequestExecutor, RequestExecutor>()
             .AddSingleton<IHttpParser, HttpParser>()
+            .AddSingleton<ICurlParser, CurlParser>()
             .AddSingleton<IRawHttpRequestExecutor, RawHttpRequestExecutor>()
             .AddSingleton<IRequestMapper, RequestMapper>()
             .AddSingleton<IResponseMapper, ResponseMapper>()
@@ -149,27 +150,24 @@ public static class Helpers
             .AddSingleton(sp =>
             {
                 var pipelineBuilder = PipelineBuilder.CreateAsync<HttpRequestModel>();
-                foreach (var middleware in
-                         sp.GetServices<IRequestMiddleware>())
-                    pipelineBuilder.Use(middleware.Invoke);
+                foreach (var middleware in sp.GetServices<IRequestMiddleware>())
+                    pipelineBuilder.UseMiddleware(middleware);
                 return pipelineBuilder.Build();
             })
             // response pipeline
             .AddSingleton(sp =>
             {
                 var pipelineBuilder = PipelineBuilder.CreateAsync<HttpContext>();
-                foreach (var middleware in
-                         sp.GetServices<IResponseMiddleware>())
-                    pipelineBuilder.Use(middleware.Invoke);
+                foreach (var middleware in sp.GetServices<IResponseMiddleware>())
+                    pipelineBuilder.UseMiddleware(middleware);
                 return pipelineBuilder.Build();
             })
             // httpHandler pipeline
             .AddSingleton(sp =>
             {
                 var pipelineBuilder = PipelineBuilder.CreateAsync<HttpClientHandler>();
-                foreach (var middleware in
-                         sp.GetServices<IHttpHandlerMiddleware>())
-                    pipelineBuilder.Use(middleware.Invoke);
+                foreach (var middleware in sp.GetServices<IHttpHandlerMiddleware>())
+                    pipelineBuilder.UseMiddleware(middleware);
                 return pipelineBuilder.Build();
             })
             .AddSingleton<HttpRequestModel>()
@@ -202,7 +200,8 @@ public static class Helpers
     }
 
 #if NET7_0_OR_GREATER
-    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("Using Microsoft.Extensions.DependencyInjection requires generating code dynamically at runtime. For example, when using enumerable and generic ValueType services.")]
+    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(
+        "Using Microsoft.Extensions.DependencyInjection requires generating code dynamically at runtime. For example, when using enumerable and generic ValueType services.")]
 # endif
     public static async Task<int> Handle(this IServiceProvider services, string[] args)
     {
@@ -210,7 +209,8 @@ public static class Helpers
         return await commandParser.InvokeAsync(args);
     }
 #if NET7_0_OR_GREATER
-    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("Using Microsoft.Extensions.DependencyInjection requires generating code dynamically at runtime. For example, when using enumerable and generic ValueType services.")]
+    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode(
+        "Using Microsoft.Extensions.DependencyInjection requires generating code dynamically at runtime. For example, when using enumerable and generic ValueType services.")]
 # endif
     public static async Task<int> Handle(this IServiceProvider services, string commandLine,
         Func<InvocationContext, Task>? handler = null)

@@ -6,18 +6,12 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace HTTPie.UnitTest.Implement;
 
-public class OutputFormatterTest
+public class OutputFormatterTest(IServiceProvider serviceProvider)
 {
-    private readonly OutputFormatter _outputFormatter;
-
-    public OutputFormatterTest(IServiceProvider serviceProvider)
-    {
-        _outputFormatter = new OutputFormatter(
+    private readonly OutputFormatter _outputFormatter = new OutputFormatter(
             serviceProvider,
             NullLogger<OutputFormatter>.Instance)
-            ;
-    }
-
+;
 
     [Theory]
     [InlineData(":5000/api/values -q")]

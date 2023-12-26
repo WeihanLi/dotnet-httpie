@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(PublishAot)'!='true'">net6.0;net7.0;net8.0</TargetFrameworks>
+    <TargetFramework Condition="'$(PublishAot)'=='true'">net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <PackAsTool>true</PackAsTool>

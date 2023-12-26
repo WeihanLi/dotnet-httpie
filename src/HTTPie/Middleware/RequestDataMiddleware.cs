@@ -10,26 +10,20 @@ using WeihanLi.Common.Extensions;
 
 namespace HTTPie.Middleware;
 
-public sealed class RequestDataMiddleware : IRequestMiddleware
+public sealed class RequestDataMiddleware(HttpContext httpContext) : IRequestMiddleware
 {
-    private readonly HttpContext _httpContext;
-
-    public RequestDataMiddleware(HttpContext httpContext)
-    {
-        _httpContext = httpContext;
-    }
-
+    private readonly HttpContext _httpContext = httpContext;
     private static readonly Option<bool> FormOption = new(new[] { "-f", "--form" },
-        $"The request is form data, and content type is '{Constants.FormContentType}'");
+        $"The request is form data, and content type is '{HttpHelper.FormDataContentType}'");
 
     private static readonly Option<bool> JsonOption = new(new[] { "-j", "--json" },
-        $"The request body is json by default, and content type is '{Constants.JsonContentType}'");
+        $"The request body is json by default, and content type is '{HttpHelper.ApplicationJsonContentType}'");
 
     private static readonly Option<string> RawDataOption = new("--raw", $"The raw request body");
 
     public Option[] SupportedOptions() => new Option[] { FormOption, JsonOption, RawDataOption };
 
-    public Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
+    public Task InvokeAsync(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
         var isFormData = requestModel.ParseResult.HasOption(FormOption);
         _httpContext.UpdateFlag(Constants.FlagNames.IsFormContentType, isFormData);
@@ -98,8 +92,8 @@ public sealed class RequestDataMiddleware : IRequestMiddleware
         if (requestModel.Body.IsNotNullOrEmpty())
         {
             requestModel.Headers[Constants.ContentTypeHeaderName] = isFormData
-                ? new StringValues(Constants.FormContentType)
-                : new StringValues(Constants.JsonContentType);
+                ? new StringValues(HttpHelper.FormDataContentType)
+                : new StringValues(HttpHelper.ApplicationJsonContentType);
 
             var requestMethodExists = _httpContext.GetProperty<bool>(Constants.RequestMethodExistsPropertyName);
             if (!requestMethodExists)

@@ -7,15 +7,9 @@ using System.Security.Authentication;
 
 namespace HTTPie.Middleware;
 
-public sealed class HttpSslMiddleware : IHttpHandlerMiddleware
+public sealed class HttpSslMiddleware(HttpRequestModel requestModel) : IHttpHandlerMiddleware
 {
-    private readonly HttpRequestModel _requestModel;
-
-    public HttpSslMiddleware(HttpRequestModel requestModel)
-    {
-        _requestModel = requestModel;
-    }
-
+    private readonly HttpRequestModel _requestModel = requestModel;
     private static readonly Option<bool> DisableSslVerifyOption =
         new(new[] { "--no-verify", "--verify=no" }, "disable ssl cert check");
 
@@ -24,7 +18,7 @@ public sealed class HttpSslMiddleware : IHttpHandlerMiddleware
 
     public Option[] SupportedOptions() => new Option[] { DisableSslVerifyOption, SslProtocalOption, };
 
-    public Task Invoke(HttpClientHandler httpClientHandler, Func<HttpClientHandler, Task> next)
+    public Task InvokeAsync(HttpClientHandler httpClientHandler, Func<HttpClientHandler, Task> next)
     {
         if (_requestModel.ParseResult.HasOption(DisableSslVerifyOption))
         {

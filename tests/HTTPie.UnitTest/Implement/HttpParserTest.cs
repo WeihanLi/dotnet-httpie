@@ -5,14 +5,9 @@ using Xunit.Abstractions;
 
 namespace HTTPie.UnitTest.Implement;
 
-public class HttpParserTest
+public class HttpParserTest(ITestOutputHelper testOutputHelper)
 {
-    private readonly ITestOutputHelper _testOutputHelper;
-
-    public HttpParserTest(ITestOutputHelper testOutputHelper)
-    {
-        _testOutputHelper = testOutputHelper;
-    }
+    private readonly ITestOutputHelper _testOutputHelper = testOutputHelper;
 
     [Theory]
     [InlineData("1234")]

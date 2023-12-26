@@ -62,11 +62,15 @@
     },
     "http-execution": {
       "commandName": "Project",
-      "commandLineArgs": "execute C:\\projects\\sources\\dotnet-httpie\\tests\\HTTPie.IntegrationTest\\TestAssets\\HttpStartedSample.http"
+      "commandLineArgs": "exec C:\\projects\\sources\\dotnet-httpie\\tests\\HTTPie.IntegrationTest\\TestAssets\\HttpStartedSample.http"
     },
     "http-execution-2": {
       "commandName": "Project",
-      "commandLineArgs": "execute C:\\projects\\sources\\dotnet-httpie\\tests\\HTTPie.IntegrationTest\\TestAssets\\HttpRequestReferenceSample.http"
+      "commandLineArgs": "exec C:\\projects\\sources\\dotnet-httpie\\tests\\HTTPie.IntegrationTest\\TestAssets\\HttpRequestReferenceSample.http"
+    },
+    "curl-execution": {
+      "commandName": "Project",
+      "commandLineArgs": "exec -t curl C:\\projects\\sources\\dotnet-httpie\\tests\\HTTPie.IntegrationTest\\TestAssets\\MakeReservationSample.curl"
     }
   }
 }

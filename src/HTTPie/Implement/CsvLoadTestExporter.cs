@@ -15,14 +15,16 @@ public sealed class CsvLoadTestExporter : ILoadTestExporter
         FluentSettings.LoadMappingProfile<ResponseMappingProfile>();
     }
 
-    private static readonly Option<string> OutputCsvPathOption = new("--export-csv-path", "Expected export csv file path");
+    private static readonly Option<string> OutputCsvPathOption =
+        new("--export-csv-path", "Expected export csv file path");
 
     public Option[] SupportedOptions()
     {
-        return new[] { OutputCsvPathOption };
+        return [OutputCsvPathOption];
     }
 
     public string Type => "csv";
+
     public async ValueTask Export(HttpContext context, HttpResponseModel[] responseList)
     {
         var csvPath = context.Request.ParseResult.GetValueForOption(OutputCsvPathOption);
@@ -30,6 +32,7 @@ public sealed class CsvLoadTestExporter : ILoadTestExporter
         {
             return;
         }
+
         await responseList.ToCsvFileAsync(csvPath);
     }
 

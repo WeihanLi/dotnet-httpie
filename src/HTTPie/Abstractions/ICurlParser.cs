@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Weihan Li.All rights reserved.
 // Licensed under the MIT license.
 
-using HTTPie.Models;
-
 namespace HTTPie.Abstractions;
 
-public interface IResponseMiddleware : IPlugin, IAsyncPipelineMiddleware<HttpContext>
+public interface ICurlParser : IHttpParser
 {
 }
