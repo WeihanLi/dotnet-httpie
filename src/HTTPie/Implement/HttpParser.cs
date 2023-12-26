@@ -13,6 +13,10 @@ namespace HTTPie.Implement;
 
 public sealed class HttpParser : IHttpParser
 {
+    private const string DotEnvFileName = ".env";
+    private const string HttpEnvFileName = "httpenv.json";
+    private const string UserHttpEnvFileName = "httpenv.json.user";
+
     public Task<HttpRequestMessage> ParseScriptAsync(string script, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();

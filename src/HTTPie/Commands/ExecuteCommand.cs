@@ -103,8 +103,10 @@ public sealed class ExecuteCommand : Command
 
         Console.WriteLine("Request message:");
         Console.WriteLine(await requestMessage.ToRawMessageAsync(cancellationToken));
+        var startTimestamp = Stopwatch.GetTimestamp();
         var response = await requestExecutor.ExecuteAsync(requestMessage, cancellationToken);
-        Console.WriteLine("Response message:");
+        var requestDuration = ProfilerHelper.GetElapsedTime(startTimestamp);
+        Console.WriteLine($"Response message({requestDuration.TotalMilliseconds}ms):");
         Console.WriteLine(await response.ToRawMessageAsync(cancellationToken));
         Console.WriteLine();
 
