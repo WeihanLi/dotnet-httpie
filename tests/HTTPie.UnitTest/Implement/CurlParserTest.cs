@@ -9,7 +9,7 @@ public sealed class CurlParserTest
     [InlineData("")]
     [InlineData(null)]
     [InlineData("Hello World")]
-    public async Task InvalidParseTest(string script)
+    public async Task InvalidParseTest(string? script)
     {
         var parser = new CurlParser();
         await Assert.ThrowsAnyAsync<ArgumentException>(() => parser.ParseScriptAsync(script));
