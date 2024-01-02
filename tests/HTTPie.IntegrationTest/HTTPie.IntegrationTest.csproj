@@ -5,12 +5,6 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="Moq" />
-    <PackageReference Include="xunit" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\src\HTTPie\HTTPie.csproj" />
   </ItemGroup>
   <ItemGroup>
