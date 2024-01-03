@@ -11,7 +11,7 @@ var target = Guard.NotNull(Argument("target", "Default"));
 var apiKey = Argument("apiKey", "");
 var stable = ArgumentBool("stable", false);
 var noPush = ArgumentBool("noPush", false);
-var branchName = EnvironmentVariable("BUILD_SOURCEBRANCHNAME") ?? "local";
+var branchName = Enviroment.GetEnvironmentVariable("BUILD_SOURCEBRANCHNAME") ?? "local";
 
 var solutionPath = "./dotnet-httpie.sln";
 string[] srcProjects = ["./src/HTTPie/HTTPie.csproj"];
