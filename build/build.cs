@@ -11,6 +11,7 @@ var target = Guard.NotNull(Argument("target", "Default"));
 var apiKey = Argument("apiKey", "");
 var stable = ArgumentBool("stable", false);
 var noPush = ArgumentBool("noPush", false);
+var branchName = EnvironmentVariable("BUILD_SOURCEBRANCHNAME") ?? "local";
 
 var solutionPath = "./dotnet-httpie.sln";
 string[] srcProjects = ["./src/HTTPie/HTTPie.csproj"];
@@ -90,6 +91,12 @@ await BuildProcess.CreateBuilder()
                     Console.WriteLine("Skip push since there's no apiKey found");
                     return;
                 }
+            }
+
+            if (branchName != "master" && branchName != "preview")
+            {
+                Console.WriteLine($"Skip push since branch name {branchName} not support push packages");
+                return;
             }
 
             // push nuget packages
