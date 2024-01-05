@@ -50,7 +50,7 @@ await BuildProcess.CreateBuilder()
             {
                 foreach (var project in testProjects)
                 {
-                    await ExecuteCommandAsync($"dotnet test {project}");
+                    await ExecuteCommandAsync($"dotnet test --collect:'XPlat Code Coverage;Format=cobertura,opencover;ExcludeByAttribute=ExcludeFromCodeCoverage,Obsolete,GeneratedCode,CompilerGeneratedAttribute' {project}");
                 }
             })
             ;
@@ -102,7 +102,7 @@ await BuildProcess.CreateBuilder()
             // push nuget packages
             foreach (var file in Directory.GetFiles("./artifacts/packages/", "*.nupkg"))
             {
-                await ExecuteCommandAsync($"dotnet nuget push {file} -k {apiKey} --skip-duplicate");
+                await ExecuteCommandAsync($"dotnet nuget push {file} -k {apiKey} --skip-duplicate", [new("$NuGet__ApiKey", apiKey)]);
             }
         }))
     .WithTask("Default", b => b.WithDependency("hello").WithDependency("pack"))
@@ -145,9 +145,17 @@ string? ArgumentInternal(string argumentName)
     return null;
 }
 
-async Task ExecuteCommandAsync(string commandText)
+async Task ExecuteCommandAsync(string commandText, KeyValuePair<string, string>[]? replacements = null)
 {
-    Console.WriteLine($"Executing command: \n    {commandText}");
+    var commandTextWithReplacements = commandText;
+    if (replacements is { Length: > 0})
+    {
+        foreach (var item in replacements)
+        {
+            commandTextWithReplacements = commandTextWithReplacements.Replace(item.Value, item.Key);
+        }
+    }
+    Console.WriteLine($"Executing command: \n    {commandTextWithReplacements}");
     Console.WriteLine();
     var splits = commandText.Split([' '], 2);
     var result = await Cli.Wrap(splits[0])
