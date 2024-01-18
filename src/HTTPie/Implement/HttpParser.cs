@@ -182,10 +182,10 @@ public sealed class HttpParser : IHttpParser
 
 
     private static readonly Regex VariableNameReferenceRegex =
-        new(@"\{\{(?<variableName>\s?[a-zA-Z_]\w*\s?)\}\}", RegexOptions.Compiled);
+        new(@"\{\{(?<variableName>\s?[a-zA-Z_][\w\.:]*\s?)\}\}", RegexOptions.Compiled);
 
     private static readonly Regex EnvNameReferenceRegex =
-        new(@"\{\{(\$processEnv|\$env)\s+(?<variableName>\s?[a-zA-Z_]\w*\s?)\}\}", RegexOptions.Compiled);
+        new(@"\{\{(\$processEnv|\$env)\s+(?<variableName>\s?[a-zA-Z_][\w\.:]*\s?)\}\}", RegexOptions.Compiled);
 
     internal static string EnsureVariableReplaced(
         string rawText,
