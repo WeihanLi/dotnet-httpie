@@ -160,8 +160,7 @@ public sealed class HttpParser : IHttpParser
             if (requestBodyBuilder is { Length: > 0 })
             {
                 var contentHeaders = requestMessage.Content?.Headers;
-                requestMessage.Content = new StringContent(requestBodyBuilder.ToString(), Encoding.UTF8,
-                    requestMessage.Content?.Headers.ContentType?.MediaType ?? HttpHelper.ApplicationJsonMediaType);
+                requestMessage.Content = new StringContent(requestBodyBuilder.ToString());
                 if (contentHeaders != null)
                 {
                     foreach (var header in contentHeaders)
