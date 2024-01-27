@@ -59,7 +59,7 @@ await BuildProcess.CreateBuilder()
         .WithDependency("test")
         .WithExecution(async () =>
         {
-            if (stable)
+            if (branchName == "master" || branchName == "main" || stable)
             {
                 foreach (var project in srcProjects)
                 {
@@ -93,7 +93,7 @@ await BuildProcess.CreateBuilder()
                 }
             }
 
-            if (branchName != "master" && branchName != "preview")
+            if (branchName != "master" && branchName != "main" && branchName != "preview")
             {
                 Console.WriteLine($"Skip push since branch name {branchName} not support push packages");
                 return;
