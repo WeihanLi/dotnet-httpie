@@ -5,9 +5,11 @@ using HTTPie.Abstractions;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using System.Diagnostics;
+using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using WeihanLi.Common.Http;
 
 namespace HTTPie.Implement;
 
@@ -165,6 +167,11 @@ public sealed class HttpParser : IHttpParser
                 {
                     foreach (var header in contentHeaders)
                     {
+                        if (header.Key.EqualsIgnoreCase(HttpHeaderNames.ContentType))
+                        {
+                            requestMessage.Content.Headers.Remove(HttpHeaderNames.ContentType);
+                        }
+
                         requestMessage.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
                     }
                 }
