@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using WeihanLi.Common.Http;
 
 namespace HTTPie.Implement;
 
@@ -161,11 +162,17 @@ public sealed class HttpParser : IHttpParser
             {
                 var contentHeaders = requestMessage.Content?.Headers;
                 requestMessage.Content = new StringContent(requestBodyBuilder.ToString(), Encoding.UTF8,
-                    requestMessage.Content?.Headers.ContentType?.MediaType ?? HttpHelper.ApplicationJsonMediaType);
+                        requestMessage.Content?.Headers.ContentType?.MediaType ?? HttpHelper.ApplicationJsonMediaType
+                    );
                 if (contentHeaders != null)
                 {
                     foreach (var header in contentHeaders)
                     {
+                        if (header.Key.EqualsIgnoreCase(HttpHeaderNames.ContentType))
+                        {
+                            requestMessage.Content.Headers.Remove(HttpHeaderNames.ContentType);
+                        }
+
                         requestMessage.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
                     }
                 }
@@ -182,10 +189,10 @@ public sealed class HttpParser : IHttpParser
 
 
     private static readonly Regex VariableNameReferenceRegex =
-        new(@"\{\{(?<variableName>\s?[a-zA-Z_]\w*\s?)\}\}", RegexOptions.Compiled);
+        new(@"\{\{(?<variableName>\s?[a-zA-Z_][\w\.:]*\s?)\}\}", RegexOptions.Compiled);
 
     private static readonly Regex EnvNameReferenceRegex =
-        new(@"\{\{(\$processEnv|\$env)\s+(?<variableName>\s?[a-zA-Z_]\w*\s?)\}\}", RegexOptions.Compiled);
+        new(@"\{\{(\$processEnv|\$env)\s+(?<variableName>\s?[a-zA-Z_][\w\.:]*\s?)\}\}", RegexOptions.Compiled);
 
     internal static string EnsureVariableReplaced(
         string rawText,
