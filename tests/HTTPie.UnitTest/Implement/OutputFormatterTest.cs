@@ -10,8 +10,7 @@ public class OutputFormatterTest(IServiceProvider serviceProvider)
 {
     private readonly OutputFormatter _outputFormatter = new OutputFormatter(
             serviceProvider,
-            NullLogger<OutputFormatter>.Instance)
-;
+            NullLogger<OutputFormatter>.Instance);
 
     [Theory]
     [InlineData(":5000/api/values -q")]

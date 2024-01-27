@@ -1,5 +1,8 @@
 <Project>
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))"/>
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);xUnit1041</NoWarn>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FluentAssertions" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
