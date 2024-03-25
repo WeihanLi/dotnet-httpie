@@ -55,13 +55,9 @@ public sealed class HttpParser : IHttpParser
                 }
 
                 var (variableName, variableValue) = (splits[0], splits[1]);
-                if (variableValue[0] == '"' && variableValue[^1] == '"')
+                if （variableValue.Length > 1 && ((variableValue[0] == '"' && variableValue[^1] == '"') || (variableValue[0] == '\'' && variableValue[^1] == '\'')))
                 {
-                    variableValue = variableValue.Trim('"');
-                }
-                else if (variableValue[0] == '\'' && variableValue[^1] == '\'')
-                {
-                    variableValue = variableValue.Trim('\'');
+                    variableValue = variableValue.Length > 2 ? variableValue[1..^2] : string.Empty;
                 }
                 if (fileScopedVariablesEnded)
                 {
