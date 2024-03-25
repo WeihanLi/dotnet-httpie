@@ -12,6 +12,7 @@ var apiKey = Argument("apiKey", "");
 var stable = ArgumentBool("stable", false);
 var noPush = ArgumentBool("noPush", false);
 var branchName = Environment.GetEnvironmentVariable("BUILD_SOURCEBRANCHNAME") ?? "local";
+stable |= branchName is "master" or "main";
 
 var solutionPath = "./dotnet-httpie.sln";
 string[] srcProjects = ["./src/HTTPie/HTTPie.csproj"];
@@ -59,7 +60,7 @@ await BuildProcess.CreateBuilder()
         .WithDependency("test")
         .WithExecution(async () =>
         {
-            if (branchName == "master" || branchName == "main" || stable)
+            if (stable)
             {
                 foreach (var project in srcProjects)
                 {
@@ -83,7 +84,7 @@ await BuildProcess.CreateBuilder()
             
             if (string.IsNullOrEmpty(apiKey))
             {
-                // try to get apiKey from environment variable
+                // try to get apiKey from the environment variable
                 apiKey = Environment.GetEnvironmentVariable("NuGet__ApiKey");
                 
                 if (string.IsNullOrEmpty(apiKey))
@@ -93,7 +94,7 @@ await BuildProcess.CreateBuilder()
                 }
             }
 
-            if (branchName != "master" && branchName != "main" && branchName != "preview")
+            if (!stable && branchName != "preview")
             {
                 Console.WriteLine($"Skip push since branch name {branchName} not support push packages");
                 return;
