@@ -55,6 +55,14 @@ public sealed class HttpParser : IHttpParser
                 }
 
                 var (variableName, variableValue) = (splits[0], splits[1]);
+                if (variableValue[0] == '"' && variableValue[^1] == '"')
+                {
+                    variableValue = variableValue.Trim('"');
+                }
+                else if (variableValue[0] == '\'' && variableValue[^1] == '\'')
+                {
+                    variableValue = variableValue.Trim('\'');
+                }
                 if (fileScopedVariablesEnded)
                 {
                     requestVariables ??= new();
