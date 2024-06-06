@@ -19,5 +19,6 @@ FROM base AS final
 COPY --from=build-env /app/artifacts/http /root/.dotnet/tools/http
 RUN ln -s /root/.dotnet/tools/http /root/.dotnet/tools/dotnet-http
 ENV PATH="/root/.dotnet/tools:${PATH}"
-ENTRYPOINT ["http"]
+WORKDIR /root/.dotnet/tools/
+ENTRYPOINT ["/root/.dotnet/tools/http"]
 CMD ["--help"]
