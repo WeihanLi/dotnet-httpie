@@ -7,10 +7,10 @@ using CliWrap;
 using Newtonsoft.Json;
 
 //
-var target = Guard.NotNull(Argument("target", "Default"));
-var apiKey = Argument("apiKey", "");
-var stable = ArgumentBool("stable", false);
-var noPush = ArgumentBool("noPush", false);
+var target = Guard.NotNull(CommandLineParser.Val("target", "Default", args));
+var apiKey = CommandLineParser.Val("apiKey", "", args);
+var stable = CommandLineParser.Val("stable", null, args).ToBoolean();
+var noPush = CommandLineParser.Val("noPush", null, args).ToBoolean();
 var branchName = Environment.GetEnvironmentVariable("BUILD_SOURCEBRANCHNAME") ?? "local";
 stable |= branchName is "master" or "main";
 
@@ -109,42 +109,6 @@ await BuildProcess.CreateBuilder()
     .WithTask("Default", b => b.WithDependency("hello").WithDependency("pack"))
     .Build()
     .ExecuteAsync(target);
-
-
-bool ArgumentBool(string argumentName, bool defaultValue = default)
-{
-    var value = ArgumentInternal(argumentName);
-    if (value is null) return defaultValue;
-    if (value == string.Empty || value == "1") return true;
-    return  value is "0" ? false : bool.Parse(value);
-}
-
-string? Argument(string argumentName, string? defaultValue = default)
-{
-    return ArgumentInternal(argumentName) ?? defaultValue;
-}
-
-string? ArgumentInternal(string argumentName)
-{
-    for (var i = 0; i < args.Length; i++)
-    {
-        if (args[i] == $"--{argumentName}" || args[i] == $"-{argumentName}")
-        {
-            if (((i + 1) == args.Length || args[i + 1].StartsWith('-')))
-                return string.Empty;
-
-            return args[i + 1];
-        }
-
-        if (args[i].StartsWith($"-{argumentName}="))
-            return args[i].Substring($"-{argumentName}=".Length);
-        
-        if (args[i].StartsWith($"--{argumentName}="))
-            return args[i].Substring($"--{argumentName}=".Length);
-    }
-
-    return null;
-}
 
 async Task ExecuteCommandAsync(string commandText, KeyValuePair<string, string>[]? replacements = null)
 {
