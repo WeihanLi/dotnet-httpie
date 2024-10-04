@@ -11,8 +11,8 @@
     <PackageVersion Condition="'$(TargetFramework)'=='net7.0'" Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
     <PackageVersion Condition="'$(TargetFramework)'=='net8.0'" Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-    <PackageVersion Include="WeihanLi.Common" Version="1.0.60" />
-    <PackageVersion Include="WeihanLi.Npoi" Version="2.4.2" />
+    <PackageVersion Include="WeihanLi.Common" Version="1.0.70" />
+    <PackageVersion Include="WeihanLi.Npoi" Version="2.5.0" />
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
