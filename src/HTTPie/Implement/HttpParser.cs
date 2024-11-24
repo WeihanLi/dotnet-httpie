@@ -38,11 +38,7 @@ public sealed class HttpParser : IHttpParser
 
         while (!reader.EndOfStream)
         {
-#if NET7_0_OR_GREATER
             var line = await reader.ReadLineAsync(cancellationToken);
-#else
-            var line = await reader.ReadLineAsync();
-#endif
             if (line.IsNullOrWhiteSpace()) continue;
             // variable definition handling
             if (line.StartsWith("@"))
