@@ -7,7 +7,7 @@ public class RequestDataMiddlewareTest : HttpTestBase
 {
     [Theory]
     [InlineData("https://reservation.weihanli.xyz/health Authorization:'Bearer dede'")]
-    public async void HeadersShouldNotBeTreatAsRequestData(string input)
+    public async Task HeadersShouldNotBeTreatAsRequestData(string input)
     {
         await Handle(input);
 
@@ -17,7 +17,7 @@ public class RequestDataMiddlewareTest : HttpTestBase
 
     [Theory]
     [InlineData("https://reservation.weihanli.xyz/health Authorization:'Bearer dede=='")]
-    public async void QueryShouldNotBeTreatAsRequestData(string input)
+    public async Task QueryShouldNotBeTreatAsRequestData(string input)
     {
         await Handle(input);
 
