@@ -7,7 +7,6 @@
     <PackageVersion Include="JsonPath.Net" Version="1.1.6" />
     <PackageVersion Include="JsonSchema.Net" Version="7.2.3" />
     <PackageVersion Include="MathNet.Numerics.Signed" Version="5.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     <PackageVersion Include="WeihanLi.Common" Version="1.0.72" />
     <PackageVersion Include="WeihanLi.Npoi" Version="2.5.0" />

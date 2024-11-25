@@ -8,7 +8,7 @@ using WeihanLi.Common.Helpers.Hosting;
 
 var debugEnabled = args.Contains("--debug", StringComparer.OrdinalIgnoreCase);
 var appBuilder = AppHost.CreateBuilder();
-appBuilder.Logging.AddConsole();
+appBuilder.Logging.AddDefaultDelegateLogger();
 appBuilder.Logging.SetMinimumLevel(debugEnabled ? LogLevel.Debug : LogLevel.Warning);
 appBuilder.Services.RegisterApplicationServices();
 var app = appBuilder.Build();
