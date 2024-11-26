@@ -15,8 +15,8 @@ var app = appBuilder.Build();
 // output helps when no argument or there's only "-h"/"/h"
 args = args switch
 {
-    [] => new[] { "--help" },
-    ["-h"] or ["/h"] => new[] { "--help" },
+    [] => ["--help"],
+    ["-h"] or ["/h"] => ["--help"],
     _ => args
 };
 if (args.Contains("--version"))
