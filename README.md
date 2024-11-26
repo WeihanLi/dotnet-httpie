@@ -44,9 +44,15 @@ Type | Grammar
 -----|-------
 Query| name`==`test
 Header| X-Api-Key`:`test
-Request-Data | name`=`test, raw data field example(Only effective for JSON): age`:=`10, job`:=`'{"Id":1,"Name":"test"}'(Escape needed for Windows)
+Request-Data | name`=`test, raw data field example(Only effective for JSON): age`:=`10, job`:=`'{"Id":1,"Name":"test"}'(Escape may needed for Windows cmd or Windows PowerShell)
 
-Here's a sample: ![sample](./images/sample.png)
+Here's a sample:
+
+``` sh
+dotnet-http https://reservation.weihanli.xyz/health test==1234 name=test age:=10 flag:=true job:='{"id": 1, "name": "test"}' api-key:Abc12345 --offline
+```
+
+![sample](./images/sample.png)
 
 More examples you may wanna have a look
 
@@ -58,18 +64,32 @@ dotnet-http /api/notice title=test body=test-body
 dotnet-http post http://localhost/api/notice title=test body=test-body
 ```
 
+## Execute
+
+You can execute `*.http`/`*.rest` http requests with the `exec` command
+
+``` sh
+dotnet-http exec HttpStartedSample.http
+
+dotnet-http exec ".\tests\HTTPie.IntegrationTest\TestAssets\HttpStartedSample.http"
+dotnet-http exec ".\tests\HTTPie.IntegrationTest\TestAssets\HttpVariableSample.http"
+dotnet-http exec ".\tests\HTTPie.IntegrationTest\TestAssets\HttpRequestReferenceSample.http"
+```
+
+see http request sample here: <https://github.com/WeihanLi/dotnet-httpie/tree/dev/tests/HTTPie.IntegrationTest/TestAssets>
+
 ## Docker
 
 There's a docker image(weihanli/dotnet-httpie) that you could use directly without installing the tool, use sample:
 
 ``` bash
-docker run --rm --pull=always weihanli/dotnet-httpie:latest http -v github.com
+docker run --rm --pull=always weihanli/dotnet-httpie:latest -v github.com
 
-docker run --rm --pull=always weihanli/dotnet-httpie:latest http reservation.weihanli.xyz/health job:='{"id":1,"name":"tester"}' --offline
+docker run --rm --pull=always weihanli/dotnet-httpie:latest reservation.weihanli.xyz/health job:='{"id":1,"name":"tester"}' --offline
 
-docker run --rm --pull=always weihanli/dotnet-httpie:latest http PUT httpbin.org hello=world
+docker run --rm --pull=always weihanli/dotnet-httpie:latest PUT httpbin.org hello=world
 
-docker run --rm --pull=always weihanli/dotnet-httpie:latest http get httpbin.org/status/400
+docker run --rm --pull=always weihanli/dotnet-httpie:latest get httpbin.org/status/400
 ```
 
 ## More

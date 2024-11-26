@@ -5,15 +5,26 @@ using HTTPie.Abstractions;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using System.Diagnostics;
-using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using WeihanLi.Common.Http;
 
 namespace HTTPie.Implement;
 
 public sealed class HttpParser : IHttpParser
 {
-    public async IAsyncEnumerable<HttpRequestMessageWrapper> ParseAsync(string filePath)
+    private const string DotEnvFileName = ".env";
+    private const string HttpEnvFileName = "httpenv.json";
+    private const string UserHttpEnvFileName = "httpenv.json.user";
+
+    public Task<HttpRequestMessage> ParseScriptAsync(string script, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async IAsyncEnumerable<HttpRequestMessageWrapper> ParseFileAsync(string filePath,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var fileScopedVariables = new Dictionary<string, string>();
         var fileScopedVariablesEnded = false;
@@ -27,7 +38,7 @@ public sealed class HttpParser : IHttpParser
 
         while (!reader.EndOfStream)
         {
-            var line = await reader.ReadLineAsync();
+            var line = await reader.ReadLineAsync(cancellationToken);
             if (line.IsNullOrWhiteSpace()) continue;
             // variable definition handling
             if (line.StartsWith("@"))
@@ -40,6 +51,10 @@ public sealed class HttpParser : IHttpParser
                 }
 
                 var (variableName, variableValue) = (splits[0], splits[1]);
+                if (variableValue.Length >= 1 && ((variableValue[0] == '"' && variableValue[^1] == '"') || (variableValue[0] == '\'' && variableValue[^1] == '\'')))
+                {
+                    variableValue = variableValue.Length > 2 ? variableValue[1..^2] : string.Empty;
+                }
                 if (fileScopedVariablesEnded)
                 {
                     requestVariables ??= new();
@@ -59,28 +74,8 @@ public sealed class HttpParser : IHttpParser
                 fileScopedVariablesEnded = true;
                 if (requestMessage != null)
                 {
-                    requestNumber++;
-                    requestName ??= $"__request_{requestNumber}";
-                    // attach request body and copy request headers
-                    if (requestBodyBuilder?.Length > 0)
-                    {
-                        var contentHeaders = requestMessage.Content?.Headers;
-                        requestMessage.Content = new StringContent(requestBodyBuilder.ToString(), Encoding.UTF8,
-                            requestMessage.Content?.Headers.ContentType?.MediaType ?? Constants.JsonMediaType);
-                        if (contentHeaders != null)
-                        {
-                            foreach (var header in contentHeaders)
-                            {
-                                requestMessage.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        requestMessage.Content = null;
-                    }
-
-                    yield return new HttpRequestMessageWrapper(requestName, requestMessage);
+                    PreReturnRequest();
+                    yield return new HttpRequestMessageWrapper(requestName!, requestMessage);
                     requestMessage = null;
                     requestBodyBuilder = null;
                     requestVariables = null;
@@ -157,39 +152,47 @@ public sealed class HttpParser : IHttpParser
 
         if (requestMessage == null) yield break;
 
-        if (requestBodyBuilder is { Length: > 0 })
-        {
-            var contentHeaders = requestMessage.Content?.Headers;
-            if (contentHeaders is { ContentType: null })
-            {
-                // use json as default content-type if no specified
-                contentHeaders.ContentType = MediaTypeHeaderValue.Parse(HttpHelper.JsonContentType);
-            }
+        PreReturnRequest();
+        yield return new HttpRequestMessageWrapper(requestName!, requestMessage);
 
-            var requestBody = requestBodyBuilder.ToString();
-            // TODO: use constant defined from common, HttpHelper.ApplicationJsonMediaType
-            requestMessage.Content = new StringContent(requestBody, Encoding.UTF8,
-                contentHeaders?.ContentType?.MediaType ?? Constants.JsonMediaType);
-            if (contentHeaders != null)
+        void PreReturnRequest()
+        {
+            // attach request body and copy request headers
+            if (requestBodyBuilder is { Length: > 0 })
             {
-                foreach (var header in contentHeaders)
+                var contentHeaders = requestMessage.Content?.Headers;
+                requestMessage.Content = new StringContent(requestBodyBuilder.ToString(), Encoding.UTF8,
+                        requestMessage.Content?.Headers.ContentType?.MediaType ?? HttpHelper.ApplicationJsonMediaType
+                    );
+                if (contentHeaders != null)
                 {
-                    requestMessage.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                    foreach (var header in contentHeaders)
+                    {
+                        if (header.Key.EqualsIgnoreCase(HttpHeaderNames.ContentType))
+                        {
+                            requestMessage.Content.Headers.Remove(HttpHeaderNames.ContentType);
+                        }
+
+                        requestMessage.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                    }
                 }
             }
-        }
+            else
+            {
+                requestMessage.Content = null;
+            }
 
-        requestNumber++;
-        requestName ??= $"request_{requestNumber}";
-        yield return new HttpRequestMessageWrapper(requestName, requestMessage);
+            requestNumber++;
+            requestName ??= $"request#{requestNumber}";
+        }
     }
 
 
     private static readonly Regex VariableNameReferenceRegex =
-        new(@"\{\{(?<variableName>\s?[a-zA-Z_]\w*\s?)\}\}", RegexOptions.Compiled);
+        new(@"\{\{(?<variableName>\s?[a-zA-Z_][\w\.:]*\s?)\}\}", RegexOptions.Compiled);
 
     private static readonly Regex EnvNameReferenceRegex =
-        new(@"\{\{(\$processEnv|\$env)\s+(?<variableName>\s?[a-zA-Z_]\w*\s?)\}\}", RegexOptions.Compiled);
+        new(@"\{\{(\$processEnv|\$env)\s+(?<variableName>\s?[a-zA-Z_][\w\.:]*\s?)\}\}", RegexOptions.Compiled);
 
     internal static string EnsureVariableReplaced(
         string rawText,
@@ -209,7 +212,7 @@ public sealed class HttpParser : IHttpParser
             {
                 if (variable?.TryGetValue(variableName, out var variableValue) == true)
                 {
-                    textReplaced = textReplaced.Replace(match.Value, variableValue ?? string.Empty);
+                    textReplaced = textReplaced.Replace(match.Value, variableValue);
                     break;
                 }
             }

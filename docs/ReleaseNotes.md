@@ -1,11 +1,21 @@
 # dotnet-httpie release notes
 
+## [0.8.0](https://nuget.org/packages/dotnet-httpie/0.8.0)
+
+- Add `net8.0` support
+- `HttpParser` enhancements
+- Add `CurlParser`
+
+## [0.7.2](https://nuget.org/packages/dotnet-httpie/0.7.2)
+
+- Add `exec` command for executing http request
+
 ## [0.6.3](https://nuget.org/packages/dotnet-httpie/0.6.3)
 
 - Add `net7.0` support
 - Remove timestamp by default
-- Allow get request with body
-- Fix Authorization request header bug
+- Allow GET request with body
+- Fix `Authorization` request header bug
 
 ## [0.5.3](https://nuget.org/packages/dotnet-httpie/0.5.3)
 

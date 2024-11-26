@@ -14,14 +14,11 @@ jobs:
   mac-build:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Setup .NET SDK
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: |
-          6.0.x
-          7.0.x
-        include-prerelease: true
+        dotnet-version: 8.0.x
     - name: dotnet info
       run: dotnet --info
     - name: build
@@ -30,17 +27,11 @@ jobs:
   linux-build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: Setup .NET 6
-      uses: actions/setup-dotnet@v1
+    - uses: actions/checkout@v4
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '6.0.x'
-        include-prerelease: true
-    - name: Setup .NET 7
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '7.0.x'
-        include-prerelease: true
+        dotnet-version: 8.0.x
     - name: dotnet info
       run: dotnet --info
     - name: build
@@ -49,17 +40,11 @@ jobs:
   windows-build:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: Setup .NET 6
-      uses: actions/setup-dotnet@v1
+    - uses: actions/checkout@v4
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '6.0.x'
-        include-prerelease: true
-    - name: Setup .NET 7
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '7.0.x'
-        include-prerelease: true
+        dotnet-version: 8.0.x
     - name: dotnet info
       run: dotnet --info
     - name: build

@@ -16,7 +16,7 @@ public sealed class RequestCacheMiddleware : IRequestMiddleware
         return new Option[] { NoCacheOption };
     }
 
-    public Task Invoke(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
+    public Task InvokeAsync(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
         if (requestModel.ParseResult.HasOption(NoCacheOption))
         {

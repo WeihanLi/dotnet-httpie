@@ -12,7 +12,7 @@ Content-Type: application/json; charset=utf-8
 
 ### getVersion
 
-POST https://sparktodo.weihanli.xyz/api/v2/Sync
+GET https://sparktodo.weihanli.xyz/api/v2/Sync
 Authorization: Bearer {{login.response.body.$.data.accessToken}}
 
 ###
@@ -37,6 +37,5 @@ Authorization: Bearer {{login.response.body.$.data.accessToken}}
   "todoTitle": "test",
   "todoContent": "test....",
   "isCompleted": false,
-  "categoryId": {{createTodoCategory.response.body.$.categoryId}},
-  "userId": 0
+  "categoryId": {{createTodoCategory.response.body.$.categoryId}}
 }

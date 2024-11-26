@@ -7,7 +7,7 @@ using WeihanLi.Common.Abstractions;
 
 namespace HTTPie.Models;
 
-public sealed class HttpContext : IProperties
+public sealed class HttpContext(HttpRequestModel request, HttpResponseModel? response = null) : IProperties
 {
     private readonly Dictionary<string, bool> _featureFlags = new();
 
@@ -15,14 +15,8 @@ public sealed class HttpContext : IProperties
     {
     }
 
-    public HttpContext(HttpRequestModel request, HttpResponseModel? response = null)
-    {
-        Request = request;
-        Response = response ?? new HttpResponseModel();
-    }
-
-    public HttpRequestModel Request { get; }
-    public HttpResponseModel Response { get; set; }
+    public HttpRequestModel Request { get; } = request;
+    public HttpResponseModel Response { get; set; } = response ?? new HttpResponseModel();
 
     [System.Text.Json.Serialization.JsonIgnore]
     [JsonIgnore]

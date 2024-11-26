@@ -11,13 +11,10 @@ public sealed class RawHttpRequestExecutor : IRawHttpRequestExecutor
 
     public RawHttpRequestExecutor()
     {
-        _client = new HttpClient(new HttpClientHandler()
-        {
-            AllowAutoRedirect = false
-        });
+        _client = new HttpClient(new HttpClientHandler() { AllowAutoRedirect = false });
     }
 
-    public async Task<HttpResponseMessage> Execute(HttpRequestMessage httpRequestMessage,
+    public async Task<HttpResponseMessage> ExecuteAsync(HttpRequestMessage httpRequestMessage,
         CancellationToken cancellationToken)
     {
         return await _client.SendAsync(httpRequestMessage, cancellationToken);

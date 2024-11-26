@@ -3,16 +3,10 @@
 
 namespace HTTPie.Models;
 
-public sealed class HttpRequestMessageWrapper
+public sealed class HttpRequestMessageWrapper(string name, HttpRequestMessage httpRequestMessage)
 {
-    public string Name { get; }
-    public HttpRequestMessage RequestMessage { get; }
-
-    public HttpRequestMessageWrapper(string name, HttpRequestMessage httpRequestMessage)
-    {
-        Name = name;
-        RequestMessage = httpRequestMessage;
-    }
+    public string Name { get; } = name;
+    public HttpRequestMessage RequestMessage { get; } = httpRequestMessage;
 
     public static implicit operator HttpRequestMessage(HttpRequestMessageWrapper httpRequestMessageWrapper)
         => httpRequestMessageWrapper.RequestMessage;

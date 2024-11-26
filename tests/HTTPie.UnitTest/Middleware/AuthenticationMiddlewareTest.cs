@@ -20,7 +20,7 @@ public class AuthorizationMiddlewareTest
         await services.Handle(input, _ => Task.CompletedTask);
         var httpContext = services.GetRequiredService<HttpContext>();
         var middleware = new AuthorizationMiddleware();
-        await middleware.Invoke(httpContext.Request, _ => Task.CompletedTask);
+        await middleware.InvokeAsync(httpContext.Request, _ => Task.CompletedTask);
         httpContext.Request.Headers.Should().BeEmpty();
     }
 
@@ -36,7 +36,7 @@ public class AuthorizationMiddlewareTest
         await services.Handle(input, _ => Task.CompletedTask);
         var httpContext = services.GetRequiredService<HttpContext>();
         var middleware = new AuthorizationMiddleware();
-        await middleware.Invoke(httpContext.Request, _ => Task.CompletedTask);
+        await middleware.InvokeAsync(httpContext.Request, _ => Task.CompletedTask);
         httpContext.Request.Headers.Should().NotBeEmpty();
         httpContext.Request.Headers.Should().ContainKey(Constants.AuthorizationHeaderName);
         var value = httpContext.Request.Headers[Constants.AuthorizationHeaderName].ToString();
@@ -57,7 +57,7 @@ public class AuthorizationMiddlewareTest
         await services.Handle(input, _ => Task.CompletedTask);
         var httpContext = services.GetRequiredService<HttpContext>();
         var middleware = new AuthorizationMiddleware();
-        await middleware.Invoke(httpContext.Request, _ => Task.CompletedTask);
+        await middleware.InvokeAsync(httpContext.Request, _ => Task.CompletedTask);
         httpContext.Request.Headers.Should().NotBeEmpty();
         httpContext.Request.Headers.Should().ContainKey(Constants.AuthorizationHeaderName);
         var value = httpContext.Request.Headers[Constants.AuthorizationHeaderName].ToString();

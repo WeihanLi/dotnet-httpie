@@ -5,5 +5,5 @@ namespace HTTPie.Abstractions;
 
 public interface IRawHttpRequestExecutor
 {
-    Task<HttpResponseMessage> Execute(HttpRequestMessage httpRequestMessage, CancellationToken cancellationToken);
+    Task<HttpResponseMessage> ExecuteAsync(HttpRequestMessage httpRequestMessage, CancellationToken cancellationToken);
 }
