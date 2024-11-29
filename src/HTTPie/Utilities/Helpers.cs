@@ -47,7 +47,7 @@ public static class Helpers
     };
 
     private static IServiceCollection AddHttpHandlerMiddleware
-        <[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]THttpHandlerMiddleware>
+        <[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THttpHandlerMiddleware>
         (this IServiceCollection serviceCollection)
         where THttpHandlerMiddleware : class, IHttpHandlerMiddleware
     {
