@@ -13,7 +13,7 @@ COPY ./Directory.Build.props ./
 COPY ./Directory.Build.targets ./
 COPY ./Directory.Packages.props ./
 WORKDIR /app/src/HTTPie/
-RUN dotnet publish -f net8.0 -c Release --self-contained --use-current-runtime -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:AssemblyName=http -p:TargetFrameworks=net8.0 -o /app/artifacts
+RUN dotnet publish -f net8.0 --use-current-runtime -p:AssemblyName=http -o /app/artifacts
 
 FROM base AS final
 COPY --from=build-env /app/artifacts/http /root/.dotnet/tools/http

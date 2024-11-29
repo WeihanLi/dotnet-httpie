@@ -11,10 +11,7 @@ public sealed class JsonLoadTestExporter : ILoadTestExporter
 {
     private static readonly Option<string> OutputJsonPathOption = new("--export-json-path", "Expected export json file path");
 
-    public Option[] SupportedOptions()
-    {
-        return new[] { OutputJsonPathOption };
-    }
+    public Option[] SupportedOptions() => [OutputJsonPathOption];
 
     public string Type => "json";
 
@@ -32,7 +29,7 @@ public sealed class JsonLoadTestExporter : ILoadTestExporter
             ResponseList = responseList
         };
         await using var fs = File.Create(jsonPath);
-        await JsonSerializer.SerializeAsync(fs, result);
+        await JsonSerializer.SerializeAsync(fs, result, Utilities.AppSerializationContext.Default.Options.GetTypeInfo(result.GetType()));
         await fs.FlushAsync();
     }
 }

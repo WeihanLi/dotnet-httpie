@@ -10,6 +10,7 @@
     <Title>dotnet-httpie</Title>
     <AssemblyName>dotnet-httpie</AssemblyName>
     <Description>dotnet httpie, a command-line HTTP client</Description>
+    <PublishAot>true</PublishAot>
   </PropertyGroup>
   <ItemGroup>
     <Using Include="System.CommandLine" />
