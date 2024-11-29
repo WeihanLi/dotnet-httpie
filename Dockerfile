@@ -1,5 +1,7 @@
 FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine AS base
 LABEL Maintainer="WeihanLi"
+# configure aot Prerequisites https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/?tabs=linux-alpine%2Cnet8
+RUN apk add clang build-base zlib-dev
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build-env
 
