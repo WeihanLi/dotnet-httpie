@@ -5,11 +5,14 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build-env
 RUN apk add clang build-base zlib-dev
 
 WORKDIR /app
+
 COPY ./src/ ./src/
 COPY ./build/ ./build/
 COPY ./Directory.Build.props ./
 COPY ./Directory.Build.targets ./
 COPY ./Directory.Packages.props ./
+COPY ./.editorconfig ./
+
 WORKDIR /app/src/HTTPie/
 RUN dotnet publish -f net8.0 --use-current-runtime -p:AssemblyName=http -o /app/artifacts
 
