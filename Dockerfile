@@ -20,7 +20,6 @@ FROM scratch
 LABEL Maintainer="WeihanLi"
 WORKDIR /app
 COPY --from=build-env /app/artifacts/http /app/http
-RUN ln -s /app/http /app/dotnet-http
 ENV PATH="/app:${PATH}"
 ENTRYPOINT ["/app/http"]
 CMD ["--help"]
