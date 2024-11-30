@@ -17,7 +17,11 @@ WORKDIR /app/src/HTTPie/
 RUN dotnet publish -f net8.0 --use-current-runtime -a $TARGETARCH -p:AssemblyName=http -o /app/artifacts
 
 FROM scratch
-LABEL Maintainer="WeihanLi"
+
+# https://github.com/opencontainers/image-spec/blob/main/annotations.md
+LABEL org.opencontainers.image.authors="WeihanLi"
+LABEL org.opencontainers.image.source="https://github.com/WeihanLi/dotnet-httpie"
+
 WORKDIR /app
 COPY --from=build-env /app/artifacts/http /app/http
 ENV PATH="/app:${PATH}"
