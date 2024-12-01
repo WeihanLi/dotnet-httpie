@@ -40,7 +40,7 @@ public sealed class CsvLoadTestExporter : ILoadTestExporter
             .OrderBy(p => p.Order)
             .ToArray();
         await using var fileStream = File.OpenWrite(Path.GetFullPath(csvPath));
-        
+
         {
             await using var csvWriter = new StreamWriter(fileStream);
             var headerLine = properties.Select(x => x.Name).StringJoin(",");
