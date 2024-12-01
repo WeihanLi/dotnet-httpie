@@ -1,24 +1,32 @@
-FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine AS base
-LABEL Maintainer="WeihanLi"
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build-env
+ARG TARGETARCH
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build-env
-
-# Install NativeAOT build prerequisites 
-# RUN apk update && apk add clang gcc lld musl-dev build-base zlib-dev
+# Configure NativeAOT Build Prerequisites 
+# https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/?tabs=linux-alpine%2Cnet8
+# for alpine
+RUN apk update && apk add clang build-base zlib-dev
+# for debian/ubuntu
+# RUN apt-get update && apt-get install -y clang zlib1g-dev
 
 WORKDIR /app
+
 COPY ./src/ ./src/
 COPY ./build/ ./build/
 COPY ./Directory.Build.props ./
 COPY ./Directory.Build.targets ./
 COPY ./Directory.Packages.props ./
-WORKDIR /app/src/HTTPie/
-RUN dotnet publish -f net8.0 -c Release --self-contained --use-current-runtime -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:AssemblyName=http -p:TargetFrameworks=net8.0 -o /app/artifacts
+COPY ./.editorconfig ./
 
-FROM base AS final
-COPY --from=build-env /app/artifacts/http /root/.dotnet/tools/http
-RUN ln -s /root/.dotnet/tools/http /root/.dotnet/tools/dotnet-http
-ENV PATH="/root/.dotnet/tools:${PATH}"
-WORKDIR /root/.dotnet/tools/
-ENTRYPOINT ["/root/.dotnet/tools/http"]
+WORKDIR /app/src/HTTPie/
+RUN dotnet publish -p:AssemblyName=http -p:TargetFrameworks=net9.0 -f net9.0 --use-current-runtime -a $TARGETARCH -o /app/publish-artifacts
+
+FROM alpine
+
+# https://github.com/opencontainers/image-spec/blob/main/annotations.md
+LABEL org.opencontainers.image.authors="WeihanLi"
+LABEL org.opencontainers.image.source="https://github.com/WeihanLi/dotnet-httpie"
+
+COPY --from=build-env /app/publish-artifacts/http /app/http
+ENV PATH="/app:${PATH}"
+ENTRYPOINT ["/app/http"]
 CMD ["--help"]

@@ -6,17 +6,26 @@ using HTTPie.Commands;
 using HTTPie.Implement;
 using HTTPie.Middleware;
 using HTTPie.Models;
+using Json.Schema;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using System.CommandLine.Builder;
 using System.CommandLine.Invocation;
 using System.CommandLine.IO;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using WeihanLi.Common.Extensions;
 
 namespace HTTPie.Utilities;
+
+[JsonSerializable(typeof(HttpRequestModel))]
+[JsonSerializable(typeof(HttpResponseModel))]
+[JsonSerializable(typeof(JsonSchema), GenerationMode = JsonSourceGenerationMode.Serialization)]
+[JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase, PropertyNameCaseInsensitive = true)]
+public sealed partial class AppSerializationContext : JsonSerializerContext;
 
 public static class Helpers
 {
@@ -37,30 +46,33 @@ public static class Helpers
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
 
-    private static IServiceCollection AddHttpHandlerMiddleware<THttpHandlerMiddleware>(
-        this IServiceCollection serviceCollection)
-        where THttpHandlerMiddleware : IHttpHandlerMiddleware
+    private static IServiceCollection AddHttpHandlerMiddleware
+        <[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THttpHandlerMiddleware>
+        (this IServiceCollection serviceCollection)
+        where THttpHandlerMiddleware : class, IHttpHandlerMiddleware
     {
-        serviceCollection.TryAddEnumerable(new ServiceDescriptor(typeof(IHttpHandlerMiddleware),
-            typeof(THttpHandlerMiddleware), ServiceLifetime.Singleton));
+        var serviceDescriptor = ServiceDescriptor.Singleton<IHttpHandlerMiddleware, THttpHandlerMiddleware>();
+        serviceCollection.TryAddEnumerable(serviceDescriptor);
         return serviceCollection;
     }
 
-    private static IServiceCollection AddRequestMiddleware<TRequestMiddleware>(
-        this IServiceCollection serviceCollection)
-        where TRequestMiddleware : IRequestMiddleware
+    private static IServiceCollection AddRequestMiddleware
+        <[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TRequestMiddleware>
+        (this IServiceCollection serviceCollection)
+        where TRequestMiddleware : class, IRequestMiddleware
     {
-        serviceCollection.TryAddEnumerable(new ServiceDescriptor(typeof(IRequestMiddleware),
-            typeof(TRequestMiddleware), ServiceLifetime.Singleton));
+        var serviceDescriptor = ServiceDescriptor.Singleton<IRequestMiddleware, TRequestMiddleware>();
+        serviceCollection.TryAddEnumerable(serviceDescriptor);
         return serviceCollection;
     }
 
-    private static IServiceCollection AddResponseMiddleware<TResponseMiddleware>(
-        this IServiceCollection serviceCollection)
-        where TResponseMiddleware : IResponseMiddleware
+    private static IServiceCollection AddResponseMiddleware
+        <[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TResponseMiddleware>
+        (this IServiceCollection serviceCollection)
+        where TResponseMiddleware : class, IResponseMiddleware
     {
-        serviceCollection.TryAddEnumerable(new ServiceDescriptor(typeof(IResponseMiddleware),
-            typeof(TResponseMiddleware), ServiceLifetime.Singleton));
+        var serviceDescriptor = ServiceDescriptor.Singleton<IResponseMiddleware, TResponseMiddleware>();
+        serviceCollection.TryAddEnumerable(serviceDescriptor);
         return serviceCollection;
     }
 

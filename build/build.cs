@@ -1,16 +1,13 @@
 // Copyright (c) 2022-2023 Weihan Li. All rights reserved.
 // Licensed under the Apache license version 2.0 http://www.apache.org/licenses/LICENSE-2.0
 
-// r: "nuget: CliWrap, 3.6.4"
-
-using CliWrap;
 using Newtonsoft.Json;
 
 //
-var target = Guard.NotNull(CommandLineParser.Val("target", "Default", args));
-var apiKey = CommandLineParser.Val("apiKey", "", args);
-var stable = CommandLineParser.Val("stable", null, args).ToBoolean();
-var noPush = CommandLineParser.Val("noPush", null, args).ToBoolean();
+var target = Guard.NotNull(CommandLineParser.Val("target", args, "Default"));
+var apiKey = CommandLineParser.Val("apiKey", args);
+var stable = CommandLineParser.Val("stable", args).ToBoolean();
+var noPush = CommandLineParser.Val("noPush", args).ToBoolean();
 var branchName = Environment.GetEnvironmentVariable("BUILD_SOURCEBRANCHNAME") ?? "local";
 stable |= branchName is "master" or "main";
 
@@ -72,7 +69,7 @@ await BuildProcess.CreateBuilder()
                 var suffix = $"preview-{DateTime.UtcNow:yyyyMMdd-HHmmss}";
                 foreach (var project in srcProjects)
                 {
-                    await ExecuteCommandAsync($"dotnet pack {project} -o ./artifacts/packages --version-suffix {suffix}");
+                    await ExecuteCommandAsync($"dotnet pack {project} -o ./artifacts/packages -p PublishAot=false --version-suffix {suffix}");
                 }
             }            
 
@@ -122,14 +119,8 @@ async Task ExecuteCommandAsync(string commandText, KeyValuePair<string, string>[
     }
     Console.WriteLine($"Executing command: \n    {commandTextWithReplacements}");
     Console.WriteLine();
-    var splits = commandText.Split([' '], 2);
-    var result = await Cli.Wrap(splits[0])
-        .WithArguments(splits.Length > 1 ? splits[1] : string.Empty)
-        .WithStandardErrorPipe(PipeTarget.ToStream(Console.OpenStandardError()))
-        .WithStandardOutputPipe(PipeTarget.ToStream(Console.OpenStandardOutput()))
-        .ExecuteAsync();
+    var result = await CommandExecutor.ExecuteCommandAsync(commandText);
     Console.WriteLine();
-    Console.WriteLine($"ExitCode: {result.ExitCode} ElapsedTime: {result.RunTime}");
 }
 
 file sealed class BuildProcess
