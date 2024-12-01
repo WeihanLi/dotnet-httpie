@@ -3,20 +3,22 @@
 
 using HTTPie.Abstractions;
 using HTTPie.Models;
-using WeihanLi.Npoi;
-using WeihanLi.Npoi.Configurations;
+using HTTPie.Utilities;
+using System.Collections.Frozen;
 
 namespace HTTPie.Implement;
 
 public sealed class CsvLoadTestExporter : ILoadTestExporter
 {
-    static CsvLoadTestExporter()
-    {
-        FluentSettings.LoadMappingProfile<ResponseMappingProfile>();
-    }
 
     private static readonly Option<string> OutputCsvPathOption =
         new("--export-csv-path", "Expected export csv file path");
+
+    private static readonly FrozenSet<string> ExcludeExportPropertyNames = new[]
+        {
+            nameof(HttpResponseModel.Bytes), nameof(HttpResponseModel.Body), nameof(HttpResponseModel.Headers)
+        }
+        .ToFrozenSet();
 
     public Option[] SupportedOptions()
     {
@@ -33,15 +35,24 @@ public sealed class CsvLoadTestExporter : ILoadTestExporter
             return;
         }
 
-        await responseList.ToCsvFileAsync(csvPath);
-    }
-
-    private sealed class ResponseMappingProfile : IMappingProfile<HttpResponseModel>
-    {
-        public void Configure(IExcelConfiguration<HttpResponseModel> configuration)
+        var properties = AppSerializationContext.Default.HttpResponseModel.Properties
+            .Where(p => p.Get is not null && ExcludeExportPropertyNames.Contains(p.Name))
+            .OrderBy(p => p.Order)
+            .ToArray();
+        await using var fileStream = File.OpenWrite(Path.GetFullPath(csvPath));
+        
         {
-            configuration.Property(x => x.Bytes).Ignored();
-            configuration.Property(x => x.Headers).Ignored();
+            await using var csvWriter = new StreamWriter(fileStream);
+            var headerLine = properties.Select(x => x.Name).StringJoin(",");
+            await csvWriter.WriteLineAsync(headerLine);
+            foreach (var response in responseList)
+            {
+                var dataLine = properties.Select(p => p.Get!.Invoke(response)?.ToString())
+                    .StringJoin(",");
+                await csvWriter.WriteLineAsync(dataLine);
+            }
         }
+
+        await fileStream.FlushAsync();
     }
 }

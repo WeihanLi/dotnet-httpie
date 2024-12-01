@@ -1,16 +1,13 @@
 // Copyright (c) 2022-2023 Weihan Li. All rights reserved.
 // Licensed under the Apache license version 2.0 http://www.apache.org/licenses/LICENSE-2.0
 
-// r: "nuget: CliWrap, 3.6.4"
-
-using CliWrap;
 using Newtonsoft.Json;
 
 //
-var target = Guard.NotNull(CommandLineParser.Val("target", "Default", args));
-var apiKey = CommandLineParser.Val("apiKey", "", args);
-var stable = CommandLineParser.Val("stable", null, args).ToBoolean();
-var noPush = CommandLineParser.Val("noPush", null, args).ToBoolean();
+var target = Guard.NotNull(CommandLineParser.Val("target", args, "Default"));
+var apiKey = CommandLineParser.Val("apiKey", args);
+var stable = CommandLineParser.Val("stable", args).ToBoolean();
+var noPush = CommandLineParser.Val("noPush", args).ToBoolean();
 var branchName = Environment.GetEnvironmentVariable("BUILD_SOURCEBRANCHNAME") ?? "local";
 stable |= branchName is "master" or "main";
 
