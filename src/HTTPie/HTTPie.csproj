@@ -30,6 +30,7 @@
     <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
     <MetricsSupport>false</MetricsSupport>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <StripSymbols>true</StripSymbols>
   </PropertyGroup>
   <ItemGroup>
     <Using Include="System.CommandLine" />
