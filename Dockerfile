@@ -20,13 +20,12 @@ COPY ./.editorconfig ./
 WORKDIR /app/src/HTTPie/
 RUN dotnet publish -f net9.0 --use-current-runtime -a $TARGETARCH -p:AssemblyName=http -p:TargetFrameworks=net9.0 -o /app/artifacts
 
-FROM scratch
+FROM alpine
 
 # https://github.com/opencontainers/image-spec/blob/main/annotations.md
 LABEL org.opencontainers.image.authors="WeihanLi"
 LABEL org.opencontainers.image.source="https://github.com/WeihanLi/dotnet-httpie"
 
-WORKDIR /app
 COPY --from=build-env /app/artifacts/http /app/http
 ENV PATH="/app:${PATH}"
 ENTRYPOINT ["/app/http"]
