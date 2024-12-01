@@ -18,7 +18,7 @@ COPY ./Directory.Packages.props ./
 COPY ./.editorconfig ./
 
 WORKDIR /app/src/HTTPie/
-RUN dotnet publish -f net8.0 -p:TargetFrameworks=net8.0 --use-current-runtime -a $TARGETARCH -p:AssemblyName=http -o /app/artifacts
+RUN dotnet publish -p:AssemblyName=http -p:TargetFrameworks=net9.0 -f net9.0 --use-current-runtime -a $TARGETARCH -o /app/publish-artifacts
 
 FROM alpine
 
@@ -26,7 +26,7 @@ FROM alpine
 LABEL org.opencontainers.image.authors="WeihanLi"
 LABEL org.opencontainers.image.source="https://github.com/WeihanLi/dotnet-httpie"
 
-COPY --from=build-env /app/artifacts/http /app/http
+COPY --from=build-env /app/publish-artifacts/http /app/http
 ENV PATH="/app:${PATH}"
 ENTRYPOINT ["/app/http"]
 CMD ["--help"]
