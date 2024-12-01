@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build-env
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build-env
 ARG TARGETARCH
 
 # Configure NativeAOT Build Prerequisites 
@@ -18,7 +18,7 @@ COPY ./Directory.Packages.props ./
 COPY ./.editorconfig ./
 
 WORKDIR /app/src/HTTPie/
-RUN dotnet publish -f net9.0 --use-current-runtime -a $TARGETARCH -p:AssemblyName=http -p:TargetFrameworks=net9.0 -o /app/artifacts
+RUN dotnet publish -f net8.0 -p:TargetFrameworks=net8.0 --use-current-runtime -a $TARGETARCH -p:AssemblyName=http -o /app/artifacts
 
 FROM alpine
 
