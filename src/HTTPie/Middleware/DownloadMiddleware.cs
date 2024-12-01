@@ -10,20 +10,20 @@ namespace HTTPie.Middleware;
 
 public sealed class DownloadMiddleware : IResponseMiddleware
 {
-    public static readonly Option<bool> DownloadOption = new(new[] { "-d", "--download" }, "Download file");
+    public static readonly Option<bool> DownloadOption = new(["-d", "--download"], "Download file");
 
     private static readonly Option<bool> ContinueOption =
-        new(new[] { "-c", "--continue" }, "Download file using append mode");
+        new(["-c", "--continue"], "Download file using append mode");
 
-    private static readonly Option<string> OutputOption = new(new[] { "-o", "--output" }, "Output file path");
-    private static readonly Option<string> CheckSumOption = new(new[] { "--checksum" }, "Checksum to validate");
+    private static readonly Option<string> OutputOption = new(["-o", "--output"], "Output file path");
+    private static readonly Option<string> CheckSumOption = new(["--checksum"], "Checksum to validate");
 
     private static readonly Option<HashType> CheckSumAlgOption =
-        new(new[] { "--checksum-alg" }, () => HashType.SHA1, "Checksum hash algorithm type");
+        new(["--checksum-alg"], () => HashType.SHA1, "Checksum hash algorithm type");
 
     public Option[] SupportedOptions()
     {
-        return new Option[] { DownloadOption, ContinueOption, OutputOption, CheckSumOption, CheckSumAlgOption };
+        return [DownloadOption, ContinueOption, OutputOption, CheckSumOption, CheckSumAlgOption];
     }
 
     public async Task InvokeAsync(HttpContext context, Func<HttpContext, Task> next)
@@ -80,7 +80,7 @@ public sealed class DownloadMiddleware : IResponseMiddleware
     {
         const string filenameSeparator = "filename=";
 
-        var value = headerValues.ToString().Split(new[] { ';' },
+        var value = headerValues.ToString().Split([';'],
                 StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
             .FirstOrDefault(x => x.StartsWith(filenameSeparator));
         if (value is null || value.Length == filenameSeparator.Length)

@@ -19,7 +19,7 @@ public sealed class ExecuteCommand : Command
     private static readonly Argument<string> FilePathArgument = new("scriptPath", "The script to execute");
 
     private static readonly Option<ExecuteScriptType> ExecuteScriptTypeOption =
-        new(new[] { "-t", "--type" }, "The script type to execute");
+        new(["-t", "--type"], "The script type to execute");
 
     public ExecuteCommand() : base("exec", "execute http request")
     {
@@ -249,7 +249,7 @@ public sealed class ExecuteCommand : Command
                         {
                             var jsonNode = JsonNode.Parse(body);
                             var pathResult = jsonPath.Evaluate(jsonNode);
-                            return pathResult.Matches?.FirstOrDefault()?.Value?.ToString() ?? string.Empty;
+                            return pathResult.Matches.FirstOrDefault()?.Value?.ToString() ?? string.Empty;
                         }
                         catch (Exception e)
                         {

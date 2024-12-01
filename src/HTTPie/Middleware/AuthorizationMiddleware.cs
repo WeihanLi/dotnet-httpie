@@ -10,8 +10,8 @@ namespace HTTPie.Middleware;
 
 public sealed class AuthorizationMiddleware : IRequestMiddleware
 {
-    private static readonly Option<string> AuthenticationTypeOption = new(new[] { "--auth-type", "-A" }, () => "Basic", "Authentication type");
-    private static readonly Option<string> AuthenticationValueOption = new(new[] { "--auth", "-a" }, "Authentication value");
+    private static readonly Option<string> AuthenticationTypeOption = new(["--auth-type", "-A"], () => "Basic", "Authentication type");
+    private static readonly Option<string> AuthenticationValueOption = new(["--auth", "-a"], "Authentication value");
 
     static AuthorizationMiddleware()
     {
@@ -22,7 +22,7 @@ public sealed class AuthorizationMiddleware : IRequestMiddleware
         });
     }
 
-    public Option[] SupportedOptions() => new Option[] { AuthenticationTypeOption, AuthenticationValueOption };
+    public Option[] SupportedOptions() => [AuthenticationTypeOption, AuthenticationValueOption];
 
     public Task InvokeAsync(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {

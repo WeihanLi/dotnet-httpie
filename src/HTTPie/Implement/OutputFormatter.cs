@@ -31,28 +31,28 @@ public sealed class OutputFormatter(IServiceProvider serviceProvider, ILogger<Ou
     private static readonly Option<PrettyOptions> PrettyOption = new("--pretty", () => PrettyOptions.All,
         "pretty output");
 
-    private static readonly Option<bool> QuietOption = new(new[] { "--quiet", "-q" }, "quiet mode, output nothing");
+    private static readonly Option<bool> QuietOption = new(["--quiet", "-q"], "quiet mode, output nothing");
 
     public static readonly Option<bool> OfflineOption =
         new("--offline", "offline mode, would not send the request, just print request info");
 
     private static readonly Option<bool> OutputHeadersOption =
-        new(new[] { "-h", "--headers" }, "output response headers only");
+        new(["-h", "--headers"], "output response headers only");
 
     private static readonly Option<bool> OutputBodyOption =
-        new(new[] { "-b", "--body" }, "output response headers and response body only");
+        new(["-b", "--body"], "output response headers and response body only");
 
-    private static readonly Option<bool> OutputVerboseOption = new(new[] { "-v", "--verbose" },
+    private static readonly Option<bool> OutputVerboseOption = new(["-v", "--verbose"],
         "output request/response, response headers and response body");
 
-    private static readonly Option<string> OutputPrintModeOption = new(new[] { "-p", "--print" },
+    private static readonly Option<string> OutputPrintModeOption = new(["-p", "--print"],
         "print mode, output specific info,H:request headers,B:request body,h:response headers,b:response body");
 
-    public Option[] SupportedOptions() => new Option[]
-    {
+    public Option[] SupportedOptions() =>
+    [
         OfflineOption, QuietOption, OutputHeadersOption, OutputBodyOption, OutputVerboseOption,
-        OutputPrintModeOption, PrettyOption,
-    };
+        OutputPrintModeOption, PrettyOption
+    ];
 
     public static OutputFormat GetOutputFormat(HttpContext httpContext)
     {
