@@ -1,12 +1,12 @@
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0 AS build-env
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build-env
 ARG TARGETARCH
 
 # Configure NativeAOT Build Prerequisites 
 # https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/?tabs=linux-alpine%2Cnet8
 # for alpine
-# RUN apk update && apk add clang build-base zlib-dev
+RUN apk update && apk add clang build-base zlib-dev
 # for debian/ubuntu
-RUN apt-get update && apt-get install -y --no-install-recommends clang zlib1g-dev
+# RUN apt-get update && apt-get install -y --no-install-recommends clang zlib1g-dev
 
 WORKDIR /app
 
