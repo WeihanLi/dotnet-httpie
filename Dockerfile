@@ -18,7 +18,7 @@ COPY ./Directory.Packages.props ./
 COPY ./.editorconfig ./
 
 WORKDIR /app/src/HTTPie/
-RUN dotnet publish -f net9.0 --use-current-runtime -a $TARGETARCH -p:AssemblyName=http -o /app/artifacts
+RUN dotnet publish -f net9.0 --use-current-runtime -a $TARGETARCH -p:AssemblyName=http -p:TargetFrameworks=net9.0 -o /app/artifacts
 
 FROM scratch
 
