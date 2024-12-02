@@ -21,32 +21,30 @@ public sealed partial class RequestExecutor(
     ILogger logger
     ) : IRequestExecutor
 {
-    private readonly Func<HttpClientHandler, Task> _httpHandlerPipeline = httpHandlerPipeline;
+#if NET8_0
+    // needed for net8.0 only
     private readonly ILogger _logger = logger;
-    private readonly IRequestMapper _requestMapper = requestMapper;
-    private readonly Func<HttpRequestModel, Task> _requestPipeline = requestPipeline;
-    private readonly IResponseMapper _responseMapper = responseMapper;
-    private readonly Func<HttpContext, Task> _responsePipeline = responsePipeline;
+#endif
 
     private static readonly Option<double> TimeoutOption = new("--timeout", "Request timeout in seconds");
 
     private static readonly Option<int> IterationOption =
-        new(new[] { "-n", "--iteration" }, () => 1, "Request iteration");
+        new(["-n", "--iteration"], () => 1, "Request iteration");
 
     private static readonly Option<int> VirtualUserOption =
-        new(new[] { "--vu", "--vus", "--virtual-users" }, () => 1, "Virtual users");
+        new(["--vu", "--vus", "--virtual-users"], () => 1, "Virtual users");
 
-    private static readonly Option<string> DurationOption = new(new[] { "--duration" }, "Request duration, 10s/1m ...");
+    private static readonly Option<string> DurationOption = new(["--duration"], "Request duration, 10s/1m ...");
 
     public Option[] SupportedOptions()
     {
-        return new Option[] { TimeoutOption, IterationOption, DurationOption, VirtualUserOption };
+        return [TimeoutOption, IterationOption, DurationOption, VirtualUserOption];
     }
 
     public async ValueTask ExecuteAsync(HttpContext httpContext)
     {
         var requestModel = httpContext.Request;
-        await _requestPipeline(requestModel);
+        await requestPipeline(requestModel);
         LogRequestModel(requestModel);
         if (requestModel.ParseResult.HasOption(OutputFormatter.OfflineOption))
         {
@@ -54,8 +52,9 @@ public sealed partial class RequestExecutor(
             return;
         }
 
-        using var httpClientHandler = new HttpClientHandler { AllowAutoRedirect = false };
-        await _httpHandlerPipeline(httpClientHandler);
+        using var httpClientHandler = new HttpClientHandler();
+        httpClientHandler.AllowAutoRedirect = false;
+        await httpHandlerPipeline(httpClientHandler);
         using var client = new HttpClient(httpClientHandler);
         var timeout = requestModel.ParseResult.GetValueForOption(TimeoutOption);
         if (timeout > 0)
@@ -93,7 +92,7 @@ public sealed partial class RequestExecutor(
         else
         {
             httpContext.Response = await InvokeRequest(client, httpContext, httpContext.RequestCancelled);
-            await _responsePipeline(httpContext);
+            await responsePipeline(httpContext);
         }
 
         async Task InvokeLoadTest(HttpClient httpClient)
@@ -151,14 +150,14 @@ public sealed partial class RequestExecutor(
         var responseModel = new HttpResponseModel();
         try
         {
-            using var requestMessage = await _requestMapper.ToRequestMessage(httpContext);
+            using var requestMessage = await requestMapper.ToRequestMessage(httpContext);
             LogRequestMessage(requestMessage);
             httpContext.Request.Timestamp = DateTimeOffset.Now;
             var startTime = Stopwatch.GetTimestamp();
             using var responseMessage = await httpClient.SendAsync(requestMessage, cancellationToken);
             var elapsed = ProfilerHelper.GetElapsedTime(startTime);
             LogResponseMessage(responseMessage);
-            responseModel = await _responseMapper.ToResponseModel(responseMessage);
+            responseModel = await responseMapper.ToResponseModel(responseMessage);
             responseModel.Elapsed = elapsed;
             responseModel.Timestamp = httpContext.Request.Timestamp.Add(elapsed);
             LogRequestDuration(httpContext.Request.Url, httpContext.Request.Method, responseModel.StatusCode, elapsed);

@@ -93,7 +93,7 @@ public sealed class HttpParser : IHttpParser
                     || line.StartsWith("// @name=")
                    )
                 {
-                    requestName = line["# @name ".Length..].TrimStart(new[] { '=' }).Trim();
+                    requestName = line["# @name ".Length..].TrimStart(['=']).Trim();
                     fileScopedVariablesEnded = true;
                 }
 
@@ -129,7 +129,7 @@ public sealed class HttpParser : IHttpParser
                         var (headerName, headerValue) = (headerSplits[0], headerSplits[1]);
                         if (HttpHelper.IsWellKnownContentHeader(headerName))
                         {
-                            requestMessage.Content ??= new ByteArrayContent(Array.Empty<byte>());
+                            requestMessage.Content ??= new ByteArrayContent([]);
                             requestMessage.Content.Headers.TryAddWithoutValidation(headerName, headerValue);
                         }
                         else

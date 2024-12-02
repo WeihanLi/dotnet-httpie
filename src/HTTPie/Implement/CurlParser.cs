@@ -76,8 +76,6 @@ public sealed class CurlParser : ICurlParser
                     headers.Add(new KeyValuePair<string, string>(headerSplits[0],
                         headerSplits.Length > 1 ? headerSplits[1] : string.Empty));
                 }
-
-                continue;
             }
         }
 

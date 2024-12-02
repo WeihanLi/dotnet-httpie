@@ -10,6 +10,7 @@
     <Title>dotnet-httpie</Title>
     <AssemblyName>dotnet-httpie</AssemblyName>
     <Description>dotnet httpie, a command-line HTTP client</Description>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <PublishAot>true</PublishAot>
   </PropertyGroup>
   <PropertyGroup Condition="'$(PublishAot)'=='true'">
@@ -30,6 +31,7 @@
     <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
     <MetricsSupport>false</MetricsSupport>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <StripSymbols>true</StripSymbols>
   </PropertyGroup>
   <ItemGroup>
     <Using Include="System.CommandLine" />
