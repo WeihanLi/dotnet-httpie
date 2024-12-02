@@ -6,7 +6,7 @@
 
 [![Github Actions Build Status](https://github.com/WeihanLi/dotnet-HTTPie/workflows/default/badge.svg?branch=dev)](https://github.com/WeihanLi/dotnet-HTTPie/actions?query=workflow%default+branch%3Adev)
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/weihanli/dotnet-httpie)](https://hub.docker.com/r/weihanli/dotnet-httpie)
+[![Docker Pulls](https://img.shields.io/docker/pulls/weihanli/dotnet-httpie)](https://hub.docker.com/r/weihanli/dotnet-httpie/tags)
 
 ## Intro
 
