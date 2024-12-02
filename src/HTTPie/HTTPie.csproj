@@ -32,6 +32,7 @@
     <MetricsSupport>false</MetricsSupport>
     <InvariantGlobalization>true</InvariantGlobalization>
     <StripSymbols>true</StripSymbols>
+    <IlcGenerateDgmlFile Condition="'$(OS)' == 'Windows_NT'">true</IlcGenerateDgmlFile>
   </PropertyGroup>
   <ItemGroup>
     <Using Include="System.CommandLine" />
