@@ -28,8 +28,8 @@ WORKDIR /app/src/HTTPie/
 RUN if [ "${TARGETARCH}" = "${BUILDARCH}" ]; then \
       dotnet publish -f net9.0 --use-current-runtime -p:AssemblyName=http -p:TargetFrameworks=net9.0 -o /app/artifacts; \
     else \      
-      apk add binutils-aarch64 --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community \
-      dotnet publish -f net9.0 -r linux-arm64-musl -p:AssemblyName=http -p:TargetFrameworks=net9.0 -p:SysRoot=/crossrootfs/arm64 -p:ObjCopyName=aarch64-linux-gnu-objcopy -o /app/artifacts; \
+      apk add binutils-aarch64 --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community; \
+      dotnet publish -f net9.0 -r linux-musl-arm64 -p:AssemblyName=http -p:TargetFrameworks=net9.0 -p:SysRoot=/crossrootfs/arm64 -p:ObjCopyName=aarch64-alpine-linux-musl-objcopy -o /app/artifacts; \
     fi
 
 FROM alpine
