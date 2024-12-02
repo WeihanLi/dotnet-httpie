@@ -6,7 +6,7 @@
 - AOT support
 - Publish container image based on AOT artifacts and multi-platform support
 
-## [0.8.0](https://nuget.org/packages/dotnet-httpie/0.8.0)
+## [0.8.2](https://nuget.org/packages/dotnet-httpie/0.8.2)
 
 - Add `net8.0` support
 - `HttpParser` enhancements
