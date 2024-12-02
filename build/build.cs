@@ -61,7 +61,7 @@ await BuildProcess.CreateBuilder()
             {
                 foreach (var project in srcProjects)
                 {
-                    await ExecuteCommandAsync($"dotnet pack {project} -o ./artifacts/packages");
+                    await ExecuteCommandAsync($"dotnet pack {project} -o ./artifacts/packages -p:PublishAot=false");
                 }
             }
             else
@@ -69,7 +69,7 @@ await BuildProcess.CreateBuilder()
                 var suffix = $"preview-{DateTime.UtcNow:yyyyMMdd-HHmmss}";
                 foreach (var project in srcProjects)
                 {
-                    await ExecuteCommandAsync($"dotnet pack {project} -o ./artifacts/packages -p PublishAot=false --version-suffix {suffix}");
+                    await ExecuteCommandAsync($"dotnet pack {project} -o ./artifacts/packages -p:PublishAot=false --version-suffix {suffix}");
                 }
             }            
 
