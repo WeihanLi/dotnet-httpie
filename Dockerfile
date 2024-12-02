@@ -38,7 +38,7 @@ FROM alpine
 LABEL org.opencontainers.image.authors="WeihanLi"
 LABEL org.opencontainers.image.source="https://github.com/WeihanLi/dotnet-httpie"
 
-COPY --from=build-env /app/artifacts/http /app/http
-ENV PATH="/app:${PATH}"
-ENTRYPOINT ["/app/http"]
+COPY --from=build-env /app/artifacts/http /usr/bin/http
+RUN chmod +x /usr/bin/http
+ENTRYPOINT ["/usr/bin/http"]
 CMD ["--help"]
