@@ -1,5 +1,11 @@
 # dotnet-httpie release notes
 
+## [0.9.0](https://nuget.org/packages/dotnet-httpie/0.9.0)
+
+- Add `net9.0` support, remove `net6.0`/`net7.0` support
+- AOT support
+- Publish container image based on AOT artifacts and multi-platform support
+
 ## [0.8.2](https://nuget.org/packages/dotnet-httpie/0.8.2)
 
 - Add `net8.0` support
