@@ -13,7 +13,7 @@ ARG BUILDARCH
 # for alpine
 # RUN apk update && apk add clang build-base zlib-dev
 # for debian/ubuntu
-RUN apt-get update && apt-get install -y clang zlib1g-dev
+RUN apt-get update && apt-get install -y clang zlib1g-dev binutils-aarch64-linux-gnu
 
 WORKDIR /app
 
