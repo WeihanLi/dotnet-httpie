@@ -67,14 +67,11 @@ public static class HttpMessageExtensions
             messageBuilder.AppendLine($"{name}: {value}");
         }
 
-        if (httpResponseMessage.Content != null)
+        var body = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
+        if (!string.IsNullOrEmpty(body))
         {
-            var body = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
-            if (!string.IsNullOrEmpty(body))
-            {
-                messageBuilder.AppendLine();
-                messageBuilder.AppendLine(body);
-            }
+            messageBuilder.AppendLine();
+            messageBuilder.AppendLine(body);
         }
 
         return messageBuilder.ToString();

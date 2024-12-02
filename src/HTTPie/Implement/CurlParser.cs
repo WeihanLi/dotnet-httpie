@@ -23,7 +23,7 @@ public sealed class CurlParser : ICurlParser
             throw new ArgumentException($"Invalid curl script: {curlScript}", nameof(curlScript));
         }
 
-        var splits = LineParser.ParseLine(normalizedScript).ToArray();
+        var splits = CommandLineParser.ParseLine(normalizedScript).ToArray();
         string requestMethod = string.Empty, requestBody = string.Empty;
         Uri? uri = null;
         var headers = new List<KeyValuePair<string, string>>();
@@ -76,8 +76,6 @@ public sealed class CurlParser : ICurlParser
                     headers.Add(new KeyValuePair<string, string>(headerSplits[0],
                         headerSplits.Length > 1 ? headerSplits[1] : string.Empty));
                 }
-
-                continue;
             }
         }
 

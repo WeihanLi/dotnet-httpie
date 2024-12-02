@@ -5,5 +5,5 @@ namespace HTTPie.Abstractions;
 
 public interface IPlugin
 {
-    Option[] SupportedOptions() => Array.Empty<Option>();
+    Option[] SupportedOptions() => [];
 }

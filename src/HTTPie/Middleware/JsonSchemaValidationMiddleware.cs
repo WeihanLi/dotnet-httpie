@@ -3,6 +3,7 @@
 
 using HTTPie.Abstractions;
 using HTTPie.Models;
+using HTTPie.Utilities;
 using Json.Schema;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Json;
@@ -12,7 +13,6 @@ namespace HTTPie.Middleware;
 
 public sealed class JsonSchemaValidationMiddleware(ILogger<JsonSchemaValidationMiddleware> logger) : IResponseMiddleware
 {
-    private readonly ILogger<JsonSchemaValidationMiddleware> _logger = logger;
     private const string JsonSchemaValidationResultHeader = "X-JsonSchema-ValidationResult";
 
     private const string JsonSchemaLoadFailed = "JsonSchema fail to load";
@@ -24,10 +24,7 @@ public sealed class JsonSchemaValidationMiddleware(ILogger<JsonSchemaValidationM
     private static readonly Option<OutputFormat> JsonSchemaValidationOutputFormatOption =
         new("--json-schema-out-format", () => OutputFormat.List, "Json schema validation result output format");
 
-    public Option[] SupportedOptions()
-    {
-        return new Option[] { JsonSchemaPathOption, JsonSchemaValidationOutputFormatOption };
-    }
+    public Option[] SupportedOptions() => [JsonSchemaPathOption, JsonSchemaValidationOutputFormatOption];
 
     public async Task InvokeAsync(HttpContext context, Func<HttpContext, Task> next)
     {
@@ -46,7 +43,7 @@ public sealed class JsonSchemaValidationMiddleware(ILogger<JsonSchemaValidationM
                 || schemaPath.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
             {
                 using var httpClient = new HttpClient();
-                jsonSchema = await httpClient.GetFromJsonAsync<JsonSchema>(schemaPath);
+                jsonSchema = await httpClient.GetFromJsonAsync(schemaPath, AppSerializationContext.Default.JsonSchema);
             }
             else
             {
@@ -55,7 +52,7 @@ public sealed class JsonSchemaValidationMiddleware(ILogger<JsonSchemaValidationM
         }
         catch (Exception e)
         {
-            _logger.LogWarning(e, JsonSchemaLoadFailed);
+            logger.LogWarning(e, JsonSchemaLoadFailed);
             validationResultMessage = JsonSchemaLoadFailed;
         }
 
@@ -74,7 +71,7 @@ public sealed class JsonSchemaValidationMiddleware(ILogger<JsonSchemaValidationM
             }
             catch (Exception e)
             {
-                _logger.LogWarning(e, JsonSchemaValidateFailed);
+                logger.LogWarning(e, JsonSchemaValidateFailed);
                 validationResultMessage = JsonSchemaValidateFailed;
             }
         }

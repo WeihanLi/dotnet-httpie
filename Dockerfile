@@ -1,23 +1,44 @@
-FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine AS base
-LABEL Maintainer="WeihanLi"
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-arm64-musl AS cross-build-env
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build-env
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build-env
 
-# Install NativeAOT build prerequisites 
-# RUN apk update && apk add clang gcc lld musl-dev build-base zlib-dev
+COPY --from=cross-build-env /crossrootfs /crossrootfs
+
+ARG TARGETARCH
+ARG BUILDARCH
+
+# Configure NativeAOT Build Prerequisites 
+# https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/?tabs=linux-alpine%2Cnet8
+# for alpine
+RUN apk update && apk add clang build-base zlib-dev
+# for debian/ubuntu
+# RUN apt-get update && apt-get install -y clang zlib1g-dev
 
 WORKDIR /app
+
 COPY ./src/ ./src/
 COPY ./build/ ./build/
 COPY ./Directory.Build.props ./
 COPY ./Directory.Build.targets ./
 COPY ./Directory.Packages.props ./
-WORKDIR /app/src/HTTPie/
-RUN dotnet publish -f net8.0 -c Release --self-contained --use-current-runtime -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:AssemblyName=http -p:TargetFrameworks=net8.0 -o /app/artifacts
+COPY ./.editorconfig ./
 
-FROM base AS final
-COPY --from=build-env /app/artifacts/http /root/.dotnet/tools/http
-RUN ln -s /root/.dotnet/tools/http /root/.dotnet/tools/dotnet-http
-ENV PATH="/root/.dotnet/tools:${PATH}"
-ENTRYPOINT ["http"]
+WORKDIR /app/src/HTTPie/
+
+RUN if [ "${TARGETARCH}" = "${BUILDARCH}" ]; then \
+      dotnet publish -f net9.0 --use-current-runtime -p:AssemblyName=http -p:TargetFrameworks=net9.0 -o /app/artifacts; \
+    else \      
+      apk add binutils-aarch64 --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community; \
+      dotnet publish -f net9.0 -r linux-musl-arm64 -p:AssemblyName=http -p:TargetFrameworks=net9.0 -p:SysRoot=/crossrootfs/arm64 -p:ObjCopyName=aarch64-alpine-linux-musl-objcopy -o /app/artifacts; \
+    fi
+
+FROM alpine
+
+# https://github.com/opencontainers/image-spec/blob/main/annotations.md
+LABEL org.opencontainers.image.authors="WeihanLi"
+LABEL org.opencontainers.image.source="https://github.com/WeihanLi/dotnet-httpie"
+
+COPY --from=build-env /app/artifacts/http /usr/bin/http
+RUN chmod +x /usr/bin/http
+ENTRYPOINT ["/usr/bin/http"]
 CMD ["--help"]

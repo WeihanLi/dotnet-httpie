@@ -9,22 +9,22 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Setup .NET SDK
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: |
-          6.0.x
-          7.0.x
-          8.0.x
+        dotnet-version: 9.0.x
     - name: dotnet info
-      run: dotnet --info
-
-    - name: Create Github release
+      run: |
+        dotnet --info
+        dotnet tool install -g dotnet-execute
+        dotnet-exec info
+    - name: Export Release Version
+      run: dotnet-exec https://github.com/OpenReservation/scripts/blob/main/build/export-gh-release-version.cs
+    - name: Create Github Release
       shell: pwsh
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         ./build.ps1 --stable=true
-        $VERSION = Get-ChildItem -Path artifacts/packages/*.nupkg -Name | Select-String -Pattern '\d+.\d+.\d+' | foreach {$_.Matches.Value}
-        gh release create --generate-notes $VERSION
+        gh release create ${{ env.ReleaseVersion }} --generate-notes

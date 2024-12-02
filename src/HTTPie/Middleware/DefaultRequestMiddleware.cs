@@ -10,12 +10,11 @@ namespace HTTPie.Middleware;
 
 public sealed class DefaultRequestMiddleware(ILogger logger) : IRequestMiddleware
 {
-    private readonly ILogger _logger = logger;
     private static readonly Option<bool> DebugOption = new("--debug", "Enable debug mode, output debug log");
     private static readonly Option<string> SchemaOption = new("--schema", "The HTTP request schema");
     private static readonly Option<Version> HttpVersionOption = new("--httpVersion", "The HTTP request HTTP version");
 
-    public Option[] SupportedOptions() => new Option[] { DebugOption, SchemaOption, HttpVersionOption, };
+    public Option[] SupportedOptions() => [DebugOption, SchemaOption, HttpVersionOption];
 
     public Task InvokeAsync(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
@@ -51,7 +50,7 @@ public sealed class DefaultRequestMiddleware(ILogger logger) : IRequestMiddlewar
             requestModel.ParseResult.GetValueForOption(HttpVersionOption);
         if (httpVersionOption != default)
         {
-            _logger.LogDebug($"httpVersion: {httpVersionOption}");
+            logger.LogDebug($"httpVersion: {httpVersionOption}");
             requestModel.HttpVersion = httpVersionOption;
         }
 

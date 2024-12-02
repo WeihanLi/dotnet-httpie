@@ -14,7 +14,7 @@ public sealed class LoadTestExporterSelector : ILoadTestExporterSelector
 
     public Option[] SupportedOptions()
     {
-        return new[] { ExporterTypeOption };
+        return [ExporterTypeOption];
     }
 
     public LoadTestExporterSelector(HttpContext context, IEnumerable<ILoadTestExporter> exporters)

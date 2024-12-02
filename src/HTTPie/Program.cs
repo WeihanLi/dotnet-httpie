@@ -8,15 +8,15 @@ using WeihanLi.Common.Helpers.Hosting;
 
 var debugEnabled = args.Contains("--debug", StringComparer.OrdinalIgnoreCase);
 var appBuilder = AppHost.CreateBuilder();
-appBuilder.Logging.AddConsole();
+appBuilder.Logging.AddDefaultDelegateLogger();
 appBuilder.Logging.SetMinimumLevel(debugEnabled ? LogLevel.Debug : LogLevel.Warning);
 appBuilder.Services.RegisterApplicationServices();
 var app = appBuilder.Build();
 // output helps when no argument or there's only "-h"/"/h"
 args = args switch
 {
-    [] => new[] { "--help" },
-    ["-h"] or ["/h"] => new[] { "--help" },
+[] => ["--help"],
+["-h"] or ["/h"] => ["--help"],
     _ => args
 };
 if (args.Contains("--version"))

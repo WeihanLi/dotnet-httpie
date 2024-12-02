@@ -10,7 +10,13 @@
     <Product>dotnet-httpie</Product>
     <Authors>WeihanLi</Authors>
     <Copyright>Copyright 2021-$([System.DateTime]::Now.Year) (c) WeihanLi</Copyright>
-    <NoWarn>NU1507;</NoWarn>
+    <NoWarn>$(NoWarn);NU1507;</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- https://learn.microsoft.com/en-us/nuget/concepts/auditing-packages -->
+    <NuGetAudit>true</NuGetAudit>    
+    <NuGetAuditMode>direct</NuGetAuditMode>
+    <NuGetAuditLevel>high</NuGetAuditLevel>
   </PropertyGroup>
   <ItemGroup>
     <Using Include="WeihanLi.Common"/>

@@ -13,7 +13,7 @@ public sealed class RequestCacheMiddleware : IRequestMiddleware
 
     public Option[] SupportedOptions()
     {
-        return new Option[] { NoCacheOption };
+        return [NoCacheOption];
     }
 
     public Task InvokeAsync(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
