@@ -6,4 +6,5 @@ var version = $"{propertyGroupNode.Element("VersionMajor").Value}.{propertyGroup
 Console.WriteLine($"Version: {version}");
 
 var dockerBuildCommand = $"""docker buildx build --push -f Dockerfile --platform="linux/amd64,linux/arm64" --output="type=image" -t weihanli/dotnet-httpie:{version} .""";
+Console.WriteLine($"Executing command: {dockerBuildCommand}");
 CommandExecutor.ExecuteCommandAndOutput(dockerBuildCommand);
