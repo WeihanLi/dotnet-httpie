@@ -1,13 +1,10 @@
 // Copyright (c) 2022-2023 Weihan Li. All rights reserved.
 // Licensed under the Apache license version 2.0 http://www.apache.org/licenses/LICENSE-2.0
 
-using Newtonsoft.Json;
-
-//
 var target = Guard.NotNull(CommandLineParser.Val("target", args, "Default"));
 var apiKey = CommandLineParser.Val("apiKey", args);
-var stable = CommandLineParser.Val("stable", args).ToBoolean();
-var noPush = CommandLineParser.Val("noPush", args).ToBoolean();
+var stable = CommandLineParser.BooleanVal("stable", args);
+var noPush = CommandLineParser.BooleanVal("noPush", args);
 var branchName = Environment.GetEnvironmentVariable("BUILD_SOURCEBRANCHNAME") ?? "local";
 stable |= branchName is "master" or "main";
 
@@ -28,10 +25,7 @@ await BuildProcess.CreateBuilder()
 
         // dump runtime info
         Console.WriteLine("RuntimeInfo:");
-        Console.WriteLine(ApplicationHelper.RuntimeInfo.ToJson(new JsonSerializerSettings()
-        {
-            Formatting = Formatting.Indented
-        }));
+        Console.WriteLine(ApplicationHelper.RuntimeInfo.ToIndentedJson());
     })
     .WithTask("hello", b => b.WithExecution(() => Console.WriteLine("Hello dotnet-exec build")))
     .WithTask("build", b =>
