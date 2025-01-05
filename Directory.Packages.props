@@ -8,7 +8,7 @@
     <PackageVersion Include="JsonSchema.Net" Version="7.2.3" />
     <PackageVersion Include="MathNet.Numerics.Signed" Version="5.0.0" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-    <PackageVersion Include="WeihanLi.Common" Version="1.0.72" />
+    <PackageVersion Include="WeihanLi.Common" Version="1.0.74" />
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
