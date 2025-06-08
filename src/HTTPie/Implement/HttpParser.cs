@@ -35,13 +35,13 @@ public sealed class HttpParser : IHttpParser
         LoadEnvVariables(DotEnvFileName, fileScopedVariables);
         if (!string.IsNullOrEmpty(Environment))
         {
-         
+
             // Load environment variables from httpenv.json file
             await LoadJsonEnvVariables(HttpEnvFileName, Environment, fileScopedVariables);
             // Load environment variables from httpenv.json.user file
             await LoadJsonEnvVariables(UserHttpEnvFileName, Environment, fileScopedVariables);
         }
-        
+
         var fileScopedVariablesEnded = false;
 
         using var reader = File.OpenText(filePath);
@@ -208,7 +208,7 @@ public sealed class HttpParser : IHttpParser
 
     private static readonly Regex EnvNameReferenceRegex =
         new(@"\{\{(\$processEnv|\$env)\s+(?<variableName>\s?[a-zA-Z_][\w\.:]*\s?)\}\}", RegexOptions.Compiled);
-    
+
     private static void LoadEnvVariables(string fileName, Dictionary<string, string> variables)
     {
         var filePath = GetFilePath(fileName);
@@ -233,7 +233,7 @@ public sealed class HttpParser : IHttpParser
 
         var jsonContentStream = File.OpenRead(fileName);
         using var jsonDocument = await JsonDocument.ParseAsync(jsonContentStream);
-        
+
         foreach (var envElement in jsonDocument.RootElement.EnumerateObject())
         {
             if (envElement.Name == environmentName)
@@ -251,7 +251,7 @@ public sealed class HttpParser : IHttpParser
     private static string? GetFilePath(string fileName, string? dir = null)
     {
         dir ??= Directory.GetCurrentDirectory();
-        
+
         var path = Path.Combine(dir, fileName);
         if (File.Exists(path))
         {
@@ -266,7 +266,7 @@ public sealed class HttpParser : IHttpParser
 
         return null;
     }
-    
+
     internal static string EnsureVariableReplaced(
         string rawText,
         params Dictionary<string, string>?[] variables

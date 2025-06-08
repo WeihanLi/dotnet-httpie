@@ -8,7 +8,7 @@ namespace HTTPie.Abstractions;
 public interface IHttpParser
 {
     string? Environment { get; set; }
-    
+
     Task<HttpRequestMessage> ParseScriptAsync(string script, CancellationToken cancellationToken = default);
 
     IAsyncEnumerable<HttpRequestMessageWrapper> ParseFileAsync(string filePath,
