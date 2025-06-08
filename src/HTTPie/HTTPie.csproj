@@ -12,6 +12,7 @@
     <Description>dotnet httpie, a command-line HTTP client</Description>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <PublishAot>true</PublishAot>
+    <DebugType>none</DebugType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(PublishAot)'=='true'">
     <!-- https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/optimizing?WT.mc_id=DT-MVP-5004222 -->
@@ -21,7 +22,6 @@
     <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
     <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
     <EventSourceSupport>false</EventSourceSupport>
-    <InvariantGlobalization>true</InvariantGlobalization>
     <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
     <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
     <StackTraceSupport>false</StackTraceSupport>
@@ -32,6 +32,7 @@
     <MetricsSupport>false</MetricsSupport>
     <InvariantGlobalization>true</InvariantGlobalization>
     <StripSymbols>true</StripSymbols>
+    <IlcGenerateDgmlFile Condition="'$(OS)' == 'Windows_NT'">true</IlcGenerateDgmlFile>
   </PropertyGroup>
   <ItemGroup>
     <Using Include="System.CommandLine" />

@@ -63,6 +63,6 @@ jobs:
       
     - name: Build
       run: |
-        dotnet build ./dotnet-httpie.sln -c Release
+        dotnet build ./dotnet-httpie.slnx -c Release
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2

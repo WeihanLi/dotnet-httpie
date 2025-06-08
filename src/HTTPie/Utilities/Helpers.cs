@@ -157,7 +157,6 @@ public static class Helpers
             .AddSingleton<IOutputFormatter, OutputFormatter>()
             .AddSingleton<ILoadTestExporterSelector, LoadTestExporterSelector>()
             .AddSingleton<ILoadTestExporter, JsonLoadTestExporter>()
-            .AddSingleton<ILoadTestExporter, CsvLoadTestExporter>()
             // request pipeline
             .AddSingleton(sp =>
             {

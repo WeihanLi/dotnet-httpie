@@ -9,6 +9,8 @@ namespace HTTPie.Implement;
 
 public sealed class CurlParser : ICurlParser
 {
+    public string? Environment { get; set; }
+
     public Task<HttpRequestMessage> ParseScriptAsync(string curlScript, CancellationToken cancellationToken = default)
     {
         Guard.NotNullOrEmpty(curlScript);

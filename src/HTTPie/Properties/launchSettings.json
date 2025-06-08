@@ -28,10 +28,6 @@
       "commandName": "Project",
       "commandLineArgs": "-v --schema=https reservation.weihanli.xyz/health --vu=10 --duration=10s --exporter-type=json --export-json-path=result.json"
     },
-    "HTTPie-load-test-csv-exporter": {
-      "commandName": "Project",
-      "commandLineArgs": "-v --schema=https reservation.weihanli.xyz/health --vu=10 --duration=10s --exporter-type=csv --export-csv-path=result.csv"
-    },
     "HTTPie-download-test": {
       "commandName": "Project",
       "commandLineArgs": "-v https://reservation.weihanli.xyz/api/notice -d -c"

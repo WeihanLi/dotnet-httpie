@@ -7,6 +7,7 @@ using HTTPie.Utilities;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using WeihanLi.Common.Http;
 
@@ -17,6 +18,10 @@ public sealed class HttpParser : IHttpParser
     private const string DotEnvFileName = ".env";
     private const string HttpEnvFileName = "httpenv.json";
     private const string UserHttpEnvFileName = "httpenv.json.user";
+    private const string HttpClientPublicEnvFileName = "http-client.env.json";
+    private const string HttpClientPrivateEnvFileName = "http-client.private.env.json";
+
+    public string? Environment { get; set; }
 
     public Task<HttpRequestMessage> ParseScriptAsync(string script, CancellationToken cancellationToken = default)
     {
@@ -27,6 +32,22 @@ public sealed class HttpParser : IHttpParser
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var fileScopedVariables = new Dictionary<string, string>();
+
+        // Load environment variables from .env file
+        LoadEnvVariables(DotEnvFileName, fileScopedVariables);
+        if (!string.IsNullOrEmpty(Environment))
+        {
+            // Load environment variables from http-client.env.json file
+            await LoadJsonEnvVariables(HttpClientPublicEnvFileName, Environment, fileScopedVariables);
+            // Load environment variables from http-client.private.env.json file
+            await LoadJsonEnvVariables(HttpClientPrivateEnvFileName, Environment, fileScopedVariables);
+
+            // Load environment variables from httpenv.json file
+            await LoadJsonEnvVariables(HttpEnvFileName, Environment, fileScopedVariables);
+            // Load environment variables from httpenv.json.user file
+            await LoadJsonEnvVariables(UserHttpEnvFileName, Environment, fileScopedVariables);
+        }
+
         var fileScopedVariablesEnded = false;
 
         using var reader = File.OpenText(filePath);
@@ -194,6 +215,64 @@ public sealed class HttpParser : IHttpParser
     private static readonly Regex EnvNameReferenceRegex =
         new(@"\{\{(\$processEnv|\$env)\s+(?<variableName>\s?[a-zA-Z_][\w\.:]*\s?)\}\}", RegexOptions.Compiled);
 
+    private static void LoadEnvVariables(string fileName, Dictionary<string, string> variables)
+    {
+        var filePath = GetFilePath(fileName);
+        if (filePath is null) return;
+
+        var lines = File.ReadAllLines(fileName);
+        foreach (var line in lines)
+        {
+            if (line.IsNullOrWhiteSpace() || line.StartsWith("#")) continue;
+
+            var splits = line.Split('=', 2, StringSplitOptions.TrimEntries);
+            if (splits.Length != 2) continue;
+
+            var (variableName, variableValue) = (splits[0], splits[1]);
+            variables[variableName] = variableValue;
+        }
+    }
+
+    private static async Task LoadJsonEnvVariables(string fileName, string environmentName, Dictionary<string, string> variables)
+    {
+        if (!File.Exists(fileName)) return;
+
+        var jsonContentStream = File.OpenRead(fileName);
+        using var jsonDocument = await JsonDocument.ParseAsync(jsonContentStream);
+
+        foreach (var envElement in jsonDocument.RootElement.EnumerateObject())
+        {
+            if (envElement.Name == environmentName)
+            {
+                // load specific environment variables only
+                foreach (var element in envElement.Value.EnumerateObject())
+                {
+                    variables[element.Name] = element.Value.GetString() ?? string.Empty;
+                }
+                break;
+            }
+        }
+    }
+
+    private static string? GetFilePath(string fileName, string? dir = null)
+    {
+        dir ??= Directory.GetCurrentDirectory();
+
+        var path = Path.Combine(dir, fileName);
+        if (File.Exists(path))
+        {
+            return path;
+        }
+
+        var parentDir = Directory.GetParent(dir);
+        if (parentDir is not null)
+        {
+            return GetFilePath(fileName, parentDir.FullName);
+        }
+
+        return null;
+    }
+
     internal static string EnsureVariableReplaced(
         string rawText,
         params Dictionary<string, string>?[] variables
@@ -225,7 +304,7 @@ public sealed class HttpParser : IHttpParser
         while (match.Success)
         {
             var variableName = match.Groups["variableName"].Value;
-            var variableValue = Environment.GetEnvironmentVariable(variableName);
+            var variableValue = System.Environment.GetEnvironmentVariable(variableName);
             textReplaced = textReplaced.Replace(match.Value, variableValue ?? string.Empty);
             match = EnvNameReferenceRegex.Match(textReplaced);
         }

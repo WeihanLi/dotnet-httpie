@@ -18,6 +18,9 @@ public sealed class ExecuteCommand : Command
 {
     private static readonly Argument<string> FilePathArgument = new("scriptPath", "The script to execute");
 
+    private static readonly Option<string> EnvironmentTypeOption =
+        new(["--env"], "The environment to execute script");
+
     private static readonly Option<ExecuteScriptType> ExecuteScriptTypeOption =
         new(["-t", "--type"], "The script type to execute");
 
@@ -38,10 +41,11 @@ public sealed class ExecuteCommand : Command
         var requestExecutor = serviceProvider.GetRequiredService<IRawHttpRequestExecutor>();
         var cancellationToken = invocationContext.GetCancellationToken();
         var type = invocationContext.ParseResult.GetValueForOption(ExecuteScriptTypeOption);
+        var environment = invocationContext.ParseResult.GetValueForOption(EnvironmentTypeOption);
         var executeTask = type switch
         {
-            ExecuteScriptType.Http => HandleHttpRequest(serviceProvider, requestExecutor, filePath, cancellationToken),
-            ExecuteScriptType.Curl => HandleCurlRequest(serviceProvider, requestExecutor, filePath, cancellationToken),
+            ExecuteScriptType.Http => HandleHttpRequest(serviceProvider, requestExecutor, filePath, environment, cancellationToken),
+            ExecuteScriptType.Curl => HandleCurlRequest(serviceProvider, requestExecutor, filePath, environment, cancellationToken),
             _ => throw new InvalidOperationException($"Not supported request type: {type}")
         };
         await executeTask;
@@ -49,10 +53,10 @@ public sealed class ExecuteCommand : Command
 
 
     private async Task HandleHttpRequest(IServiceProvider serviceProvider, IRawHttpRequestExecutor requestExecutor,
-        string filePath,
-        CancellationToken cancellationToken)
+        string filePath, string? environment, CancellationToken cancellationToken)
     {
         var httpParser = serviceProvider.GetRequiredService<IHttpParser>();
+        httpParser.Environment = environment;
         var responseList = new Dictionary<string, HttpResponseMessage>();
         try
         {
@@ -84,9 +88,10 @@ public sealed class ExecuteCommand : Command
     }
 
     private async Task HandleCurlRequest(IServiceProvider serviceProvider, IRawHttpRequestExecutor requestExecutor,
-        string filePath, CancellationToken cancellationToken)
+        string filePath, string? environment, CancellationToken cancellationToken)
     {
         var curlParser = serviceProvider.GetRequiredService<ICurlParser>();
+        curlParser.Environment = environment;
         var curlScript = await File.ReadAllTextAsync(filePath, cancellationToken);
         using var requestMessage = await curlParser.ParseScriptAsync(curlScript, cancellationToken);
         using var response = await ExecuteRequest(requestExecutor, requestMessage, cancellationToken);
