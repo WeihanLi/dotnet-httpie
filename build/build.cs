@@ -8,7 +8,7 @@ var noPush = CommandLineParser.BooleanVal("noPush", args);
 var branchName = Environment.GetEnvironmentVariable("BUILD_SOURCEBRANCHNAME") ?? "local";
 stable |= branchName is "master" or "main";
 
-var solutionPath = "./dotnet-httpie.sln";
+var solutionPath = "./dotnet-httpie.slnx";
 string[] srcProjects = ["./src/HTTPie/HTTPie.csproj"];
 string[] testProjects = [ "./tests/HTTPie.UnitTest/HTTPie.UnitTest.csproj", "./tests/HTTPie.IntegrationTest/HTTPie.IntegrationTest.csproj" ];
 
