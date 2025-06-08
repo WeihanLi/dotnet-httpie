@@ -18,6 +18,8 @@ public sealed class HttpParser : IHttpParser
     private const string DotEnvFileName = ".env";
     private const string HttpEnvFileName = "httpenv.json";
     private const string UserHttpEnvFileName = "httpenv.json.user";
+    private const string HttpClientPublicEnvFileName = "http-client.env.json";
+    private const string HttpClientPrivateEnvFileName = "http-client.private.env.json";
 
     public string? Environment { get; set; }
 
@@ -35,7 +37,11 @@ public sealed class HttpParser : IHttpParser
         LoadEnvVariables(DotEnvFileName, fileScopedVariables);
         if (!string.IsNullOrEmpty(Environment))
         {
-
+            // Load environment variables from http-client.env.json file
+            await LoadJsonEnvVariables(HttpClientPublicEnvFileName, Environment, fileScopedVariables);
+            // Load environment variables from http-client.private.env.json file
+            await LoadJsonEnvVariables(HttpClientPrivateEnvFileName, Environment, fileScopedVariables);
+            
             // Load environment variables from httpenv.json file
             await LoadJsonEnvVariables(HttpEnvFileName, Environment, fileScopedVariables);
             // Load environment variables from httpenv.json.user file
