@@ -41,7 +41,7 @@ public sealed class HttpParser : IHttpParser
             await LoadJsonEnvVariables(HttpClientPublicEnvFileName, Environment, fileScopedVariables);
             // Load environment variables from http-client.private.env.json file
             await LoadJsonEnvVariables(HttpClientPrivateEnvFileName, Environment, fileScopedVariables);
-            
+
             // Load environment variables from httpenv.json file
             await LoadJsonEnvVariables(HttpEnvFileName, Environment, fileScopedVariables);
             // Load environment variables from httpenv.json.user file
