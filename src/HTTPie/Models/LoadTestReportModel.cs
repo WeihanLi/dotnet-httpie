@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 namespace HTTPie.Models;
+
 public sealed class LoadTestReportModel
 {
     public int TotalRequestCount { get; init; }
