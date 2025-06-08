@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <PackAsTool>true</PackAsTool>
@@ -14,7 +14,7 @@
     <PublishAot>true</PublishAot>
     <DebugType>none</DebugType>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(PublishAot)'=='true'">
+  <PropertyGroup Condition="'$(PublishAot)'=='true' AND '$(TargetFramework)'=='net10.0'">
     <!-- https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/optimizing?WT.mc_id=DT-MVP-5004222 -->
     <OptimizationPreference>Size</OptimizationPreference>
     <!-- https://learn.microsoft.com/en-us/dotnet/core/deploying/trimming/trimming-options?WT.mc_id=DT-MVP-5004222#trimming-framework-library-features -->
