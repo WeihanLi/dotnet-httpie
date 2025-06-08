@@ -4,7 +4,7 @@
 
 [![dotnet-HTTPie Latest](https://img.shields.io/nuget/vpre/dotnet-HTTPie)](https://www.nuget.org/packages/dotnet-HTTPie/absoluteLatest)
 
-[![Github Actions Build Status](https://github.com/WeihanLi/dotnet-httpie/workflows/dotnet/badge.svg?branch=dev)](https://github.com/WeihanLi/dotnet-HTTPie/actions?query=workflow%dotnet+branch%3Adev)
+[![GitHub Action Build Status](https://github.com/WeihanLi/dotnet-httpie/actions/workflows/dotnet.yml/badge.svg)](https://github.com/WeihanLi/dotnet-httpie/actions/workflows/dotnet.yml)
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/weihanli/dotnet-httpie)](https://hub.docker.com/r/weihanli/dotnet-httpie/tags)
 
