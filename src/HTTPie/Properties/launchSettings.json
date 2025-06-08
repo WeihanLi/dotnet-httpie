@@ -67,6 +67,10 @@
     "curl-execution": {
       "commandName": "Project",
       "commandLineArgs": "exec -t curl C:\\projects\\sources\\dotnet-httpie\\tests\\HTTPie.IntegrationTest\\TestAssets\\MakeReservationSample.curl"
+    },
+    "http-env-file-execution": {
+      "commandName": "Project",
+      "commandLineArgs": "exec C:\\projects\\sources\\dotnet-httpie\\tests\\HTTPie.IntegrationTest\\TestAssets\\HttpEnvFileVariableSample.http --env=test"
     }
   }
 }

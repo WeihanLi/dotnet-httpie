@@ -27,6 +27,7 @@ public sealed class ExecuteCommand : Command
     public ExecuteCommand() : base("exec", "execute http request")
     {
         AddOption(ExecuteScriptTypeOption);
+        AddOption(EnvironmentTypeOption);
         AddArgument(FilePathArgument);
     }
 

@@ -101,7 +101,7 @@ public static class Helpers
     private static Command InitializeCommandInternal(IServiceProvider serviceProvider,
         Func<InvocationContext, Task>? handler = null)
     {
-        var command = new RootCommand() { Name = "http", };
+        var command = new RootCommand { Name = "http", };
         var executeCommand = new ExecuteCommand();
         executeCommand.SetHandler(invocationContext => executeCommand.InvokeAsync(invocationContext, serviceProvider));
         command.AddCommand(executeCommand);
