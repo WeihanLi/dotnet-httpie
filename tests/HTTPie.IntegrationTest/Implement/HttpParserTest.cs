@@ -14,13 +14,14 @@ public class HttpParserTest(ITestOutputHelper outputHelper)
     [InlineData("HttpVariableSample.http")]
     [InlineData("HttpRequestReferenceSample.http")]
     [InlineData("HttpEnvFileVariableSample.http")]
-    public async Task CommonParseTest(string fileName)
+    [InlineData("HttpEnvFileVariableSample.http", "test")]
+    public async Task CommonParseTest(string fileName, string? env = null)
     {
         Environment.SetEnvironmentVariable("timestamp", DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString());
         var path = Path.Combine(Directory.GetCurrentDirectory(), "TestAssets", fileName);
         var parser = new HttpParser
         {
-            // Environment = "test"
+            Environment = env
         };
         var count = 0;
 
