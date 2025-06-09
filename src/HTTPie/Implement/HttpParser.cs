@@ -22,7 +22,7 @@ public sealed class HttpParser : IHttpParser
     private const string HttpClientPublicEnvFileName = "http-client.env.json";
     private const string HttpClientPrivateEnvFileName = "http-client.private.env.json";
     private const int MaxRecursionDepth = 32;
-    
+
     private static readonly Dictionary<string, Func<string[], string>> BuiltInFunctions;
 
     public string? Environment { get; set; }
@@ -48,25 +48,25 @@ public sealed class HttpParser : IHttpParser
                     return Random.Shared.Next(10_000).ToString(CultureInfo.InvariantCulture);
                 }
             },
-            { 
+            {
                 "datetime", static input =>
                 {
                     if (input.Length is 1)
                     {
                         return DateTimeOffset.Now.ToString(input[0], CultureInfo.InvariantCulture);
                     }
-                
+
                     return DateTimeOffset.Now.ToString(CultureInfo.InvariantCulture);
                 }
             },
-            { 
+            {
                 "timestamp", static input =>
                 {
                     if (input.Length is 1)
                     {
                         return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString(input[0], CultureInfo.InvariantCulture);
                     }
-                
+
                     return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString(CultureInfo.InvariantCulture);
                 }
             }
@@ -385,7 +385,7 @@ public sealed class HttpParser : IHttpParser
             textReplaced = textReplaced.Replace(match.Value, variableValue ?? string.Empty);
             match = EnvNameReferenceRegex.Match(textReplaced);
         }
-        
+
         // custom functions
         match = CustomFunctionReferenceRegex.Match(textReplaced);
         while (match.Success)
