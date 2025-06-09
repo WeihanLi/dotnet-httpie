@@ -14,7 +14,7 @@ public class HttpParserTest(ITestOutputHelper testOutputHelper)
     [InlineData("")]
     public void VariableReplacementTest_NoReplacement(string text)
     {
-        var replacedText = HttpParser.EnsureVariableReplaced(text, new(), null);
+        var replacedText = HttpParser.EnsureVariableReplaced(text, new(), [null]);
         Assert.Equal(text, replacedText);
     }
 

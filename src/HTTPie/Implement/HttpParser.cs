@@ -341,7 +341,7 @@ public sealed class HttpParser : IHttpParser
     internal static string EnsureVariableReplaced(
         string rawText,
         Dictionary<string, string> dotEnvVariables,
-        params Dictionary<string, string>[] variables
+        params Dictionary<string, string>?[] variables
     )
     {
         if (string.IsNullOrEmpty(rawText)) return rawText;
