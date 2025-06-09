@@ -15,6 +15,8 @@ public class HttpParserTest(ITestOutputHelper outputHelper)
     [InlineData("HttpRequestReferenceSample.http")]
     [InlineData("HttpEnvFileVariableSample.http")]
     [InlineData("HttpEnvFileVariableSample.http", "test")]
+    [InlineData("HttpEnvFileVariableSample.http", "dev")]
+    [InlineData("HttpEnvFileVariableSample.http", "staging")]
     public async Task CommonParseTest(string fileName, string? env = null)
     {
         Environment.SetEnvironmentVariable("timestamp", DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString());

@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using WeihanLi.Common.Http;
 
@@ -300,21 +301,32 @@ public sealed class HttpParser : IHttpParser
         if (filePath is null) return;
 
         await using var jsonContentStream = File.OpenRead(filePath);
-        using var jsonDocument = await JsonDocument.ParseAsync(jsonContentStream);
+        var jsonNode = await JsonNode.ParseAsync(jsonContentStream);
+        if (jsonNode is null) return;
 
-        foreach (var envElement in jsonDocument.RootElement.EnumerateObject())
+        // load environment shared variables
+        var sharedVariables = jsonNode["$shared"]?.AsObject();
+        if (sharedVariables is not null)
         {
-            if (envElement.Name == environmentName)
+            foreach (var variable in sharedVariables)
             {
-                // load specific environment variables only
-                foreach (var element in envElement.Value.EnumerateObject())
+                if (variable.Value?.GetValueKind() == JsonValueKind.String)
                 {
-                    if (element.Value.ValueKind == JsonValueKind.String)
-                    {
-                        variables[element.Name] = element.Value.GetString() ?? string.Empty;
-                    }
+                    variables[variable.Key] = variable.Value.GetValue<string>();
                 }
-                break;
+            }
+        }
+        
+        // load environment specific variables
+        var environmentSpecificVariables = jsonNode[environmentName]?.AsObject();
+        if (environmentSpecificVariables is not null)
+        {
+            foreach (var variable in environmentSpecificVariables)
+            {
+                if (variable.Value?.GetValueKind() == JsonValueKind.String)
+                {
+                    variables[variable.Key] = variable.Value.GetValue<string>();
+                }
             }
         }
     }
