@@ -129,7 +129,7 @@ public sealed class HttpParser : IHttpParser
             if (requestMessage is null)
             {
                 var splits = normalizedLine.Split(' ');
-                Debug.Assert(splits.Length > 1);
+                Debug.Assert(splits.Length > 1, "The normalized line must contain at least two parts separated by spaces: the HTTP method and the URL.");
                 if (Helpers.HttpMethods.Contains(splits[0]))
                 {
                     requestMessage = new HttpRequestMessage(new HttpMethod(splits[0].ToUpper()), splits[1]);
