@@ -110,10 +110,10 @@ public sealed class CurlParser : ICurlParser
     {
         var scripts = await File.ReadAllTextAsync(filePath, cancellationToken);
         var index = 0;
-        foreach (var script in scripts.Split("###\n"))
+        foreach (var script in scripts.Split("\n###\n"))
         {
             var request = await ParseScriptAsync(script, cancellationToken);
-            yield return new HttpRequestMessageWrapper($"#{index}", request);
+            yield return new HttpRequestMessageWrapper($"request#{index}", request);
             index++;
         }
     }
