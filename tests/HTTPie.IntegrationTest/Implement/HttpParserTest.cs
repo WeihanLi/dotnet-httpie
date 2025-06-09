@@ -9,25 +9,29 @@ namespace HTTPie.IntegrationTest.Implement;
 
 public class HttpParserTest(ITestOutputHelper outputHelper)
 {
-    private readonly ITestOutputHelper _outputHelper = outputHelper;
-
     [Theory]
     [InlineData("HttpStartedSample.http")]
     [InlineData("HttpVariableSample.http")]
+    [InlineData("HttpRequestReferenceSample.http")]
+    [InlineData("HttpEnvFileVariableSample.http")]
     public async Task CommonParseTest(string fileName)
     {
         Environment.SetEnvironmentVariable("timestamp", DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString());
         var path = Path.Combine(Directory.GetCurrentDirectory(), "TestAssets", fileName);
-        var parser = new HttpParser();
+        var parser = new HttpParser
+        {
+            Environment = "test"
+        };
         var count = 0;
 
-        await foreach (var request in parser.ParseFileAsync(path, new CancellationToken()))
+        outputHelper.WriteLine($"http-file: {fileName}...");
+        await foreach (var request in parser.ParseFileAsync(path, CancellationToken.None))
         {
             Assert.NotNull(request);
             count++;
 
-            _outputHelper.WriteLine(request.Name);
-            _outputHelper.WriteLine(await request.RequestMessage.ToRawMessageAsync());
+            outputHelper.WriteLine(request.Name);
+            outputHelper.WriteLine(await request.RequestMessage.ToRawMessageAsync());
         }
 
         Assert.NotEqual(0, count);
