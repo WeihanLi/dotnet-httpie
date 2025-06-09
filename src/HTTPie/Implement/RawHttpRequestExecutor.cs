@@ -7,7 +7,12 @@ namespace HTTPie.Implement;
 
 public sealed class RawHttpRequestExecutor : IRawHttpRequestExecutor
 {
-    private readonly HttpClient _client = new(new HttpClientHandler { AllowAutoRedirect = false });
+    private readonly HttpClient _client = new(new HttpClientHandler
+    {
+        AllowAutoRedirect = false,
+        UseCookies = false,
+        UseDefaultCredentials = false
+    });
 
     public async Task<HttpResponseMessage> ExecuteAsync(HttpRequestMessage httpRequestMessage,
         CancellationToken cancellationToken)
