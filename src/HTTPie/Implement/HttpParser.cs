@@ -57,7 +57,7 @@ public sealed class HttpParser : IHttpParser
         string? requestName = null;
         var requestNumber = 0;
         StringBuilder? requestBodyBuilder = null;
-        Dictionary<string, string>? requestVariables = null;
+        Dictionary<string, string> requestVariables = new();
 
         // CA2024: Do not use StreamReader.EndOfStream in async methods
         // https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca2024
@@ -82,7 +82,7 @@ public sealed class HttpParser : IHttpParser
                 }
                 if (fileScopedVariablesEnded)
                 {
-                    requestVariables ??= new();
+                    requestVariables.Clear();
                     requestVariables[variableName] = variableValue;
                 }
                 else
@@ -103,7 +103,7 @@ public sealed class HttpParser : IHttpParser
                     yield return new HttpRequestMessageWrapper(requestName!, requestMessage);
                     requestMessage = null;
                     requestBodyBuilder = null;
-                    requestVariables = null;
+                    requestVariables.Clear();
                     requestName = null;
                 }
 
@@ -307,7 +307,8 @@ public sealed class HttpParser : IHttpParser
                     break;
                 }
             }
-
+            
+            textReplaced = textReplaced.Replace(match.Value, string.Empty);
             match = VariableNameReferenceRegex.Match(textReplaced);
         }
 

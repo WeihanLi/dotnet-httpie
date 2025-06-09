@@ -20,7 +20,7 @@ public class HttpParserTest(ITestOutputHelper outputHelper)
         var path = Path.Combine(Directory.GetCurrentDirectory(), "TestAssets", fileName);
         var parser = new HttpParser
         {
-            Environment = "test"
+            // Environment = "test"
         };
         var count = 0;
 
