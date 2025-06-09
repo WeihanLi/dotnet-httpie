@@ -4,6 +4,7 @@
 using HTTPie.Abstractions;
 using HTTPie.Models;
 using HTTPie.Utilities;
+using System.Runtime.CompilerServices;
 
 namespace HTTPie.Implement;
 
@@ -104,9 +105,16 @@ public sealed class CurlParser : ICurlParser
         return request.WrapTask();
     }
 
-    public IAsyncEnumerable<HttpRequestMessageWrapper> ParseFileAsync(string filePath,
-        CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<HttpRequestMessageWrapper> ParseFileAsync(string filePath,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var scripts = await File.ReadAllTextAsync(filePath, cancellationToken);
+        var index = 0;
+        foreach (var script in scripts.Split("###\n"))
+        {
+            var request = await ParseScriptAsync(script, cancellationToken);
+            yield return new HttpRequestMessageWrapper($"#{index}", request);
+            index++;
+        }
     }
 }

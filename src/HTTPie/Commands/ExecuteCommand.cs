@@ -43,30 +43,28 @@ public sealed class ExecuteCommand : Command
         var cancellationToken = invocationContext.GetCancellationToken();
         var type = invocationContext.ParseResult.GetValueForOption(ExecuteScriptTypeOption);
         var environment = invocationContext.ParseResult.GetValueForOption(EnvironmentTypeOption);
-        var executeTask = type switch
+        var parser = type switch
         {
-            ExecuteScriptType.Http => HandleHttpRequest(serviceProvider, requestExecutor, filePath, environment, cancellationToken),
-            ExecuteScriptType.Curl => HandleCurlRequest(serviceProvider, requestExecutor, filePath, environment, cancellationToken),
+            ExecuteScriptType.Http => serviceProvider.GetRequiredService<IHttpParser>(),
+            ExecuteScriptType.Curl => serviceProvider.GetRequiredService<ICurlParser>(),
             _ => throw new InvalidOperationException($"Not supported request type: {type}")
         };
-        await executeTask;
+        parser.Environment = environment;
+        await InvokeRequest(parser, requestExecutor, filePath, cancellationToken);
     }
-
-
-    private async Task HandleHttpRequest(IServiceProvider serviceProvider, IRawHttpRequestExecutor requestExecutor,
-        string filePath, string? environment, CancellationToken cancellationToken)
+    
+    private static async Task InvokeRequest(IHttpParser httpParser, IRawHttpRequestExecutor requestExecutor,
+        string filePath, CancellationToken cancellationToken)
     {
-        var httpParser = serviceProvider.GetRequiredService<IHttpParser>();
-        httpParser.Environment = environment;
         var responseList = new Dictionary<string, HttpResponseMessage>();
         try
         {
             await foreach (var request in httpParser.ParseFileAsync(filePath, cancellationToken))
             {
                 await EnsureRequestVariableReferenceReplaced(request, responseList);
-
-                var response = await ExecuteRequest(requestExecutor, request.RequestMessage, cancellationToken,
-                    request.Name);
+                var response = await ExecuteRequest(
+                    requestExecutor, request.RequestMessage, cancellationToken, request.Name
+                    );
                 responseList[request.Name] = response;
             }
         }
@@ -88,17 +86,7 @@ public sealed class ExecuteCommand : Command
         }
     }
 
-    private async Task HandleCurlRequest(IServiceProvider serviceProvider, IRawHttpRequestExecutor requestExecutor,
-        string filePath, string? environment, CancellationToken cancellationToken)
-    {
-        var curlParser = serviceProvider.GetRequiredService<ICurlParser>();
-        curlParser.Environment = environment;
-        var curlScript = await File.ReadAllTextAsync(filePath, cancellationToken);
-        using var requestMessage = await curlParser.ParseScriptAsync(curlScript, cancellationToken);
-        using var response = await ExecuteRequest(requestExecutor, requestMessage, cancellationToken);
-    }
-
-    private async Task<HttpResponseMessage> ExecuteRequest(
+    private static async Task<HttpResponseMessage> ExecuteRequest(
         IRawHttpRequestExecutor requestExecutor,
         HttpRequestMessage requestMessage,
         CancellationToken cancellationToken,
@@ -119,11 +107,12 @@ public sealed class ExecuteCommand : Command
         return response;
     }
 
+    // use source generated regex when removing net8.0
     private static readonly Regex RequestVariableNameReferenceRegex =
         new(@"\{\{(?<requestName>\s?[a-zA-Z_]\w*)\.(request|response)\.(headers|body).*\s?\}\}",
             RegexOptions.Compiled);
 
-    private async Task EnsureRequestVariableReferenceReplaced(HttpRequestMessage requestMessage,
+    private static async Task EnsureRequestVariableReferenceReplaced(HttpRequestMessage requestMessage,
         Dictionary<string, HttpResponseMessage> requests)
     {
         var requestHeaders = requestMessage.Headers.ToArray();
@@ -204,7 +193,7 @@ public sealed class ExecuteCommand : Command
         }
     }
 
-    private async Task<string> GetRequestVariableValue(Match match,
+    private static async Task<string> GetRequestVariableValue(Match match,
         Dictionary<string, HttpResponseMessage> responseMessages)
     {
         var matchedText = match.Value;
