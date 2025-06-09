@@ -1,5 +1,10 @@
 # dotnet-httpie release notes
 
+## [0.10.0](https://nuget.org/packages/dotnet-httpie/0.10.0)
+
+- Add http env file support for http file execution
+- Add `net10.0` support
+
 ## [0.9.0](https://nuget.org/packages/dotnet-httpie/0.9.0)
 
 - Add `net9.0` support, remove `net6.0`/`net7.0` support
