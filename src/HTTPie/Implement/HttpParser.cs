@@ -32,11 +32,12 @@ public sealed class HttpParser : IHttpParser
     public async IAsyncEnumerable<HttpRequestMessageWrapper> ParseFileAsync(string filePath,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        var dotEnvVariables = new Dictionary<string, string>();
         var fileScopedVariables = new Dictionary<string, string>();
 
         var dir = Path.GetDirectoryName(Path.GetFullPath(filePath));
         // Load environment variables from .env file
-        LoadEnvVariables(DotEnvFileName, dir, fileScopedVariables);
+        LoadEnvVariables(DotEnvFileName, dir, dotEnvVariables);
         if (!string.IsNullOrEmpty(Environment))
         {
             // Load environment variables from http-client.env.json file
@@ -126,7 +127,7 @@ public sealed class HttpParser : IHttpParser
             }
 
             //
-            var normalizedLine = EnsureVariableReplaced(line, requestVariables, fileScopedVariables);
+            var normalizedLine = EnsureVariableReplaced(line, dotEnvVariables, requestVariables, fileScopedVariables);
             if (requestMessage is null)
             {
                 var splits = normalizedLine.Split(' ');
@@ -217,6 +218,8 @@ public sealed class HttpParser : IHttpParser
 
     private static readonly Regex EnvNameReferenceRegex =
         new(@"\{\{(\$processEnv|\$env)\s+(?<variableName>\s?[a-zA-Z_][\w\.:]*\s?)\}\}", RegexOptions.Compiled);
+    private static readonly Regex DotEnvNameReferenceRegex =
+        new(@"\{\{(\$dotenv)\s+(?<variableName>\s?[a-zA-Z_][\w\.:]*\s?)\}\}", RegexOptions.Compiled);
 
     private static void LoadEnvVariables(string fileName, string? dir, Dictionary<string, string> variables)
     {
@@ -287,7 +290,8 @@ public sealed class HttpParser : IHttpParser
 
     internal static string EnsureVariableReplaced(
         string rawText,
-        params Dictionary<string, string>?[] variables
+        Dictionary<string, string> dotEnvVariables,
+        params Dictionary<string, string>[] variables
     )
     {
         if (string.IsNullOrEmpty(rawText)) return rawText;
@@ -310,6 +314,16 @@ public sealed class HttpParser : IHttpParser
 
             textReplaced = textReplaced.Replace(match.Value, string.Empty);
             match = VariableNameReferenceRegex.Match(textReplaced);
+        }
+        
+        // dotenv name replacement
+        match = DotEnvNameReferenceRegex.Match(textReplaced);
+        while (match.Success)
+        {
+            var variableName = match.Groups["variableName"].Value;
+            dotEnvVariables.TryGetValue(variableName, out var variableValue);
+            textReplaced = textReplaced.Replace(match.Value, variableValue ?? string.Empty);
+            match = EnvNameReferenceRegex.Match(textReplaced);
         }
 
         // env name replacement

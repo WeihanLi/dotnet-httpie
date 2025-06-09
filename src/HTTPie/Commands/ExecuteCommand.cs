@@ -5,6 +5,7 @@ using HTTPie.Abstractions;
 using HTTPie.Utilities;
 using Json.Path;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System.CommandLine.Invocation;
 using System.Diagnostics;
 using System.Text;
@@ -39,6 +40,7 @@ public sealed class ExecuteCommand : Command
             throw new InvalidOperationException("Invalid filePath");
         }
 
+        var logger = serviceProvider.GetRequiredService<ILogger>();
         var requestExecutor = serviceProvider.GetRequiredService<IRawHttpRequestExecutor>();
         var cancellationToken = invocationContext.GetCancellationToken();
         var type = invocationContext.ParseResult.GetValueForOption(ExecuteScriptTypeOption);
@@ -50,6 +52,8 @@ public sealed class ExecuteCommand : Command
             _ => throw new InvalidOperationException($"Not supported request type: {type}")
         };
         parser.Environment = environment;
+        logger.LogDebug("Executing {ScriptType} http request {ScriptPath} with {ScriptExecutor}", 
+            type, filePath, parser.GetType().Name);
         await InvokeRequest(parser, requestExecutor, filePath, cancellationToken);
     }
 

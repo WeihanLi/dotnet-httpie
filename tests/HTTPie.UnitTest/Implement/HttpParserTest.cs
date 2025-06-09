@@ -24,11 +24,26 @@ public class HttpParserTest(ITestOutputHelper testOutputHelper)
     public void VariableReplacementTest_VariableReplacement(string text)
     {
         var replacedText = HttpParser.EnsureVariableReplaced(text,
+            new(),
             new() { { "host", "https://sparktodo.weihanli.xyz" } },
             new()
             {
                 { "baseUrl", "https://reservation.weihanli.xyz" }, { "host", "https://reservation.weihanli.xyz" }
             });
+        Assert.NotEqual(text, replacedText);
+        Assert.DoesNotContain("{{", replacedText);
+        Assert.DoesNotContain("}}", replacedText);
+        _testOutputHelper.WriteLine(replacedText);
+    }
+    
+    [Theory]
+    [InlineData("GET {{$dotenv reservation_host}}/api/notice")]
+    public void VariableReplacementTest_DotEnvReplacement(string text)
+    {
+        var replacedText = HttpParser.EnsureVariableReplaced(text, new()
+        {
+            { "reservation_host", "https://reservation.weihanli.xyz" }
+        });
         Assert.NotEqual(text, replacedText);
         Assert.DoesNotContain("{{", replacedText);
         Assert.DoesNotContain("}}", replacedText);
@@ -42,8 +57,7 @@ public class HttpParserTest(ITestOutputHelper testOutputHelper)
     {
         Environment.SetEnvironmentVariable("reservation_host", "https://reservation.weihanli.xyz");
 
-        var replacedText = HttpParser.EnsureVariableReplaced(text,
-            new(), new());
+        var replacedText = HttpParser.EnsureVariableReplaced(text, new());
         Assert.NotEqual(text, replacedText);
         Assert.DoesNotContain("{{", replacedText);
         Assert.DoesNotContain("}}", replacedText);
