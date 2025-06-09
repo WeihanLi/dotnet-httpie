@@ -316,7 +316,7 @@ public sealed class HttpParser : IHttpParser
                 }
             }
         }
-        
+
         // load environment specific variables
         var environmentSpecificVariables = jsonNode[environmentName]?.AsObject();
         if (environmentSpecificVariables is not null)
