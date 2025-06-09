@@ -62,7 +62,7 @@ public sealed class HttpParser : IHttpParser
         while (await reader.ReadLineAsync(cancellationToken) is { } line)
         {
             if (line.IsNullOrWhiteSpace()) continue;
-            
+
             // variable definition handling
             if (line.StartsWith('@'))
             {
@@ -224,7 +224,7 @@ public sealed class HttpParser : IHttpParser
         var lines = File.ReadAllLines(fileName);
         foreach (var line in lines)
         {
-            if (line.IsNullOrWhiteSpace() 
+            if (line.IsNullOrWhiteSpace()
                 || line.StartsWith('#')
                 )
             {
