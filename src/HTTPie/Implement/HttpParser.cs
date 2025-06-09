@@ -307,7 +307,7 @@ public sealed class HttpParser : IHttpParser
                     break;
                 }
             }
-            
+
             textReplaced = textReplaced.Replace(match.Value, string.Empty);
             match = VariableNameReferenceRegex.Match(textReplaced);
         }
