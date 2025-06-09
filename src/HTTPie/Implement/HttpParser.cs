@@ -57,12 +57,14 @@ public sealed class HttpParser : IHttpParser
         StringBuilder? requestBodyBuilder = null;
         Dictionary<string, string>? requestVariables = null;
 
-        while (!reader.EndOfStream)
+        // CA2024: Do not use StreamReader.EndOfStream in async methods
+        // https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca2024
+        while (await reader.ReadLineAsync(cancellationToken) is { } line)
         {
-            var line = await reader.ReadLineAsync(cancellationToken);
             if (line.IsNullOrWhiteSpace()) continue;
+            
             // variable definition handling
-            if (line.StartsWith("@"))
+            if (line.StartsWith('@'))
             {
                 var splits = line[1..].Split('=', 2, StringSplitOptions.TrimEntries);
                 Debug.Assert(splits.Length == 2, "Invalid variable");
@@ -90,7 +92,7 @@ public sealed class HttpParser : IHttpParser
             }
 
             // request end
-            if ("###" == line || line.StartsWith("### "))
+            if ("###" == line || line.StartsWith("### ", StringComparison.Ordinal))
             {
                 fileScopedVariablesEnded = true;
                 if (requestMessage != null)
@@ -126,7 +128,7 @@ public sealed class HttpParser : IHttpParser
             if (requestMessage is null)
             {
                 var splits = normalizedLine.Split(' ');
-                Debug.Assert(splits.Length > 1, "splits.Length > 1");
+                Debug.Assert(splits.Length > 1);
                 if (Helpers.HttpMethods.Contains(splits[0]))
                 {
                     requestMessage = new HttpRequestMessage(new HttpMethod(splits[0].ToUpper()), splits[1]);
@@ -208,7 +210,6 @@ public sealed class HttpParser : IHttpParser
         }
     }
 
-
     private static readonly Regex VariableNameReferenceRegex =
         new(@"\{\{(?<variableName>\s?[a-zA-Z_][\w\.:]*\s?)\}\}", RegexOptions.Compiled);
 
@@ -223,7 +224,12 @@ public sealed class HttpParser : IHttpParser
         var lines = File.ReadAllLines(fileName);
         foreach (var line in lines)
         {
-            if (line.IsNullOrWhiteSpace() || line.StartsWith("#")) continue;
+            if (line.IsNullOrWhiteSpace() 
+                || line.StartsWith('#')
+                )
+            {
+                continue;
+            }
 
             var splits = line.Split('=', 2, StringSplitOptions.TrimEntries);
             if (splits.Length != 2) continue;
@@ -254,7 +260,7 @@ public sealed class HttpParser : IHttpParser
         }
     }
 
-    private static string? GetFilePath(string fileName, string? dir = null)
+    private static string? GetFilePath(string fileName, string? dir = null, int depth = 0)
     {
         dir ??= Directory.GetCurrentDirectory();
 
@@ -265,9 +271,9 @@ public sealed class HttpParser : IHttpParser
         }
 
         var parentDir = Directory.GetParent(dir);
-        if (parentDir is not null)
+        if (parentDir is not null && depth <= 32)
         {
-            return GetFilePath(fileName, parentDir.FullName);
+            return GetFilePath(fileName, parentDir.FullName, depth + 1);
         }
 
         return null;

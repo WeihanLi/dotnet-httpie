@@ -14,7 +14,7 @@
     <None Update="TestAssets\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="TestAssets\HttpEnvFileVariableSample.http">
+    <None Update="httpenv.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
