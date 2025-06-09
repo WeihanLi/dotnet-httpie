@@ -52,7 +52,7 @@ public sealed class ExecuteCommand : Command
             _ => throw new InvalidOperationException($"Not supported request type: {type}")
         };
         parser.Environment = environment;
-        logger.LogDebug("Executing {ScriptType} http request {ScriptPath} with {ScriptExecutor}", 
+        logger.LogDebug("Executing {ScriptType} http request {ScriptPath} with {ScriptExecutor}",
             type, filePath, parser.GetType().Name);
         await InvokeRequest(parser, requestExecutor, filePath, cancellationToken);
     }

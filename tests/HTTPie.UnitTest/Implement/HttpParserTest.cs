@@ -35,7 +35,7 @@ public class HttpParserTest(ITestOutputHelper testOutputHelper)
         Assert.DoesNotContain("}}", replacedText);
         _testOutputHelper.WriteLine(replacedText);
     }
-    
+
     [Theory]
     [InlineData("GET {{$dotenv reservation_host}}/api/notice")]
     public void VariableReplacementTest_DotEnvReplacement(string text)

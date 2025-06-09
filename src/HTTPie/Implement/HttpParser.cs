@@ -315,7 +315,7 @@ public sealed class HttpParser : IHttpParser
             textReplaced = textReplaced.Replace(match.Value, string.Empty);
             match = VariableNameReferenceRegex.Match(textReplaced);
         }
-        
+
         // dotenv name replacement
         match = DotEnvNameReferenceRegex.Match(textReplaced);
         while (match.Success)
