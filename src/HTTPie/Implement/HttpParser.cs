@@ -5,6 +5,7 @@ using HTTPie.Abstractions;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
@@ -21,8 +22,56 @@ public sealed class HttpParser : IHttpParser
     private const string HttpClientPublicEnvFileName = "http-client.env.json";
     private const string HttpClientPrivateEnvFileName = "http-client.private.env.json";
     private const int MaxRecursionDepth = 32;
+    
+    private static readonly Dictionary<string, Func<string[], string>> BuiltInFunctions;
 
     public string? Environment { get; set; }
+
+    static HttpParser()
+    {
+        BuiltInFunctions = new Dictionary<string, Func<string[], string>>
+        {
+            { "guid", static _ => Guid.NewGuid().ToString() },
+            {
+                "randomInt", static input =>
+                {
+                    if (input.Length == 2 && int.TryParse(input[0], out var min) && int.TryParse(input[1], out var max))
+                    {
+                        return Random.Shared.Next(min, max).ToString();
+                    }
+
+                    if (input.Length == 1 && int.TryParse(input[0], out max))
+                    {
+                        return Random.Shared.Next(max).ToString();
+                    }
+
+                    return Random.Shared.Next(10_000).ToString(CultureInfo.InvariantCulture);
+                }
+            },
+            { 
+                "datetime", static input =>
+                {
+                    if (input.Length is 1)
+                    {
+                        return DateTimeOffset.Now.ToString(input[0], CultureInfo.InvariantCulture);
+                    }
+                
+                    return DateTimeOffset.Now.ToString(CultureInfo.InvariantCulture);
+                }
+            },
+            { 
+                "timestamp", static input =>
+                {
+                    if (input.Length is 1)
+                    {
+                        return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString(input[0], CultureInfo.InvariantCulture);
+                    }
+                
+                    return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString(CultureInfo.InvariantCulture);
+                }
+            }
+        };
+    }
 
     public Task<HttpRequestMessage> ParseScriptAsync(string script, CancellationToken cancellationToken = default)
     {
@@ -215,11 +264,12 @@ public sealed class HttpParser : IHttpParser
 
     private static readonly Regex VariableNameReferenceRegex =
         new(@"\{\{(?<variableName>\s?[a-zA-Z_][\w\.:]*\s?)\}\}", RegexOptions.Compiled);
-
     private static readonly Regex EnvNameReferenceRegex =
         new(@"\{\{(\$processEnv|\$env)\s+(?<variableName>\s?[a-zA-Z_][\w\.:]*\s?)\}\}", RegexOptions.Compiled);
     private static readonly Regex DotEnvNameReferenceRegex =
         new(@"\{\{(\$dotenv)\s+(?<variableName>\s?[a-zA-Z_][\w\.:]*\s?)\}\}", RegexOptions.Compiled);
+    private static readonly Regex CustomFunctionReferenceRegex =
+        new(@"\{\{\$(?<variableName>\s?[a-zA-Z_][\w\.:\s]*\s?)\}\}", RegexOptions.Compiled);
 
     private static void LoadEnvVariables(string fileName, string? dir, Dictionary<string, string> variables)
     {
@@ -333,6 +383,25 @@ public sealed class HttpParser : IHttpParser
             var variableName = match.Groups["variableName"].Value;
             var variableValue = System.Environment.GetEnvironmentVariable(variableName);
             textReplaced = textReplaced.Replace(match.Value, variableValue ?? string.Empty);
+            match = EnvNameReferenceRegex.Match(textReplaced);
+        }
+        
+        // custom functions
+        match = CustomFunctionReferenceRegex.Match(textReplaced);
+        while (match.Success)
+        {
+            var functionName = match.Groups["variableName"].Value;
+            var split = functionName.Split(' ');
+            string? value = null;
+            if (BuiltInFunctions.TryGetValue(split[0], out var function))
+            {
+                value = function.Invoke(split[1..]);
+            }
+            else
+            {
+                ConsoleHelper.WriteLineWithColor($"{match.Value} is not supported, will be ignored", ConsoleColor.DarkYellow);
+            }
+            textReplaced = textReplaced.Replace(match.Value, value ?? string.Empty);
             match = EnvNameReferenceRegex.Match(textReplaced);
         }
 
