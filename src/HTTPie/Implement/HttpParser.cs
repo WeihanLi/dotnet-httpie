@@ -299,7 +299,7 @@ public sealed class HttpParser : IHttpParser
         var filePath = GetFilePath(fileName, dir);
         if (filePath is null) return;
 
-        var jsonContentStream = File.OpenRead(filePath);
+        await using var jsonContentStream = File.OpenRead(filePath);
         using var jsonDocument = await JsonDocument.ParseAsync(jsonContentStream);
 
         foreach (var envElement in jsonDocument.RootElement.EnumerateObject())
