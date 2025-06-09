@@ -5,6 +5,6 @@ tests
 build.cake
 build.ps1
 build.sh
-dotnet-httpie.sln
+dotnet-httpie.slnx
 LICENSE
 README.md
