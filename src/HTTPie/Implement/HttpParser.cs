@@ -20,6 +20,7 @@ public sealed class HttpParser : IHttpParser
     private const string UserHttpEnvFileName = "httpenv.json.user";
     private const string HttpClientPublicEnvFileName = "http-client.env.json";
     private const string HttpClientPrivateEnvFileName = "http-client.private.env.json";
+    private const int MaxRecursionDepth = 32;
 
     public string? Environment { get; set; }
 
@@ -276,7 +277,7 @@ public sealed class HttpParser : IHttpParser
         }
 
         var parentDir = Directory.GetParent(dir);
-        if (parentDir is not null && depth <= 32)
+        if (parentDir is not null && depth <= MaxRecursionDepth)
         {
             return GetFilePath(fileName, parentDir.FullName, depth + 1);
         }
