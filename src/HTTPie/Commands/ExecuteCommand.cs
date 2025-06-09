@@ -52,7 +52,7 @@ public sealed class ExecuteCommand : Command
         parser.Environment = environment;
         await InvokeRequest(parser, requestExecutor, filePath, cancellationToken);
     }
-    
+
     private static async Task InvokeRequest(IHttpParser httpParser, IRawHttpRequestExecutor requestExecutor,
         string filePath, CancellationToken cancellationToken)
     {
