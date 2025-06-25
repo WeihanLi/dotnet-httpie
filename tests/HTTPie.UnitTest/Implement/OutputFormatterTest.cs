@@ -21,7 +21,7 @@ public class OutputFormatterTest(IServiceProvider serviceProvider)
             .AddLogging()
             .RegisterApplicationServices()
             .BuildServiceProvider();
-        await services.Handle(input, _ => Task.CompletedTask);
+        await services.Handle(input, (_, _) => Task.CompletedTask);
         var httpContext = services.GetRequiredService<HttpContext>();
         var output = await _outputFormatter.GetOutput(httpContext);
         Assert.Empty(output);

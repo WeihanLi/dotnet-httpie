@@ -3,13 +3,17 @@
 
 using HTTPie.Abstractions;
 using HTTPie.Models;
+using HTTPie.Utilities;
 using Microsoft.Extensions.Primitives;
 
 namespace HTTPie.Middleware;
 
 public sealed class RequestCacheMiddleware : IRequestMiddleware
 {
-    private static readonly Option<bool> NoCacheOption = new("--no-cache", "Send 'Cache-Control: No-Cache' request header");
+    private static readonly Option<bool> NoCacheOption = new("--no-cache")
+    {
+        Description = "Send 'Cache-Control: No-Cache' request header"
+    };
 
     public Option[] SupportedOptions()
     {

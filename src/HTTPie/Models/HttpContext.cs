@@ -20,11 +20,11 @@ public sealed class HttpContext(HttpRequestModel request, HttpResponseModel? res
 
     [System.Text.Json.Serialization.JsonIgnore]
     [JsonIgnore]
-    public CancellationToken RequestCancelled => InvocationContext.GetCancellationToken();
+    public CancellationToken RequestCancelled { get; set; }
 
     [System.Text.Json.Serialization.JsonIgnore]
     [JsonIgnore]
-    public InvocationContext InvocationContext { get; set; } = null!;
+    public ParseResult ParseResult { get; set; } = null!;
 
     public IDictionary<string, object?> Properties { get; } = new Dictionary<string, object?>();
 

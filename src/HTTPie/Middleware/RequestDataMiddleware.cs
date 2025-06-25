@@ -12,13 +12,20 @@ namespace HTTPie.Middleware;
 
 public sealed class RequestDataMiddleware(HttpContext httpContext) : IRequestMiddleware
 {
-    private static readonly Option<bool> FormOption = new(["-f", "--form"],
-        $"The request is form data, and content type is '{HttpHelper.FormDataContentType}'");
+    private static readonly Option<bool> FormOption = new("-f", "--form")
+    {
+        Description = $"The request is form data, and content type is '{HttpHelper.FormDataContentType}'"
+    };
 
-    private static readonly Option<bool> JsonOption = new(["-j", "--json"],
-        $"The request body is json by default, and content type is '{HttpHelper.ApplicationJsonContentType}'");
+    private static readonly Option<bool> JsonOption = new("-j", "--json")
+    {
+        Description = $"The request body is json by default, and content type is '{HttpHelper.ApplicationJsonContentType}'"
+    };
 
-    private static readonly Option<string> RawDataOption = new("--raw", $"The raw request body");
+    private static readonly Option<string> RawDataOption = new("--raw")
+    {
+        Description = "The raw request body"
+    };
 
     public Option[] SupportedOptions() => [FormOption, JsonOption, RawDataOption];
 
@@ -29,7 +36,7 @@ public sealed class RequestDataMiddleware(HttpContext httpContext) : IRequestMid
 
         if (requestModel.ParseResult.HasOption(RawDataOption))
         {
-            var rawData = requestModel.ParseResult.GetValueForOption(RawDataOption);
+            var rawData = requestModel.ParseResult.GetValue(RawDataOption);
             requestModel.Body = rawData;
         }
         else

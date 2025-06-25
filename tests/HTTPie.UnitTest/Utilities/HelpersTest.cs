@@ -3,6 +3,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using System.CommandLine.Parsing;
+using CommandLineParser = System.CommandLine.Parsing.CommandLineParser;
 
 namespace HTTPie.UnitTest.Utilities;
 
@@ -16,7 +17,7 @@ public class HelpersTest
             .AddLogging()
             .RegisterApplicationServices()
             .BuildServiceProvider();
-        await services.Handle(input, _ => Task.CompletedTask);
+        await services.Handle(input, (_, _) => Task.CompletedTask);
         var httpContext = services.GetRequiredService<HttpContext>();
         httpContext.Request.Url.Should().Be("reservation.weihanli.xyz/health");
         httpContext.Request.RequestItems.Should().BeEmpty();
@@ -30,7 +31,7 @@ public class HelpersTest
             .AddLogging()
             .RegisterApplicationServices()
             .BuildServiceProvider();
-        await services.Handle(input, _ => Task.CompletedTask);
+        await services.Handle(input, (_, _) => Task.CompletedTask);
         var httpContext = services.GetRequiredService<HttpContext>();
         httpContext.Request.Url.Should().Be("reservation.weihanli.xyz/health");
         httpContext.Request.RequestItems.Should().NotBeEmpty();
@@ -43,7 +44,7 @@ public class HelpersTest
     [InlineData(@"--raw '{""Id"":1,""Name"":""Test""}'")]
     public void SplitTest(string commandLine)
     {
-        var args = CommandLineStringSplitter.Instance.Split(commandLine).ToArray();
+        var args = CommandLineParser.SplitCommandLine(commandLine).ToArray();
         Assert.Equal(2, args.Length);
         Assert.Equal("--raw", args[0]);
         Assert.Equal(@"{""Id"":1,""Name"":""Test""}", args[1]);

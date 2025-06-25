@@ -5,9 +5,11 @@ using HTTPie.Abstractions;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using WeihanLi.Common.Http;
 
@@ -22,7 +24,55 @@ public sealed class HttpParser : IHttpParser
     private const string HttpClientPrivateEnvFileName = "http-client.private.env.json";
     private const int MaxRecursionDepth = 32;
 
+    private static readonly Dictionary<string, Func<string[], string>> BuiltInFunctions;
+
     public string? Environment { get; set; }
+
+    static HttpParser()
+    {
+        BuiltInFunctions = new Dictionary<string, Func<string[], string>>
+        {
+            { "guid", static _ => Guid.NewGuid().ToString() },
+            {
+                "randomInt", static input =>
+                {
+                    if (input.Length == 2 && int.TryParse(input[0], out var min) && int.TryParse(input[1], out var max))
+                    {
+                        return Random.Shared.Next(min, max).ToString();
+                    }
+
+                    if (input.Length == 1 && int.TryParse(input[0], out max))
+                    {
+                        return Random.Shared.Next(max).ToString();
+                    }
+
+                    return Random.Shared.Next(10_000).ToString(CultureInfo.InvariantCulture);
+                }
+            },
+            {
+                "datetime", static input =>
+                {
+                    if (input.Length is 1)
+                    {
+                        return DateTimeOffset.Now.ToString(input[0], CultureInfo.InvariantCulture);
+                    }
+
+                    return DateTimeOffset.Now.ToString(CultureInfo.InvariantCulture);
+                }
+            },
+            {
+                "timestamp", static input =>
+                {
+                    if (input.Length is 1)
+                    {
+                        return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString(input[0], CultureInfo.InvariantCulture);
+                    }
+
+                    return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString(CultureInfo.InvariantCulture);
+                }
+            }
+        };
+    }
 
     public Task<HttpRequestMessage> ParseScriptAsync(string script, CancellationToken cancellationToken = default)
     {
@@ -32,11 +82,12 @@ public sealed class HttpParser : IHttpParser
     public async IAsyncEnumerable<HttpRequestMessageWrapper> ParseFileAsync(string filePath,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        var dotEnvVariables = new Dictionary<string, string>();
         var fileScopedVariables = new Dictionary<string, string>();
 
         var dir = Path.GetDirectoryName(Path.GetFullPath(filePath));
         // Load environment variables from .env file
-        LoadEnvVariables(DotEnvFileName, dir, fileScopedVariables);
+        LoadEnvVariables(DotEnvFileName, dir, dotEnvVariables);
         if (!string.IsNullOrEmpty(Environment))
         {
             // Load environment variables from http-client.env.json file
@@ -57,7 +108,7 @@ public sealed class HttpParser : IHttpParser
         string? requestName = null;
         var requestNumber = 0;
         StringBuilder? requestBodyBuilder = null;
-        Dictionary<string, string>? requestVariables = null;
+        Dictionary<string, string> requestVariables = new();
 
         // CA2024: Do not use StreamReader.EndOfStream in async methods
         // https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca2024
@@ -82,7 +133,7 @@ public sealed class HttpParser : IHttpParser
                 }
                 if (fileScopedVariablesEnded)
                 {
-                    requestVariables ??= new();
+                    requestVariables.Clear();
                     requestVariables[variableName] = variableValue;
                 }
                 else
@@ -103,7 +154,7 @@ public sealed class HttpParser : IHttpParser
                     yield return new HttpRequestMessageWrapper(requestName!, requestMessage);
                     requestMessage = null;
                     requestBodyBuilder = null;
-                    requestVariables = null;
+                    requestVariables.Clear();
                     requestName = null;
                 }
 
@@ -126,7 +177,7 @@ public sealed class HttpParser : IHttpParser
             }
 
             //
-            var normalizedLine = EnsureVariableReplaced(line, requestVariables, fileScopedVariables);
+            var normalizedLine = EnsureVariableReplaced(line, dotEnvVariables, requestVariables, fileScopedVariables);
             if (requestMessage is null)
             {
                 var splits = normalizedLine.Split(' ');
@@ -214,9 +265,12 @@ public sealed class HttpParser : IHttpParser
 
     private static readonly Regex VariableNameReferenceRegex =
         new(@"\{\{(?<variableName>\s?[a-zA-Z_][\w\.:]*\s?)\}\}", RegexOptions.Compiled);
-
     private static readonly Regex EnvNameReferenceRegex =
         new(@"\{\{(\$processEnv|\$env)\s+(?<variableName>\s?[a-zA-Z_][\w\.:]*\s?)\}\}", RegexOptions.Compiled);
+    private static readonly Regex DotEnvNameReferenceRegex =
+        new(@"\{\{(\$dotenv)\s+(?<variableName>\s?[a-zA-Z_][\w\.:]*\s?)\}\}", RegexOptions.Compiled);
+    private static readonly Regex CustomFunctionReferenceRegex =
+        new(@"\{\{\$(?<variableName>\s?[a-zA-Z_][\w\.:\s]*\s?)\}\}", RegexOptions.Compiled);
 
     private static void LoadEnvVariables(string fileName, string? dir, Dictionary<string, string> variables)
     {
@@ -246,22 +300,33 @@ public sealed class HttpParser : IHttpParser
         var filePath = GetFilePath(fileName, dir);
         if (filePath is null) return;
 
-        var jsonContentStream = File.OpenRead(filePath);
-        using var jsonDocument = await JsonDocument.ParseAsync(jsonContentStream);
+        await using var jsonContentStream = File.OpenRead(filePath);
+        var jsonNode = await JsonNode.ParseAsync(jsonContentStream);
+        if (jsonNode is null) return;
 
-        foreach (var envElement in jsonDocument.RootElement.EnumerateObject())
+        // load environment shared variables
+        var sharedVariables = jsonNode["$shared"]?.AsObject();
+        if (sharedVariables is not null)
         {
-            if (envElement.Name == environmentName)
+            foreach (var variable in sharedVariables)
             {
-                // load specific environment variables only
-                foreach (var element in envElement.Value.EnumerateObject())
+                if (variable.Value?.GetValueKind() == JsonValueKind.String)
                 {
-                    if (element.Value.ValueKind == JsonValueKind.String)
-                    {
-                        variables[element.Name] = element.Value.GetString() ?? string.Empty;
-                    }
+                    variables[variable.Key] = variable.Value.GetValue<string>();
                 }
-                break;
+            }
+        }
+
+        // load environment specific variables
+        var environmentSpecificVariables = jsonNode[environmentName]?.AsObject();
+        if (environmentSpecificVariables is not null)
+        {
+            foreach (var variable in environmentSpecificVariables)
+            {
+                if (variable.Value?.GetValueKind() == JsonValueKind.String)
+                {
+                    variables[variable.Key] = variable.Value.GetValue<string>();
+                }
             }
         }
     }
@@ -287,6 +352,7 @@ public sealed class HttpParser : IHttpParser
 
     internal static string EnsureVariableReplaced(
         string rawText,
+        Dictionary<string, string> dotEnvVariables,
         params Dictionary<string, string>?[] variables
     )
     {
@@ -308,7 +374,18 @@ public sealed class HttpParser : IHttpParser
                 }
             }
 
+            textReplaced = textReplaced.Replace(match.Value, string.Empty);
             match = VariableNameReferenceRegex.Match(textReplaced);
+        }
+
+        // dotenv name replacement
+        match = DotEnvNameReferenceRegex.Match(textReplaced);
+        while (match.Success)
+        {
+            var variableName = match.Groups["variableName"].Value;
+            dotEnvVariables.TryGetValue(variableName, out var variableValue);
+            textReplaced = textReplaced.Replace(match.Value, variableValue ?? string.Empty);
+            match = EnvNameReferenceRegex.Match(textReplaced);
         }
 
         // env name replacement
@@ -318,6 +395,25 @@ public sealed class HttpParser : IHttpParser
             var variableName = match.Groups["variableName"].Value;
             var variableValue = System.Environment.GetEnvironmentVariable(variableName);
             textReplaced = textReplaced.Replace(match.Value, variableValue ?? string.Empty);
+            match = EnvNameReferenceRegex.Match(textReplaced);
+        }
+
+        // custom functions
+        match = CustomFunctionReferenceRegex.Match(textReplaced);
+        while (match.Success)
+        {
+            var functionName = match.Groups["variableName"].Value;
+            var split = functionName.Split(' ');
+            string? value = null;
+            if (BuiltInFunctions.TryGetValue(split[0], out var function))
+            {
+                value = function.Invoke(split[1..]);
+            }
+            else
+            {
+                ConsoleHelper.WriteLineWithColor($"{match.Value} is not supported, will be ignored", ConsoleColor.DarkYellow);
+            }
+            textReplaced = textReplaced.Replace(match.Value, value ?? string.Empty);
             match = EnvNameReferenceRegex.Match(textReplaced);
         }
 

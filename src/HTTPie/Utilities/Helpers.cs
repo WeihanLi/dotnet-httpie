@@ -10,9 +10,6 @@ using Json.Schema;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using System.CommandLine.Builder;
-using System.CommandLine.Invocation;
-using System.CommandLine.IO;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -76,35 +73,37 @@ public static class Helpers
         return serviceCollection;
     }
 
-    private static Parser ConstructCommand(this IServiceProvider serviceProvider,
-        Func<InvocationContext, Task>? handler = null)
+    private static CommandLineConfiguration ConstructCommand(this IServiceProvider serviceProvider,
+        Func<ParseResult, CancellationToken, Task>? handler = null)
     {
         var command = InitializeCommandInternal(serviceProvider, handler);
-        var builder = new CommandLineBuilder(command);
-        // builder.UseDefaults();
-        builder
-            .UseHelp("--help", "-?", "/?")
-            .UseEnvironmentVariableDirective()
-            .UseParseDirective()
-            .UseSuggestDirective()
-            .RegisterWithDotnetSuggest()
-            .UseTypoCorrections()
-            .UseParseErrorReporting()
-            .UseExceptionHandler()
-            .CancelOnProcessTermination()
-            // required when try to resolve IServiceProvider from invocationContext
-            .AddMiddleware(invocationContext => invocationContext.BindingContext.AddService(_ => serviceProvider))
-            ;
-        return builder.Build();
+        var configuration = new CommandLineConfiguration(command);
+        // var builder = new CommandLineBuilder(command);
+        // // builder.UseDefaults();
+        // builder
+        //     .UseHelp("--help", "-?", "/?")
+        //     .UseEnvironmentVariableDirective()
+        //     .UseParseDirective()
+        //     .UseSuggestDirective()
+        //     .RegisterWithDotnetSuggest()
+        //     .UseTypoCorrections()
+        //     .UseParseErrorReporting()
+        //     .UseExceptionHandler()
+        //     .CancelOnProcessTermination()
+        //     // required when try to resolve IServiceProvider from invocationContext
+        //     .AddMiddleware(invocationContext => invocationContext.BindingContext.AddService(_ => serviceProvider))
+        //     ;
+        return configuration;
     }
 
     private static Command InitializeCommandInternal(IServiceProvider serviceProvider,
-        Func<InvocationContext, Task>? handler = null)
+        Func<ParseResult, CancellationToken, Task>? handler = null)
     {
-        var command = new RootCommand { Name = "http", };
+        var command = new RootCommand();
         var executeCommand = new ExecuteCommand();
-        executeCommand.SetHandler(invocationContext => executeCommand.InvokeAsync(invocationContext, serviceProvider));
-        command.AddCommand(executeCommand);
+        executeCommand.SetAction((parseResult, cancellationToken) => 
+            executeCommand.InvokeAsync(parseResult, cancellationToken, serviceProvider));
+        command.Add(executeCommand);
 
         // var methodArgument = new Argument<HttpMethod>("method")
         // {
@@ -136,11 +135,11 @@ public static class Helpers
                      .Union(serviceProvider.GetServices<ILoadTestExporter>().SelectMany(x => x.SupportedOptions()))
                 )
         {
-            command.AddOption(option);
+            command.Add(option);
         }
 
         command.TreatUnmatchedTokensAsErrors = false;
-        command.SetHandler(invocationContext => HttpCommandHandler(invocationContext, serviceProvider, handler));
+        command.SetAction((parseResult, cancellationToken) => HttpCommandHandler(parseResult, cancellationToken, serviceProvider, handler));
         return command;
     }
 
@@ -217,20 +216,21 @@ public static class Helpers
     }
 
     public static async Task<int> Handle(this IServiceProvider services, string commandLine,
-        Func<InvocationContext, Task>? handler = null)
+        Func<ParseResult, CancellationToken, Task>? handler = null)
     {
         var commandParser = services.ConstructCommand(handler);
         return await commandParser.InvokeAsync(commandLine);
     }
 
-    private static async Task HttpCommandHandler(InvocationContext invocationContext, IServiceProvider serviceProvider,
-        Func<InvocationContext, Task>? internalHandler = null)
+    private static async Task HttpCommandHandler(ParseResult parseResult, CancellationToken cancellationToken, IServiceProvider serviceProvider,
+        Func<ParseResult, CancellationToken, Task>? internalHandler = null)
     {
         var context = serviceProvider.GetRequiredService<HttpContext>();
-        context.InvocationContext = invocationContext;
+        context.ParseResult = parseResult;
+        context.RequestCancelled = cancellationToken;
 
         var requestModel = context.Request;
-        requestModel.ParseResult = invocationContext.ParseResult;
+        requestModel.ParseResult = parseResult;
 
         var method = requestModel.ParseResult.UnmatchedTokens
             .FirstOrDefault(x => HttpMethods.Contains(x), string.Empty);
@@ -263,11 +263,17 @@ public static class Helpers
                 .ExecuteAsync(context);
             var output = await serviceProvider.ResolveRequiredService<IOutputFormatter>()
                 .GetOutput(context);
-            invocationContext.Console.Out.WriteLine(output.Trim());
+            Console.Out.WriteLine(output.Trim());
         }
         else
         {
-            await internalHandler(invocationContext);
+            await internalHandler(parseResult, cancellationToken);
         }
+    }
+
+    public static bool HasOption(this ParseResult parseResult, Option option)
+    {
+        var result = parseResult.GetResult(option);
+        return result is { Implicit: false };
     }
 }

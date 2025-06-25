@@ -5,7 +5,7 @@ using HTTPie.Abstractions;
 using HTTPie.Utilities;
 using Json.Path;
 using Microsoft.Extensions.DependencyInjection;
-using System.CommandLine.Invocation;
+using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -16,33 +16,42 @@ namespace HTTPie.Commands;
 
 public sealed class ExecuteCommand : Command
 {
-    private static readonly Argument<string> FilePathArgument = new("scriptPath", "The script to execute");
+    private static readonly Argument<string> FilePathArgument = new("scriptPath")
+    {
+        Description = "The script to execute"
+    };
 
     private static readonly Option<string> EnvironmentTypeOption =
-        new(["--env"], "The environment to execute script");
+        new("--env")
+        {
+            Description = "The environment to execute script"
+        };
 
     private static readonly Option<ExecuteScriptType> ExecuteScriptTypeOption =
-        new(["-t", "--type"], "The script type to execute");
+        new("-t", "--type")
+        {
+            Description = "The script type to execute"
+        };
 
     public ExecuteCommand() : base("exec", "execute http request")
     {
-        AddOption(ExecuteScriptTypeOption);
-        AddOption(EnvironmentTypeOption);
-        AddArgument(FilePathArgument);
+        Options.Add(ExecuteScriptTypeOption);
+        Options.Add(EnvironmentTypeOption);
+        Arguments.Add(FilePathArgument);
     }
 
-    public async Task InvokeAsync(InvocationContext invocationContext, IServiceProvider serviceProvider)
+    public async Task InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken, IServiceProvider serviceProvider)
     {
-        var filePath = invocationContext.ParseResult.GetValueForArgument(FilePathArgument);
+        var filePath = parseResult.GetValue(FilePathArgument);
         if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
         {
             throw new InvalidOperationException("Invalid filePath");
         }
 
+        var logger = serviceProvider.GetRequiredService<ILogger>();
         var requestExecutor = serviceProvider.GetRequiredService<IRawHttpRequestExecutor>();
-        var cancellationToken = invocationContext.GetCancellationToken();
-        var type = invocationContext.ParseResult.GetValueForOption(ExecuteScriptTypeOption);
-        var environment = invocationContext.ParseResult.GetValueForOption(EnvironmentTypeOption);
+        var type = parseResult.GetValue(ExecuteScriptTypeOption);
+        var environment = parseResult.GetValue(EnvironmentTypeOption);
         var parser = type switch
         {
             ExecuteScriptType.Http => serviceProvider.GetRequiredService<IHttpParser>(),
@@ -50,6 +59,8 @@ public sealed class ExecuteCommand : Command
             _ => throw new InvalidOperationException($"Not supported request type: {type}")
         };
         parser.Environment = environment;
+        logger.LogDebug("Executing {ScriptType} http request {ScriptPath} with {ScriptExecutor}",
+            type, filePath, parser.GetType().Name);
         await InvokeRequest(parser, requestExecutor, filePath, cancellationToken);
     }
 

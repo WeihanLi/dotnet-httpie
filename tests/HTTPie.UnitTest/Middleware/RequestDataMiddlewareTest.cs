@@ -14,7 +14,7 @@ public class RequestDataMiddlewareTest(IServiceProvider serviceProvider)
     [InlineData("https://reservation.weihanli.xyz/health?name=test&hello=world")]
     public async Task UrlQueryStringShouldNotBeTreatAsRequestData_Issue1(string url)
     {
-        await _serviceProvider.Handle(url, _ => Task.CompletedTask);
+        await _serviceProvider.Handle(url, (_, _) => Task.CompletedTask);
         var httpContext = _serviceProvider.GetRequiredService<HttpContext>();
         var middleware = new RequestDataMiddleware(httpContext);
         await middleware.InvokeAsync(httpContext.Request, _ => Task.CompletedTask);
@@ -26,7 +26,7 @@ public class RequestDataMiddlewareTest(IServiceProvider serviceProvider)
     [InlineData("https://reservation.weihanli.xyz/health name==test hello==world")]
     public async Task QueryShouldNotBeTreatAsRequestData(string input)
     {
-        await _serviceProvider.Handle(input, _ => Task.CompletedTask);
+        await _serviceProvider.Handle(input, (_, _) => Task.CompletedTask);
         var httpContext = _serviceProvider.GetRequiredService<HttpContext>();
         var middleware = new RequestDataMiddleware(httpContext);
         await middleware.InvokeAsync(httpContext.Request, _ => Task.CompletedTask);
@@ -39,7 +39,7 @@ public class RequestDataMiddlewareTest(IServiceProvider serviceProvider)
     [InlineData("https://reservation.weihanli.xyz/health Authorization:'Bearer dede'")]
     public async Task HeadersShouldNotBeTreatAsRequestData(string input)
     {
-        await _serviceProvider.Handle(input, _ => Task.CompletedTask);
+        await _serviceProvider.Handle(input, (_, _) => Task.CompletedTask);
         var httpContext = _serviceProvider.GetRequiredService<HttpContext>();
         var middleware = new RequestDataMiddleware(httpContext);
         await middleware.InvokeAsync(httpContext.Request, _ => Task.CompletedTask);
@@ -52,7 +52,7 @@ public class RequestDataMiddlewareTest(IServiceProvider serviceProvider)
     [InlineData("reservation.weihanli.xyz/health --verbose --schema=https")]
     public async Task FlagsShouldNotBeTreatAsRequestData(string input)
     {
-        await _serviceProvider.Handle(input, _ => Task.CompletedTask);
+        await _serviceProvider.Handle(input, (_, _) => Task.CompletedTask);
         var httpContext = _serviceProvider.GetRequiredService<HttpContext>();
         var middleware = new RequestDataMiddleware(httpContext);
         await middleware.InvokeAsync(httpContext.Request, _ => Task.CompletedTask);
@@ -69,7 +69,7 @@ public class RequestDataMiddlewareTest(IServiceProvider serviceProvider)
             .AddLogging()
             .RegisterApplicationServices()
             .BuildServiceProvider();
-        await services.Handle(input, _ => Task.CompletedTask);
+        await services.Handle(input, (_, _) => Task.CompletedTask);
         var httpContext = services.GetRequiredService<HttpContext>();
         var middleware = new RequestDataMiddleware(httpContext);
         await middleware.InvokeAsync(httpContext.Request, _ => Task.CompletedTask);

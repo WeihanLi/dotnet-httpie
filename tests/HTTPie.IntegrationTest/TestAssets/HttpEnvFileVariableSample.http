@@ -1,5 +1,5 @@
 @baseUrl = https://reservation.weihanli.xyz
 
 # @name notice
-GET {{baseUrl}}/api/notice?q={{name}}
+GET {{baseUrl}}/api/notice?q={{name}}&t={{date}}
 Accept: application/json

@@ -21,12 +21,12 @@ public sealed class LoadTestExporterSelector : ILoadTestExporterSelector
     {
         _context = context;
         _exporters = exporters.ToDictionary(x => x.Type, x => x, StringComparer.OrdinalIgnoreCase);
-        ExporterTypeOption.AddCompletions(_exporters.Keys.ToArray());
+        ExporterTypeOption.CompletionSources.Add(_exporters.Keys.ToArray());
     }
 
     public ILoadTestExporter? Select()
     {
-        var exporterType = _context.Request.ParseResult.GetValueForOption(ExporterTypeOption) ?? string.Empty;
+        var exporterType = _context.Request.ParseResult.GetValue(ExporterTypeOption) ?? string.Empty;
         _exporters.TryGetValue(exporterType, out var exporter);
         return exporter;
     }
