@@ -10,15 +10,24 @@ namespace HTTPie.Middleware;
 
 public sealed class DefaultRequestMiddleware(ILogger logger) : IRequestMiddleware
 {
-    private static readonly Option<bool> DebugOption = new("--debug", "Enable debug mode, output debug log");
-    private static readonly Option<string> SchemaOption = new("--schema", "The HTTP request schema");
-    private static readonly Option<Version> HttpVersionOption = new("--httpVersion", "The HTTP request HTTP version");
+    private static readonly Option<bool> DebugOption = new("--debug")
+    {
+        Description = "Enable debug mode, output debug log"
+    };
+    private static readonly Option<string> SchemaOption = new("--schema")
+    {
+        Description = "The HTTP request schema"
+    };
+    private static readonly Option<Version> HttpVersionOption = new("--httpVersion")
+    {
+        Description = "The HTTP request HTTP version"
+    };
 
     public Option[] SupportedOptions() => [DebugOption, SchemaOption, HttpVersionOption];
 
     public Task InvokeAsync(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
-        var schema = requestModel.ParseResult.GetValueForOption(SchemaOption);
+        var schema = requestModel.ParseResult.GetValue(SchemaOption);
         if (!string.IsNullOrEmpty(schema)) requestModel.Schema = schema;
 
         if (requestModel.Url is ":" or "/")
@@ -47,7 +56,7 @@ public sealed class DefaultRequestMiddleware(ILogger logger) : IRequestMiddlewar
         requestModel.Url = url;
 
         var httpVersionOption =
-            requestModel.ParseResult.GetValueForOption(HttpVersionOption);
+            requestModel.ParseResult.GetValue(HttpVersionOption);
         if (httpVersionOption != default)
         {
             logger.LogDebug($"httpVersion: {httpVersionOption}");

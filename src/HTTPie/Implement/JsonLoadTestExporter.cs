@@ -17,7 +17,7 @@ public sealed class JsonLoadTestExporter : ILoadTestExporter
 
     public async ValueTask Export(HttpContext context, HttpResponseModel[] responseList)
     {
-        var jsonPath = context.Request.ParseResult.GetValueForOption(OutputJsonPathOption);
+        var jsonPath = context.Request.ParseResult.GetValue(OutputJsonPathOption);
         if (string.IsNullOrEmpty(jsonPath))
         {
             return;

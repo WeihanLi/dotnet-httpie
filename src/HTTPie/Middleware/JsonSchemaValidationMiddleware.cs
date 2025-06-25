@@ -14,21 +14,27 @@ namespace HTTPie.Middleware;
 public sealed class JsonSchemaValidationMiddleware(ILogger<JsonSchemaValidationMiddleware> logger) : IResponseMiddleware
 {
     private const string JsonSchemaValidationResultHeader = "X-JsonSchema-ValidationResult";
-
     private const string JsonSchemaLoadFailed = "JsonSchema fail to load";
     private const string JsonSchemaValidateFailed = "JsonSchema fail to validate";
 
 
-    private static readonly Option<string> JsonSchemaPathOption = new("--json-schema-path", "Json schema path");
+    private static readonly Option<string> JsonSchemaPathOption = new("--json-schema-path")
+    {
+        Description = "Json schema path"
+    };
 
     private static readonly Option<OutputFormat> JsonSchemaValidationOutputFormatOption =
-        new("--json-schema-out-format", () => OutputFormat.List, "Json schema validation result output format");
+        new("--json-schema-out-format")
+        {
+            Description = "Json schema validation result output format",
+            DefaultValueFactory = _ => OutputFormat.List
+        };
 
     public Option[] SupportedOptions() => [JsonSchemaPathOption, JsonSchemaValidationOutputFormatOption];
 
     public async Task InvokeAsync(HttpContext context, Func<HttpContext, Task> next)
     {
-        var schemaPath = context.Request.ParseResult.GetValueForOption(JsonSchemaPathOption)?.Trim();
+        var schemaPath = context.Request.ParseResult.GetValue(JsonSchemaPathOption)?.Trim();
         if (string.IsNullOrEmpty(schemaPath))
         {
             await next(context);
@@ -63,7 +69,7 @@ public sealed class JsonSchemaValidationMiddleware(ILogger<JsonSchemaValidationM
                 var options = new EvaluationOptions()
                 {
                     OutputFormat =
-                        context.Request.ParseResult.GetValueForOption(JsonSchemaValidationOutputFormatOption)
+                        context.Request.ParseResult.GetValue(JsonSchemaValidationOutputFormatOption)
                 };
 
                 var validateResult = jsonSchema.Evaluate(context.Response.Body, options);

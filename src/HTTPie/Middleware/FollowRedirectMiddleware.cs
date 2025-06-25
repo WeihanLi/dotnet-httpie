@@ -3,13 +3,20 @@
 
 using HTTPie.Abstractions;
 using HTTPie.Models;
+using HTTPie.Utilities;
 
 namespace HTTPie.Middleware;
 
 public sealed class FollowRedirectMiddleware(HttpRequestModel requestModel) : IHttpHandlerMiddleware
 {
-    private static readonly Option<bool> FollowOption = new(["--follow", "-F"], "The HTTP request should follow redirects");
-    private static readonly Option<int> MaxRedirectsOption = new("--max-redirects", "Allowed max HTTP request redirect times");
+    private static readonly Option<bool> FollowOption = new("--follow", "-F")
+    {
+        Description = "The HTTP request should follow redirects"
+    };
+    private static readonly Option<int> MaxRedirectsOption = new("--max-redirects")
+    {
+        Description = "Allowed max HTTP request redirect times"
+    };
 
     public Task InvokeAsync(HttpClientHandler httpClientHandler, Func<HttpClientHandler, Task> next)
     {
@@ -18,7 +25,7 @@ public sealed class FollowRedirectMiddleware(HttpRequestModel requestModel) : IH
         {
             httpClientHandler.AllowAutoRedirect = true;
         }
-        var maxRedirects = requestModel.ParseResult.GetValueForOption(MaxRedirectsOption);
+        var maxRedirects = requestModel.ParseResult.GetValue(MaxRedirectsOption);
         if (maxRedirects > 0)
             httpClientHandler.MaxAutomaticRedirections = maxRedirects;
 

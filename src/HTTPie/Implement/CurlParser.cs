@@ -5,6 +5,7 @@ using HTTPie.Abstractions;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using System.Runtime.CompilerServices;
+using CommandLineParser = System.CommandLine.Parsing.CommandLineParser;
 
 namespace HTTPie.Implement;
 
@@ -26,7 +27,7 @@ public sealed class CurlParser : ICurlParser
             throw new ArgumentException($"Invalid curl script: {curlScript}", nameof(curlScript));
         }
 
-        var splits = CommandLineParser.ParseLine(normalizedScript).ToArray();
+        var splits = CommandLineParser.SplitCommandLine(normalizedScript).ToArray();
         string requestMethod = string.Empty, requestBody = string.Empty;
         Uri? uri = null;
         var headers = new List<KeyValuePair<string, string>>();

@@ -29,12 +29,23 @@ public sealed partial class RequestExecutor(
     private static readonly Option<double> TimeoutOption = new("--timeout", "Request timeout in seconds");
 
     private static readonly Option<int> IterationOption =
-        new(["-n", "--iteration"], () => 1, "Request iteration");
+        new("-n", "--iteration")
+        {
+            Description = "Request iteration",
+            DefaultValueFactory = _ => 1
+        };
 
     private static readonly Option<int> VirtualUserOption =
-        new(["--vu", "--vus", "--virtual-users"], () => 1, "Virtual users");
+        new("--vu", "--vus", "--virtual-users")
+        {
+            Description = "Virtual users",
+            DefaultValueFactory = _ => 1
+        };
 
-    private static readonly Option<string> DurationOption = new(["--duration"], "Request duration, 10s/1m ...");
+    private static readonly Option<string> DurationOption = new("--duration")
+    {
+        Description = "Request duration, 10s/1m or 00:01:00 ..."
+    };
 
     public Option[] SupportedOptions()
     {
@@ -56,12 +67,12 @@ public sealed partial class RequestExecutor(
         httpClientHandler.AllowAutoRedirect = false;
         await httpHandlerPipeline(httpClientHandler);
         using var client = new HttpClient(httpClientHandler);
-        var timeout = requestModel.ParseResult.GetValueForOption(TimeoutOption);
+        var timeout = requestModel.ParseResult.GetValue(TimeoutOption);
         if (timeout > 0)
             client.Timeout = TimeSpan.FromSeconds(timeout);
-        var iteration = requestModel.ParseResult.GetValueForOption(IterationOption);
-        var virtualUsers = requestModel.ParseResult.GetValueForOption(VirtualUserOption);
-        var durationValue = requestModel.ParseResult.GetValueForOption(DurationOption);
+        var iteration = requestModel.ParseResult.GetValue(IterationOption);
+        var virtualUsers = requestModel.ParseResult.GetValue(VirtualUserOption);
+        var durationValue = requestModel.ParseResult.GetValue(DurationOption);
         var duration = TimeSpan.Zero;
         if (!string.IsNullOrEmpty(durationValue))
         {
