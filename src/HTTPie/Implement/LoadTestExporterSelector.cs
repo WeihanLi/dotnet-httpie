@@ -10,7 +10,10 @@ public sealed class LoadTestExporterSelector : ILoadTestExporterSelector
 {
     private readonly HttpContext _context;
     private readonly Dictionary<string, ILoadTestExporter> _exporters;
-    private static readonly Option<string> ExporterTypeOption = new("--exporter-type", "Load test result exporter type");
+    private static readonly Option<string> ExporterTypeOption = new("--exporter-type")
+    {
+        Description = "Load test result exporter type"
+    };
 
     public Option[] SupportedOptions()
     {

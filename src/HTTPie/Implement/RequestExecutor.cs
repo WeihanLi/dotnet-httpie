@@ -26,7 +26,10 @@ public sealed partial class RequestExecutor(
     private readonly ILogger _logger = logger;
 #endif
 
-    private static readonly Option<double> TimeoutOption = new("--timeout", "Request timeout in seconds");
+    private static readonly Option<double> TimeoutOption = new("--timeout")
+    {
+        Description = "Request timeout in seconds"
+    };
 
     private static readonly Option<int> IterationOption =
         new("-n", "--iteration")

@@ -40,7 +40,10 @@ public sealed class OutputFormatter(IServiceProvider serviceProvider, ILogger<Ou
     };
 
     public static readonly Option<bool> OfflineOption =
-        new("--offline", "offline mode, would not send the request, just print request info");
+        new("--offline")
+    {
+        Description = "offline mode, would not send the request, just print request info"    
+    };
 
     private static readonly Option<bool> OutputHeadersOption =
         new("-h", "--headers")

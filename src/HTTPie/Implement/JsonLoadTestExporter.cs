@@ -9,7 +9,10 @@ namespace HTTPie.Implement;
 
 public sealed class JsonLoadTestExporter : ILoadTestExporter
 {
-    private static readonly Option<string> OutputJsonPathOption = new("--export-json-path", "Expected export json file path");
+    private static readonly Option<string> OutputJsonPathOption = new("--export-json-path")
+    {
+        Description = "Expected export json file path"
+    };
 
     public Option[] SupportedOptions() => [OutputJsonPathOption];
 
