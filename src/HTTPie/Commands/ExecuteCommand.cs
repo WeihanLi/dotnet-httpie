@@ -3,6 +3,7 @@
 
 using HTTPie.Abstractions;
 using HTTPie.Implement;
+using HTTPie.Middleware;
 using HTTPie.Utilities;
 using Json.Path;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,6 +40,7 @@ public sealed class ExecuteCommand : Command
     {
         Options.Add(ExecuteScriptTypeOption);
         Options.Add(EnvironmentTypeOption);
+        Options.Add(DefaultRequestMiddleware.DebugOption);
         Arguments.Add(FilePathArgument);
     }
 
