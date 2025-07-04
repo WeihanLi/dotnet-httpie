@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
+using HTTPie.Implement;
 using HTTPie.Utilities;
 using Json.Path;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,7 +19,8 @@ public sealed class ExecuteCommand : Command
 {
     private static readonly Argument<string> FilePathArgument = new("scriptPath")
     {
-        Description = "The script to execute"
+        Description = "The script to execute",
+        Arity = ArgumentArity.ZeroOrOne
     };
 
     private static readonly Option<string> EnvironmentTypeOption =
@@ -40,12 +42,31 @@ public sealed class ExecuteCommand : Command
         Arguments.Add(FilePathArgument);
     }
 
-    public async Task InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken, IServiceProvider serviceProvider)
+    public async Task InvokeAsync(
+        ParseResult parseResult, CancellationToken cancellationToken, IServiceProvider serviceProvider
+        )
     {
+        var scriptText = string.Empty;
         var filePath = parseResult.GetValue(FilePathArgument);
-        if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+        if (string.IsNullOrEmpty(filePath))
         {
-            throw new InvalidOperationException("Invalid filePath");
+            // try to read script content from stdin
+            if (Console.IsInputRedirected && Console.In.Peek() != -1)
+            {
+                scriptText = (await Console.In.ReadToEndAsync(cancellationToken)).Trim();
+            }
+
+            if (string.IsNullOrEmpty(scriptText))
+            {
+                throw new InvalidOperationException("Invalid script to execute");
+            }
+        }
+        else
+        {
+            if (!File.Exists(filePath))
+            {
+                throw new InvalidOperationException("Invalid filePath");
+            }
         }
 
         var logger = serviceProvider.GetRequiredService<ILogger>();
@@ -59,23 +80,34 @@ public sealed class ExecuteCommand : Command
             _ => throw new InvalidOperationException($"Not supported request type: {type}")
         };
         parser.Environment = environment;
-        logger.LogDebug("Executing {ScriptType} http request {ScriptPath} with {ScriptExecutor}",
-            type, filePath, parser.GetType().Name);
-        await InvokeRequest(parser, requestExecutor, filePath, cancellationToken);
+        logger.LogDebug("Executing {ScriptType} http request {ScriptPath} with {ScriptExecutor} with environment {Environment}",
+            type, filePath, parser.GetType().Name, environment);
+        
+        var offline = parseResult.GetValue(OutputFormatter.OfflineOption);
+        await InvokeRequest(parser, requestExecutor, scriptText, filePath, offline, cancellationToken);
     }
 
-    private static async Task InvokeRequest(IHttpParser httpParser, IRawHttpRequestExecutor requestExecutor,
-        string filePath, CancellationToken cancellationToken)
+    private static async Task InvokeRequest(
+        IHttpParser httpParser, IRawHttpRequestExecutor requestExecutor, string scriptText,
+        string? filePath, bool offline, CancellationToken cancellationToken)
     {
         var responseList = new Dictionary<string, HttpResponseMessage>();
+        
         try
         {
-            await foreach (var request in httpParser.ParseFileAsync(filePath, cancellationToken))
+            var getRequests = string.IsNullOrEmpty(filePath) 
+                ? httpParser.ParseScriptAsync(scriptText, cancellationToken)
+                : httpParser.ParseFileAsync(filePath, cancellationToken)
+                ;
+            await foreach (var request in getRequests.WithCancellation(cancellationToken))
             {
                 await EnsureRequestVariableReferenceReplaced(request, responseList);
                 var response = await ExecuteRequest(
-                    requestExecutor, request.RequestMessage, cancellationToken, request.Name
+                    requestExecutor, request.RequestMessage, offline, cancellationToken, request.Name
                     );
+                if (response is null)
+                    continue;
+
                 responseList[request.Name] = response;
             }
         }
@@ -97,9 +129,10 @@ public sealed class ExecuteCommand : Command
         }
     }
 
-    private static async Task<HttpResponseMessage> ExecuteRequest(
+    private static async Task<HttpResponseMessage?> ExecuteRequest(
         IRawHttpRequestExecutor requestExecutor,
         HttpRequestMessage requestMessage,
+        bool offline,
         CancellationToken cancellationToken,
         string? requestName = null)
     {
@@ -108,6 +141,9 @@ public sealed class ExecuteCommand : Command
 
         Console.WriteLine("Request message:");
         Console.WriteLine(await requestMessage.ToRawMessageAsync(cancellationToken));
+        if (offline)
+            return null;
+        
         var startTimestamp = Stopwatch.GetTimestamp();
         var response = await requestExecutor.ExecuteAsync(requestMessage, cancellationToken);
         var requestDuration = ProfilerHelper.GetElapsedTime(startTimestamp);

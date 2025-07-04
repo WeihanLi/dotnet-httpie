@@ -7,22 +7,31 @@ public sealed class CurlParserTest
 {
     [Theory]
     [InlineData("")]
-    [InlineData(null)]
     [InlineData("Hello World")]
-    public async Task InvalidParseTest(string? script)
+    public async Task InvalidParseTest(string script)
     {
         var parser = new CurlParser();
-        await Assert.ThrowsAnyAsync<ArgumentException>(() => parser.ParseScriptAsync(script ?? ""));
+        
+        await Assert.ThrowsAnyAsync<ArgumentException>(async () =>
+        {
+            await foreach (var request in parser.ParseScriptAsync(script))
+            {
+                Assert.NotNull(request);
+            }
+        });
     }
-
 
     [Theory]
     [MemberData(nameof(CurlScriptTestData))]
     public async Task ParseTest(string script)
     {
         var parser = new CurlParser();
-        var request = await parser.ParseScriptAsync(script);
-        Assert.NotNull(request);
+        
+        var requests = await parser.ParseScriptAsync(script).ToArrayAsync();
+        Assert.NotNull(requests);
+        Assert.Single(requests);
+        Assert.NotNull(requests[0].RequestMessage);
+        Assert.NotEmpty(requests[0].RequestMessage.Method.Method);
     }
 
     public static IEnumerable<object[]> CurlScriptTestData()

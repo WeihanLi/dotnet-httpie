@@ -9,13 +9,56 @@ using CommandLineParser = System.CommandLine.Parsing.CommandLineParser;
 
 namespace HTTPie.Implement;
 
-public sealed class CurlParser : ICurlParser
+public sealed class CurlParser : AbstractHttpRequestParser, ICurlParser
 {
-    public string? Environment { get; set; }
+    public override async IAsyncEnumerable<HttpRequestMessageWrapper> ParseScriptAsync
+        (string script, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Guard.NotNullOrEmpty(script);
+        await foreach (var request in ParseHttpRequestsAsync(
+                           script.Split("\n###\n").ToAsyncEnumerable(), null,
+                           cancellationToken))
+        {
+            yield return request;
+        }
+    }
 
-    public Task<HttpRequestMessage> ParseScriptAsync(string curlScript, CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<HttpRequestMessageWrapper> ParseFileAsync(
+        string filePath, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Guard.NotNullOrEmpty(filePath);
+        var script = await File.ReadAllTextAsync(filePath, cancellationToken);
+        await foreach (var request in ParseHttpRequestsAsync(
+                           script.Split("\n###\n").ToAsyncEnumerable(), filePath,
+                           cancellationToken))
+        {
+            yield return request;
+        }
+    }
+
+    protected override async IAsyncEnumerable<HttpRequestMessageWrapper> ParseHttpRequestsAsync
+        (
+            IAsyncEnumerable<string> chunks,
+            string? filePath, 
+            [EnumeratorCancellation]CancellationToken cancellationToken
+        )
+    {
+        var index = 0;
+        await foreach (var chunk in chunks.WithCancellation(cancellationToken))
+        {
+            var request = ParseCurlScript(chunk, cancellationToken);
+            var requestName = $"request#{index}";
+            index++;
+            yield return new HttpRequestMessageWrapper(requestName, request);
+        }
+    }
+    
+    private static HttpRequestMessage ParseCurlScript(
+        string curlScript, CancellationToken cancellationToken = default
+        )
     {
         Guard.NotNullOrEmpty(curlScript);
+        cancellationToken.ThrowIfCancellationRequested();
         var normalizedScript = curlScript
             .Replace("\\\n", " ")
             .Replace("\\\r\n", " ")
@@ -103,19 +146,6 @@ public sealed class CurlParser : ICurlParser
             );
         }
 
-        return request.WrapTask();
-    }
-
-    public async IAsyncEnumerable<HttpRequestMessageWrapper> ParseFileAsync(string filePath,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        var scripts = await File.ReadAllTextAsync(filePath, cancellationToken);
-        var index = 0;
-        foreach (var script in scripts.Split("\n###\n"))
-        {
-            var request = await ParseScriptAsync(script, cancellationToken);
-            yield return new HttpRequestMessageWrapper($"request#{index}", request);
-            index++;
-        }
+        return request;
     }
 }

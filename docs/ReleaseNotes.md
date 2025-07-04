@@ -1,5 +1,9 @@
 # dotnet-httpie release notes
 
+## Unreleased
+
+- upgrade System.CommandLine
+
 ## [0.10.0](https://nuget.org/packages/dotnet-httpie/0.10.0)
 
 - Add http env file support for http file execution

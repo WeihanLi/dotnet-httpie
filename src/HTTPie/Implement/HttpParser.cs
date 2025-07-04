@@ -4,6 +4,7 @@
 using HTTPie.Abstractions;
 using HTTPie.Models;
 using HTTPie.Utilities;
+using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -15,8 +16,38 @@ using WeihanLi.Common.Http;
 
 namespace HTTPie.Implement;
 
-public sealed class HttpParser : IHttpParser
+public abstract class AbstractHttpRequestParser: IHttpParser
 {
+    public string? Environment { get; set; }
+    
+    public virtual IAsyncEnumerable<HttpRequestMessageWrapper> ParseScriptAsync(string script, CancellationToken cancellationToken = default)
+    {
+        var lines = script.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        return ParseHttpRequestsAsync(lines.ToAsyncEnumerable(), null, cancellationToken);
+    }
+
+    public virtual IAsyncEnumerable<HttpRequestMessageWrapper> ParseFileAsync(
+        string filePath, CancellationToken cancellationToken = default
+    ) =>
+        ParseHttpRequestsAsync(
+            File.ReadLinesAsync(filePath, cancellationToken), 
+            filePath, 
+            cancellationToken
+        );
+
+    protected abstract IAsyncEnumerable<HttpRequestMessageWrapper> ParseHttpRequestsAsync(
+        IAsyncEnumerable<string> chunks,
+        string? filePath,
+        CancellationToken cancellationToken
+    );
+}
+
+public sealed partial class HttpParser(ILogger logger) : AbstractHttpRequestParser
+{
+#if NET8_0
+    private readonly ILogger _logger = logger;
+#endif
+    
     private const string DotEnvFileName = ".env";
     private const string HttpEnvFileName = "httpenv.json";
     private const string UserHttpEnvFileName = "httpenv.json.user";
@@ -25,8 +56,6 @@ public sealed class HttpParser : IHttpParser
     private const int MaxRecursionDepth = 32;
 
     private static readonly Dictionary<string, Func<string[], string>> BuiltInFunctions;
-
-    public string? Environment { get; set; }
 
     static HttpParser()
     {
@@ -74,20 +103,18 @@ public sealed class HttpParser : IHttpParser
         };
     }
 
-    public Task<HttpRequestMessage> ParseScriptAsync(string script, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async IAsyncEnumerable<HttpRequestMessageWrapper> ParseFileAsync(string filePath,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    protected override async IAsyncEnumerable<HttpRequestMessageWrapper> ParseHttpRequestsAsync(
+        IAsyncEnumerable<string> fileLines,
+        string? filePath,
+        [EnumeratorCancellation] CancellationToken cancellationToken
+        )
     {
         var dotEnvVariables = new Dictionary<string, string>();
         var fileScopedVariables = new Dictionary<string, string>();
 
-        var dir = Path.GetDirectoryName(Path.GetFullPath(filePath));
+        var dir =  filePath is null ? Directory.GetCurrentDirectory() : Path.GetDirectoryName(Path.GetFullPath(filePath));
         // Load environment variables from .env file
-        LoadEnvVariables(DotEnvFileName, dir, dotEnvVariables);
+        await LoadEnvVariables(DotEnvFileName, dir, dotEnvVariables);
         if (!string.IsNullOrEmpty(Environment))
         {
             // Load environment variables from http-client.env.json file
@@ -103,7 +130,6 @@ public sealed class HttpParser : IHttpParser
 
         var fileScopedVariablesEnded = false;
 
-        using var reader = File.OpenText(filePath);
         HttpRequestMessage? requestMessage = null;
         string? requestName = null;
         var requestNumber = 0;
@@ -112,7 +138,7 @@ public sealed class HttpParser : IHttpParser
 
         // CA2024: Do not use StreamReader.EndOfStream in async methods
         // https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca2024
-        while (await reader.ReadLineAsync(cancellationToken) is { } line)
+        await foreach (var line in fileLines.WithCancellation(cancellationToken))
         {
             if (line.IsNullOrWhiteSpace()) continue;
 
@@ -272,13 +298,14 @@ public sealed class HttpParser : IHttpParser
     private static readonly Regex CustomFunctionReferenceRegex =
         new(@"\{\{\$(?<variableName>\s?[a-zA-Z_][\w\.:\s]*\s?)\}\}", RegexOptions.Compiled);
 
-    private static void LoadEnvVariables(string fileName, string? dir, Dictionary<string, string> variables)
+    private async Task LoadEnvVariables(string fileName, string? dir, Dictionary<string, string> variables)
     {
         var filePath = GetFilePath(fileName, dir);
         if (filePath is null) return;
-
-        var lines = File.ReadAllLines(filePath);
-        foreach (var line in lines)
+        
+        LogDebugLoadEnvVariablesFromFile(filePath);
+        
+        await foreach (var line in File.ReadLinesAsync(filePath))
         {
             if (line.IsNullOrWhiteSpace()
                 || line.StartsWith('#')
@@ -295,7 +322,7 @@ public sealed class HttpParser : IHttpParser
         }
     }
 
-    private static async Task LoadJsonEnvVariables(string fileName, string? dir, string environmentName, Dictionary<string, string> variables)
+    private async Task LoadJsonEnvVariables(string fileName, string? dir, string environmentName, Dictionary<string, string> variables)
     {
         var filePath = GetFilePath(fileName, dir);
         if (filePath is null) return;
@@ -303,8 +330,10 @@ public sealed class HttpParser : IHttpParser
         await using var jsonContentStream = File.OpenRead(filePath);
         var jsonNode = await JsonNode.ParseAsync(jsonContentStream);
         if (jsonNode is null) return;
-
+        
         // load environment shared variables
+        LogDebugLoadVariablesFromEnvFile(filePath);
+
         var sharedVariables = jsonNode["$shared"]?.AsObject();
         if (sharedVariables is not null)
         {
@@ -331,6 +360,12 @@ public sealed class HttpParser : IHttpParser
         }
     }
 
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Load variables from env file {FileName}")]
+    private partial void LogDebugLoadVariablesFromEnvFile(string fileName);
+    
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Load environment variables from {FileName}")]
+    private partial void LogDebugLoadEnvVariablesFromFile(string fileName);
+    
     private static string? GetFilePath(string fileName, string? dir = null, int depth = 0)
     {
         dir ??= Directory.GetCurrentDirectory();
