@@ -53,7 +53,7 @@ public sealed class ExecuteCommand : Command
         if (string.IsNullOrEmpty(filePath))
         {
             // try to read script content from stdin
-            if (Console.IsInputRedirected && Console.In.Peek() != -1)
+            if (ConsoleHelper.HasStandardInput())
             {
                 scriptText = (await Console.In.ReadToEndAsync(cancellationToken)).Trim();
             }
@@ -67,7 +67,7 @@ public sealed class ExecuteCommand : Command
         {
             if (!File.Exists(filePath))
             {
-                throw new InvalidOperationException("Invalid filePath");
+                throw new InvalidOperationException($"Invalid filePath {filePath}");
             }
         }
 
