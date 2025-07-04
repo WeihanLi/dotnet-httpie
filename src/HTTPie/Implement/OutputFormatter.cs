@@ -25,9 +25,6 @@ public enum PrettyOptions
 
 public sealed class OutputFormatter(IServiceProvider serviceProvider, ILogger<OutputFormatter> logger) : IOutputFormatter
 {
-    private readonly IServiceProvider _serviceProvider = serviceProvider;
-    private readonly ILogger<OutputFormatter> _logger = logger;
-
     private static readonly Option<PrettyOptions> PrettyOption = new("--pretty")
     {
         Description = "pretty output",
@@ -40,7 +37,7 @@ public sealed class OutputFormatter(IServiceProvider serviceProvider, ILogger<Ou
     };
 
     public static readonly Option<bool> OfflineOption =
-        new("--offline")
+        new("--offline", "--dry-run")
     {
         Description = "offline mode, would not send the request, just print request info"    
     };
@@ -201,14 +198,14 @@ public sealed class OutputFormatter(IServiceProvider serviceProvider, ILogger<Ou
 
         try
         {
-            var exporterSelector = _serviceProvider.GetRequiredService<ILoadTestExporterSelector>();
+            var exporterSelector = serviceProvider.GetRequiredService<ILoadTestExporterSelector>();
             var exporter = exporterSelector.Select();
             if (exporter is not null)
                 await exporter.Export(httpContext, responseList);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Export load test result failed");
+            logger.LogError(ex, "Export load test result failed");
         }
 
         return $@"{GetCommonOutput(httpContext, outputFormat & OutputFormat.RequestInfo)}
