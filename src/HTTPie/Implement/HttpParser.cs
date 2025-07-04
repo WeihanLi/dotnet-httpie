@@ -114,7 +114,7 @@ public sealed partial class HttpParser(ILogger logger) : AbstractHttpRequestPars
 
         var dir =  filePath is null ? Directory.GetCurrentDirectory() : Path.GetDirectoryName(Path.GetFullPath(filePath));
         // Load environment variables from .env file
-        LoadEnvVariables(DotEnvFileName, dir, dotEnvVariables);
+        await LoadEnvVariables(DotEnvFileName, dir, dotEnvVariables);
         if (!string.IsNullOrEmpty(Environment))
         {
             // Load environment variables from http-client.env.json file
@@ -298,15 +298,14 @@ public sealed partial class HttpParser(ILogger logger) : AbstractHttpRequestPars
     private static readonly Regex CustomFunctionReferenceRegex =
         new(@"\{\{\$(?<variableName>\s?[a-zA-Z_][\w\.:\s]*\s?)\}\}", RegexOptions.Compiled);
 
-    private void LoadEnvVariables(string fileName, string? dir, Dictionary<string, string> variables)
+    private async Task LoadEnvVariables(string fileName, string? dir, Dictionary<string, string> variables)
     {
         var filePath = GetFilePath(fileName, dir);
         if (filePath is null) return;
         
         LogDebugLoadEnvVariablesFromFile(filePath);
-
-        var lines = File.ReadAllLines(filePath);
-        foreach (var line in lines)
+        
+        await foreach (var line in File.ReadLinesAsync(filePath))
         {
             if (line.IsNullOrWhiteSpace()
                 || line.StartsWith('#')
