@@ -122,7 +122,7 @@ public sealed class CurlParser : AbstractHttpRequestParser, ICurlParser
                 {
                     var header = splits[i].Trim('\'', '"');
                     var headerSplits = header.Split(':', 2, StringSplitOptions.TrimEntries);
-                    if (headerSplits.Length == 2 && !string.IsNullOrEmpty(headerSplits[1]))
+                    if (headerSplits.Length == 2)
                     {
                         headers.Add(new KeyValuePair<string, string>(headerSplits[0], headerSplits[1].Trim()));   
                     }
