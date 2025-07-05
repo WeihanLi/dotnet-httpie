@@ -41,6 +41,7 @@ public sealed class ExecuteCommand : Command
         Options.Add(ExecuteScriptTypeOption);
         Options.Add(EnvironmentTypeOption);
         Options.Add(DefaultRequestMiddleware.DebugOption);
+        Options.Add(OutputFormatter.OfflineOption);
         Arguments.Add(FilePathArgument);
     }
 
@@ -82,9 +83,11 @@ public sealed class ExecuteCommand : Command
             _ => throw new InvalidOperationException($"Not supported request type: {type}")
         };
         parser.Environment = environment;
-        logger.LogDebug("Executing {ScriptType} http request {ScriptPath} with {ScriptExecutor} with environment {Environment}",
-            type, filePath, parser.GetType().Name, environment);
-        
+        logger.LogDebug(
+            "Executing {ScriptType} http request [{ScriptPath}]({ScriptText}) with {ScriptExecutor} with environment {Environment}",
+            type, filePath, scriptText, parser.GetType().Name, environment
+            );
+
         var offline = parseResult.GetValue(OutputFormatter.OfflineOption);
         await InvokeRequest(parser, requestExecutor, scriptText, filePath, offline, cancellationToken);
     }

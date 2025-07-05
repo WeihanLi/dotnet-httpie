@@ -5,7 +5,7 @@ using HTTPie.Abstractions;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using System.Runtime.CompilerServices;
-using CommandLineParser = System.CommandLine.Parsing.CommandLineParser;
+using CommandLineParser = WeihanLi.Common.Helpers.CommandLineParser;
 
 namespace HTTPie.Implement;
 
@@ -70,7 +70,9 @@ public sealed class CurlParser : AbstractHttpRequestParser, ICurlParser
             throw new ArgumentException($"Invalid curl script: {curlScript}", nameof(curlScript));
         }
 
-        var splits = CommandLineParser.SplitCommandLine(normalizedScript).ToArray();
+        var splits = CommandLineParser.ParseLine(normalizedScript)
+            .Where(s=> !string.IsNullOrEmpty(s))
+            .ToArray();
         string requestMethod = string.Empty, requestBody = string.Empty;
         Uri? uri = null;
         var headers = new List<KeyValuePair<string, string>>();
@@ -120,13 +122,18 @@ public sealed class CurlParser : AbstractHttpRequestParser, ICurlParser
                 {
                     var header = splits[i].Trim('\'', '"');
                     var headerSplits = header.Split(':', 2, StringSplitOptions.TrimEntries);
-                    headers.Add(new KeyValuePair<string, string>(headerSplits[0],
-                        headerSplits.Length > 1 ? headerSplits[1] : string.Empty));
+                    if (headerSplits.Length == 2 && !string.IsNullOrEmpty(headerSplits[1]))
+                    {
+                        headers.Add(new KeyValuePair<string, string>(headerSplits[0], headerSplits[1].Trim()));   
+                    }
                 }
             }
         }
 
-        if (string.IsNullOrEmpty(requestMethod)) requestMethod = "GET";
+        if (string.IsNullOrEmpty(requestMethod))
+        {
+            requestMethod =  requestBody.IsNullOrEmpty() ? HttpMethod.Get.Method : HttpMethod.Post.Method;
+        }
 
         if (uri is null) throw new ArgumentException("Url info not found");
 
