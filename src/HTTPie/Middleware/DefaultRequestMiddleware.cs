@@ -10,7 +10,7 @@ namespace HTTPie.Middleware;
 
 public sealed class DefaultRequestMiddleware(ILogger logger) : IRequestMiddleware
 {
-    private static readonly Option<bool> DebugOption = new("--debug")
+    public static readonly Option<bool> DebugOption = new("--debug")
     {
         Description = "Enable debug mode, output debug log"
     };

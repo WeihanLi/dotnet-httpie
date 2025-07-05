@@ -3,6 +3,7 @@
 
 using HTTPie.Abstractions;
 using HTTPie.Implement;
+using HTTPie.Middleware;
 using HTTPie.Utilities;
 using Json.Path;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,6 +40,7 @@ public sealed class ExecuteCommand : Command
     {
         Options.Add(ExecuteScriptTypeOption);
         Options.Add(EnvironmentTypeOption);
+        Options.Add(DefaultRequestMiddleware.DebugOption);
         Arguments.Add(FilePathArgument);
     }
 
@@ -51,7 +53,7 @@ public sealed class ExecuteCommand : Command
         if (string.IsNullOrEmpty(filePath))
         {
             // try to read script content from stdin
-            if (Console.IsInputRedirected && Console.In.Peek() != -1)
+            if (ConsoleHelper.HasStandardInput())
             {
                 scriptText = (await Console.In.ReadToEndAsync(cancellationToken)).Trim();
             }
@@ -65,7 +67,7 @@ public sealed class ExecuteCommand : Command
         {
             if (!File.Exists(filePath))
             {
-                throw new InvalidOperationException("Invalid filePath");
+                throw new InvalidOperationException($"Invalid filePath {filePath}");
             }
         }
 
