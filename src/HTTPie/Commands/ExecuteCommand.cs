@@ -84,8 +84,8 @@ public sealed class ExecuteCommand : Command
         };
         parser.Environment = environment;
         logger.LogDebug(
-            "Executing {ScriptType} http request [{ScriptPath}]({ScriptText}) with {ScriptExecutor} with environment {Environment}",
-            type, filePath, scriptText, parser.GetType().Name, environment
+            "Executing {ScriptType} http request with scriptPath: [{ScriptPath}], scriptText: ({ScriptText}), environment: {Environment} via {ScriptExecutor}",
+            type, filePath, scriptText, environment, parser.GetType().Name
             );
 
         var offline = parseResult.GetValue(OutputFormatter.OfflineOption);

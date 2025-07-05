@@ -135,7 +135,7 @@ public sealed class CurlParser : AbstractHttpRequestParser, ICurlParser
             requestMethod =  requestBody.IsNullOrEmpty() ? HttpMethod.Get.Method : HttpMethod.Post.Method;
         }
 
-        if (uri is null) throw new ArgumentException("Url info not found");
+        if (uri is null) throw new ArgumentException("Request url info not found");
 
         var request = new HttpRequestMessage(new HttpMethod(requestMethod), uri);
         // request body
@@ -149,7 +149,7 @@ public sealed class CurlParser : AbstractHttpRequestParser, ICurlParser
         {
             request.TryAddHeader(
                 headerGroup.Key,
-                headerGroup.Select(x => x.Value).StringJoin(",")
+                headerGroup.Select(x => x.Value).StringJoin(",").Trim(',', ' ')
             );
         }
 
