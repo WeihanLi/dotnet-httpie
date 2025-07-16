@@ -79,7 +79,7 @@ public static class HttpMessageExtensions
     public static async Task<string> ToRequestLine(this HttpRequestMessage httpRequestMessage, CancellationToken cancellationToken = default)
     {
         var builder = new StringBuilder($"dotnet-http {httpRequestMessage.Method.Method} ");
-        
+
         foreach (var header in httpRequestMessage.Headers)
         {
             builder.Append($"{header.Key}:{header.Value.StringJoin(",").Trim(',', ' ')} ");
@@ -98,7 +98,7 @@ public static class HttpMessageExtensions
                 builder.Append($"--raw {requestBody}");
             }
         }
-        
+
         return builder.ToString();
     }
 }

@@ -38,9 +38,9 @@ public sealed class OutputFormatter(IServiceProvider serviceProvider, ILogger<Ou
 
     public static readonly Option<bool> OfflineOption =
         new("--offline", "--dry-run")
-    {
-        Description = "offline mode, would not send the request, just print request info"    
-    };
+        {
+            Description = "offline mode, would not send the request, just print request info"
+        };
 
     private static readonly Option<bool> OutputHeadersOption =
         new("-h", "--headers")
@@ -61,7 +61,7 @@ public sealed class OutputFormatter(IServiceProvider serviceProvider, ILogger<Ou
 
     private static readonly Option<string> OutputPrintModeOption = new("-p", "--print")
     {
-        Description = 
+        Description =
             "print mode, output specific info,H:request headers,B:request body,h:response headers,b:response body"
     };
 

@@ -97,10 +97,10 @@ public sealed class ExecuteCommand : Command
         string? filePath, bool offline, CancellationToken cancellationToken)
     {
         var responseList = new Dictionary<string, HttpResponseMessage>();
-        
+
         try
         {
-            var getRequests = string.IsNullOrEmpty(filePath) 
+            var getRequests = string.IsNullOrEmpty(filePath)
                 ? httpParser.ParseScriptAsync(scriptText, cancellationToken)
                 : httpParser.ParseFileAsync(filePath, cancellationToken)
                 ;
@@ -148,7 +148,7 @@ public sealed class ExecuteCommand : Command
         Console.WriteLine(await requestMessage.ToRawMessageAsync(cancellationToken));
         if (offline)
             return null;
-        
+
         var startTimestamp = Stopwatch.GetTimestamp();
         var response = await requestExecutor.ExecuteAsync(requestMessage, cancellationToken);
         var requestDuration = ProfilerHelper.GetElapsedTime(startTimestamp);

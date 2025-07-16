@@ -39,8 +39,8 @@ public sealed class CurlParser : AbstractHttpRequestParser, ICurlParser
     protected override async IAsyncEnumerable<HttpRequestMessageWrapper> ParseHttpRequestsAsync
         (
             IAsyncEnumerable<string> chunks,
-            string? filePath, 
-            [EnumeratorCancellation]CancellationToken cancellationToken
+            string? filePath,
+            [EnumeratorCancellation] CancellationToken cancellationToken
         )
     {
         var index = 0;
@@ -52,7 +52,7 @@ public sealed class CurlParser : AbstractHttpRequestParser, ICurlParser
             yield return new HttpRequestMessageWrapper(requestName, request);
         }
     }
-    
+
     private static HttpRequestMessage ParseCurlScript(
         string curlScript, CancellationToken cancellationToken = default
         )
@@ -71,7 +71,7 @@ public sealed class CurlParser : AbstractHttpRequestParser, ICurlParser
         }
 
         var splits = CommandLineParser.ParseLine(normalizedScript)
-            .Where(s=> !string.IsNullOrEmpty(s))
+            .Where(s => !string.IsNullOrEmpty(s))
             .ToArray();
         string requestMethod = string.Empty, requestBody = string.Empty;
         Uri? uri = null;
@@ -124,7 +124,7 @@ public sealed class CurlParser : AbstractHttpRequestParser, ICurlParser
                     var headerSplits = header.Split(':', 2, StringSplitOptions.TrimEntries);
                     if (headerSplits.Length == 2)
                     {
-                        headers.Add(new KeyValuePair<string, string>(headerSplits[0], headerSplits[1].Trim()));   
+                        headers.Add(new KeyValuePair<string, string>(headerSplits[0], headerSplits[1].Trim()));
                     }
                 }
             }
@@ -132,7 +132,7 @@ public sealed class CurlParser : AbstractHttpRequestParser, ICurlParser
 
         if (string.IsNullOrEmpty(requestMethod))
         {
-            requestMethod =  requestBody.IsNullOrEmpty() ? HttpMethod.Get.Method : HttpMethod.Post.Method;
+            requestMethod = requestBody.IsNullOrEmpty() ? HttpMethod.Get.Method : HttpMethod.Post.Method;
         }
 
         if (uri is null) throw new ArgumentException("Request url info not found");

@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 using Microsoft.Extensions.DependencyInjection;
-using System.CommandLine.Parsing;
 using CommandLineParser = System.CommandLine.Parsing.CommandLineParser;
 
 namespace HTTPie.UnitTest.Utilities;

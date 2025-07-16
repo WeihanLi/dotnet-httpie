@@ -78,7 +78,7 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
                             var idx = item.IndexOf('[');
                             if (idx > -1)
                             {
-                                
+
                             }
                         }
                     }
@@ -110,7 +110,7 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
                             }
 
                         jsonDataBuilder.Append('}');
-                        requestModel.Body = jsonDataBuilder.ToString();   
+                        requestModel.Body = jsonDataBuilder.ToString();
                     }
                 }
             }

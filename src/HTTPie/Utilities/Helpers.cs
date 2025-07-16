@@ -101,7 +101,7 @@ public static class Helpers
     {
         var command = new RootCommand();
         var executeCommand = new ExecuteCommand();
-        executeCommand.SetAction((parseResult, cancellationToken) => 
+        executeCommand.SetAction((parseResult, cancellationToken) =>
             executeCommand.InvokeAsync(parseResult, cancellationToken, serviceProvider));
         command.Add(executeCommand);
 
