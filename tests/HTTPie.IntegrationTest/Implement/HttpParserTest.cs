@@ -3,6 +3,7 @@
 
 using HTTPie.Implement;
 using HTTPie.Utilities;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit.Abstractions;
 
 namespace HTTPie.IntegrationTest.Implement;
@@ -15,11 +16,13 @@ public class HttpParserTest(ITestOutputHelper outputHelper)
     [InlineData("HttpRequestReferenceSample.http")]
     [InlineData("HttpEnvFileVariableSample.http")]
     [InlineData("HttpEnvFileVariableSample.http", "test")]
+    [InlineData("HttpEnvFileVariableSample.http", "dev")]
+    [InlineData("HttpEnvFileVariableSample.http", "staging")]
     public async Task CommonParseTest(string fileName, string? env = null)
     {
         Environment.SetEnvironmentVariable("timestamp", DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString());
         var path = Path.Combine(Directory.GetCurrentDirectory(), "TestAssets", fileName);
-        var parser = new HttpParser
+        var parser = new HttpParser(NullLogger.Instance)
         {
             Environment = env
         };

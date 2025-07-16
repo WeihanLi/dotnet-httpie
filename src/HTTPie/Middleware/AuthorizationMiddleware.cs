@@ -10,16 +10,19 @@ namespace HTTPie.Middleware;
 
 public sealed class AuthorizationMiddleware : IRequestMiddleware
 {
-    private static readonly Option<string> AuthenticationTypeOption = new(["--auth-type", "-A"], () => "Basic", "Authentication type");
-    private static readonly Option<string> AuthenticationValueOption = new(["--auth", "-a"], "Authentication value");
+    private static readonly Option<string> AuthenticationTypeOption = new("--auth-type", "-A")
+    {
+        Description = "Authentication type",
+        DefaultValueFactory = _ => "Basic"
+    };
+    private static readonly Option<string> AuthenticationValueOption = new("--auth", "-a")
+    {
+        Description = "Authentication value"
+    };
 
     static AuthorizationMiddleware()
     {
-        AuthenticationTypeOption.AddCompletions(new[]
-        {
-            "Basic",
-            "Bearer"
-        });
+        AuthenticationTypeOption.CompletionSources.Add("Basic", "Bearer");
     }
 
     public Option[] SupportedOptions() => [AuthenticationTypeOption, AuthenticationValueOption];
@@ -28,10 +31,10 @@ public sealed class AuthorizationMiddleware : IRequestMiddleware
     {
         if (requestModel.ParseResult.HasOption(AuthenticationValueOption))
         {
-            var authValue = requestModel.ParseResult.GetValueForOption(AuthenticationValueOption);
+            var authValue = requestModel.ParseResult.GetValue(AuthenticationValueOption);
             if (!requestModel.Headers.ContainsKey(Constants.AuthorizationHeaderName) && !string.IsNullOrEmpty(authValue))
             {
-                var authType = requestModel.ParseResult.GetValueForOption(AuthenticationTypeOption);
+                var authType = requestModel.ParseResult.GetValue(AuthenticationTypeOption);
                 var authHeaderValue = GetAuthHeader(authType, authValue);
                 requestModel.Headers.TryAdd(Constants.AuthorizationHeaderName, authHeaderValue);
             }

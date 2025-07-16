@@ -43,7 +43,6 @@ public static class HttpMessageExtensions
         return messageBuilder.ToString();
     }
 
-
     public static async Task<string> ToRawMessageAsync(this HttpResponseMessage httpResponseMessage,
         CancellationToken cancellationToken = default)
     {
@@ -75,5 +74,31 @@ public static class HttpMessageExtensions
         }
 
         return messageBuilder.ToString();
+    }
+
+    public static async Task<string> ToRequestLine(this HttpRequestMessage httpRequestMessage, CancellationToken cancellationToken = default)
+    {
+        var builder = new StringBuilder($"dotnet-http {httpRequestMessage.Method.Method} ");
+
+        foreach (var header in httpRequestMessage.Headers)
+        {
+            builder.Append($"{header.Key}:{header.Value.StringJoin(",").Trim(',', ' ')} ");
+        }
+
+        if (httpRequestMessage.Content is not null)
+        {
+            foreach (var header in httpRequestMessage.Content.Headers)
+            {
+                builder.Append($"{header.Key}:{header.Value.StringJoin(",").Trim(',', ' ')} ");
+            }
+
+            var requestBody = await httpRequestMessage.Content.ReadAsStringAsync(cancellationToken);
+            if (!string.IsNullOrEmpty(requestBody))
+            {
+                builder.Append($"--raw {requestBody}");
+            }
+        }
+
+        return builder.ToString();
     }
 }

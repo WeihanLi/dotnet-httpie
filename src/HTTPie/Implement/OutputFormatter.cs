@@ -25,28 +25,45 @@ public enum PrettyOptions
 
 public sealed class OutputFormatter(IServiceProvider serviceProvider, ILogger<OutputFormatter> logger) : IOutputFormatter
 {
-    private readonly IServiceProvider _serviceProvider = serviceProvider;
-    private readonly ILogger<OutputFormatter> _logger = logger;
+    private static readonly Option<PrettyOptions> PrettyOption = new("--pretty")
+    {
+        Description = "pretty output",
+        DefaultValueFactory = _ => PrettyOptions.All
+    };
 
-    private static readonly Option<PrettyOptions> PrettyOption = new("--pretty", () => PrettyOptions.All,
-        "pretty output");
-
-    private static readonly Option<bool> QuietOption = new(["--quiet", "-q"], "quiet mode, output nothing");
+    private static readonly Option<bool> QuietOption = new("--quiet", "-q")
+    {
+        Description = "quiet mode, output nothing"
+    };
 
     public static readonly Option<bool> OfflineOption =
-        new("--offline", "offline mode, would not send the request, just print request info");
+        new("--offline", "--dry-run")
+        {
+            Description = "offline mode, would not send the request, just print request info"
+        };
 
     private static readonly Option<bool> OutputHeadersOption =
-        new(["-h", "--headers"], "output response headers only");
+        new("-h", "--headers")
+        {
+            Description = "output response headers only"
+        };
 
     private static readonly Option<bool> OutputBodyOption =
-        new(["-b", "--body"], "output response headers and response body only");
+        new("-b", "--body")
+        {
+            Description = "output response headers and response body only"
+        };
 
-    private static readonly Option<bool> OutputVerboseOption = new(["-v", "--verbose"],
-        "output request/response, response headers and response body");
+    private static readonly Option<bool> OutputVerboseOption = new("-v", "--verbose")
+    {
+        Description = "output request/response, response headers and response body"
+    };
 
-    private static readonly Option<string> OutputPrintModeOption = new(["-p", "--print"],
-        "print mode, output specific info,H:request headers,B:request body,h:response headers,b:response body");
+    private static readonly Option<string> OutputPrintModeOption = new("-p", "--print")
+    {
+        Description =
+            "print mode, output specific info,H:request headers,B:request body,h:response headers,b:response body"
+    };
 
     public Option[] SupportedOptions() =>
     [
@@ -86,7 +103,7 @@ public sealed class OutputFormatter(IServiceProvider serviceProvider, ILogger<Ou
         }
         else if (requestModel.ParseResult.HasOption(OutputPrintModeOption))
         {
-            var mode = requestModel.ParseResult.GetValueForOption(OutputPrintModeOption);
+            var mode = requestModel.ParseResult.GetValue(OutputPrintModeOption);
             if (!string.IsNullOrEmpty(mode))
                 outputFormat = mode.Select(m => m switch
                     {
@@ -116,7 +133,7 @@ public sealed class OutputFormatter(IServiceProvider serviceProvider, ILogger<Ou
     private static string GetCommonOutput(HttpContext httpContext, OutputFormat outputFormat)
     {
         var requestModel = httpContext.Request;
-        var prettyOption = requestModel.ParseResult.GetValueForOption(PrettyOption);
+        var prettyOption = requestModel.ParseResult.GetValue(PrettyOption);
         var output = new StringBuilder();
         if (outputFormat.HasFlag(OutputFormat.RequestHeaders))
         {
@@ -181,14 +198,14 @@ public sealed class OutputFormatter(IServiceProvider serviceProvider, ILogger<Ou
 
         try
         {
-            var exporterSelector = _serviceProvider.GetRequiredService<ILoadTestExporterSelector>();
+            var exporterSelector = serviceProvider.GetRequiredService<ILoadTestExporterSelector>();
             var exporter = exporterSelector.Select();
             if (exporter is not null)
                 await exporter.Export(httpContext, responseList);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Export load test result failed");
+            logger.LogError(ex, "Export load test result failed");
         }
 
         return $@"{GetCommonOutput(httpContext, outputFormat & OutputFormat.RequestInfo)}

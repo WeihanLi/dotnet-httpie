@@ -10,16 +10,32 @@ namespace HTTPie.Middleware;
 
 public sealed class DownloadMiddleware : IResponseMiddleware
 {
-    public static readonly Option<bool> DownloadOption = new(["-d", "--download"], "Download file");
+    public static readonly Option<bool> DownloadOption = new("-d", "--download")
+    {
+        Description = "Download file"
+    };
 
     private static readonly Option<bool> ContinueOption =
-        new(["-c", "--continue"], "Download file using append mode");
+        new("-c", "--continue", "--append")
+        {
+            Description = "Download file using append mode"
+        };
 
-    private static readonly Option<string> OutputOption = new(["-o", "--output"], "Output file path");
-    private static readonly Option<string> CheckSumOption = new(["--checksum"], "Checksum to validate");
+    private static readonly Option<string> OutputOption = new("-o", "--output")
+    {
+        Description = "Output file path"
+    };
+    private static readonly Option<string> CheckSumOption = new("--checksum")
+    {
+        Description = "Checksum to validate"
+    };
 
     private static readonly Option<HashType> CheckSumAlgOption =
-        new(["--checksum-alg"], () => HashType.SHA1, "Checksum hash algorithm type");
+        new("--checksum-alg")
+        {
+            Description = "Checksum hash algorithm type",
+            DefaultValueFactory = _ => HashType.SHA1
+        };
 
     public Option[] SupportedOptions()
     {
@@ -35,7 +51,7 @@ public sealed class DownloadMiddleware : IResponseMiddleware
             return;
         }
 
-        var output = context.Request.ParseResult.GetValueForOption(OutputOption);
+        var output = context.Request.ParseResult.GetValue(OutputOption);
         if (string.IsNullOrWhiteSpace(output))
         {
             if (context.Response.Headers.TryGetValue(Constants.ContentDispositionHeaderName,
@@ -62,10 +78,10 @@ public sealed class DownloadMiddleware : IResponseMiddleware
             await File.WriteAllBytesAsync(fileName, context.Response.Bytes).ConfigureAwait(false);
         }
 
-        var checksum = context.Request.ParseResult.GetValueForOption(CheckSumOption);
+        var checksum = context.Request.ParseResult.GetValue(CheckSumOption);
         if (checksum.IsNotNullOrWhiteSpace())
         {
-            var checksumAlgType = context.Request.ParseResult.GetValueForOption(CheckSumAlgOption);
+            var checksumAlgType = context.Request.ParseResult.GetValue(CheckSumAlgOption);
             var calculatedValue = HashHelper.GetHashedString(checksumAlgType, context.Response.Bytes);
             var checksumMatched = calculatedValue.EqualsIgnoreCase(checksum);
             context.Response.Headers.TryAdd(Constants.ResponseCheckSumValueHeaderName, calculatedValue);

@@ -3,14 +3,21 @@
 
 using HTTPie.Abstractions;
 using HTTPie.Models;
+using HTTPie.Utilities;
 using System.Net;
 
 namespace HTTPie.Middleware;
 
 public sealed class ProxyMiddleware(HttpRequestModel requestModel) : IHttpHandlerMiddleware
 {
-    private static readonly Option<string> ProxyOption = new("--proxy", "Send request with proxy");
-    private static readonly Option<bool> NoProxyOption = new("--no-proxy", "Disable proxy");
+    private static readonly Option<string> ProxyOption = new("--proxy")
+    {
+        Description = "Send request with proxy"
+    };
+    private static readonly Option<bool> NoProxyOption = new("--no-proxy")
+    {
+        Description = "Disable proxy"
+    };
 
     public Option[] SupportedOptions()
     {
@@ -26,7 +33,7 @@ public sealed class ProxyMiddleware(HttpRequestModel requestModel) : IHttpHandle
         }
         else
         {
-            var proxyValue = requestModel.ParseResult.GetValueForOption(ProxyOption);
+            var proxyValue = requestModel.ParseResult.GetValue(ProxyOption);
             if (Uri.TryCreate(proxyValue, UriKind.Absolute, out var proxyUri))
             {
                 httpClientHandler.Proxy = new WebProxy(proxyUri);

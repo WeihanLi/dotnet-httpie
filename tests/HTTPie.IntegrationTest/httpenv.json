@@ -1,4 +1,7 @@
 ﻿{
+  "$shared": {
+    "name": "shared"
+  },
   "test": {
     "name": "test"
   }

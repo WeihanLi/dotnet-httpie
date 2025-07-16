@@ -2,11 +2,12 @@
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
+using HTTPie.Implement;
+using HTTPie.Middleware;
 using HTTPie.Utilities;
 using Json.Path;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.CommandLine.Invocation;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -17,34 +18,64 @@ namespace HTTPie.Commands;
 
 public sealed class ExecuteCommand : Command
 {
-    private static readonly Argument<string> FilePathArgument = new("scriptPath", "The script to execute");
+    private static readonly Argument<string> FilePathArgument = new("scriptPath")
+    {
+        Description = "The script to execute",
+        Arity = ArgumentArity.ZeroOrOne
+    };
 
     private static readonly Option<string> EnvironmentTypeOption =
-        new(["--env"], "The environment to execute script");
+        new("--env")
+        {
+            Description = "The environment to execute script"
+        };
 
     private static readonly Option<ExecuteScriptType> ExecuteScriptTypeOption =
-        new(["-t", "--type"], "The script type to execute");
+        new("-t", "--type")
+        {
+            Description = "The script type to execute"
+        };
 
     public ExecuteCommand() : base("exec", "execute http request")
     {
-        AddOption(ExecuteScriptTypeOption);
-        AddOption(EnvironmentTypeOption);
-        AddArgument(FilePathArgument);
+        Options.Add(ExecuteScriptTypeOption);
+        Options.Add(EnvironmentTypeOption);
+        Options.Add(DefaultRequestMiddleware.DebugOption);
+        Options.Add(OutputFormatter.OfflineOption);
+        Arguments.Add(FilePathArgument);
     }
 
-    public async Task InvokeAsync(InvocationContext invocationContext, IServiceProvider serviceProvider)
+    public async Task InvokeAsync(
+        ParseResult parseResult, CancellationToken cancellationToken, IServiceProvider serviceProvider
+        )
     {
-        var filePath = invocationContext.ParseResult.GetValueForArgument(FilePathArgument);
-        if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+        var scriptText = string.Empty;
+        var filePath = parseResult.GetValue(FilePathArgument);
+        if (string.IsNullOrEmpty(filePath))
         {
-            throw new InvalidOperationException("Invalid filePath");
+            // try to read script content from stdin
+            if (ConsoleHelper.HasStandardInput())
+            {
+                scriptText = (await Console.In.ReadToEndAsync(cancellationToken)).Trim();
+            }
+
+            if (string.IsNullOrEmpty(scriptText))
+            {
+                throw new InvalidOperationException("Invalid script to execute");
+            }
+        }
+        else
+        {
+            if (!File.Exists(filePath))
+            {
+                throw new InvalidOperationException($"Invalid filePath {filePath}");
+            }
         }
 
         var logger = serviceProvider.GetRequiredService<ILogger>();
         var requestExecutor = serviceProvider.GetRequiredService<IRawHttpRequestExecutor>();
-        var cancellationToken = invocationContext.GetCancellationToken();
-        var type = invocationContext.ParseResult.GetValueForOption(ExecuteScriptTypeOption);
-        var environment = invocationContext.ParseResult.GetValueForOption(EnvironmentTypeOption);
+        var type = parseResult.GetValue(ExecuteScriptTypeOption);
+        var environment = parseResult.GetValue(EnvironmentTypeOption);
         var parser = type switch
         {
             ExecuteScriptType.Http => serviceProvider.GetRequiredService<IHttpParser>(),
@@ -52,23 +83,36 @@ public sealed class ExecuteCommand : Command
             _ => throw new InvalidOperationException($"Not supported request type: {type}")
         };
         parser.Environment = environment;
-        logger.LogDebug("Executing {ScriptType} http request {ScriptPath} with {ScriptExecutor}",
-            type, filePath, parser.GetType().Name);
-        await InvokeRequest(parser, requestExecutor, filePath, cancellationToken);
+        logger.LogDebug(
+            "Executing {ScriptType} http request with scriptPath: [{ScriptPath}], scriptText: ({ScriptText}), environment: {Environment} via {ScriptExecutor}",
+            type, filePath, scriptText, environment, parser.GetType().Name
+            );
+
+        var offline = parseResult.GetValue(OutputFormatter.OfflineOption);
+        await InvokeRequest(parser, requestExecutor, scriptText, filePath, offline, cancellationToken);
     }
 
-    private static async Task InvokeRequest(IHttpParser httpParser, IRawHttpRequestExecutor requestExecutor,
-        string filePath, CancellationToken cancellationToken)
+    private static async Task InvokeRequest(
+        IHttpParser httpParser, IRawHttpRequestExecutor requestExecutor, string scriptText,
+        string? filePath, bool offline, CancellationToken cancellationToken)
     {
         var responseList = new Dictionary<string, HttpResponseMessage>();
+
         try
         {
-            await foreach (var request in httpParser.ParseFileAsync(filePath, cancellationToken))
+            var getRequests = string.IsNullOrEmpty(filePath)
+                ? httpParser.ParseScriptAsync(scriptText, cancellationToken)
+                : httpParser.ParseFileAsync(filePath, cancellationToken)
+                ;
+            await foreach (var request in getRequests.WithCancellation(cancellationToken))
             {
                 await EnsureRequestVariableReferenceReplaced(request, responseList);
                 var response = await ExecuteRequest(
-                    requestExecutor, request.RequestMessage, cancellationToken, request.Name
+                    requestExecutor, request.RequestMessage, offline, cancellationToken, request.Name
                     );
+                if (response is null)
+                    continue;
+
                 responseList[request.Name] = response;
             }
         }
@@ -90,9 +134,10 @@ public sealed class ExecuteCommand : Command
         }
     }
 
-    private static async Task<HttpResponseMessage> ExecuteRequest(
+    private static async Task<HttpResponseMessage?> ExecuteRequest(
         IRawHttpRequestExecutor requestExecutor,
         HttpRequestMessage requestMessage,
+        bool offline,
         CancellationToken cancellationToken,
         string? requestName = null)
     {
@@ -101,6 +146,9 @@ public sealed class ExecuteCommand : Command
 
         Console.WriteLine("Request message:");
         Console.WriteLine(await requestMessage.ToRawMessageAsync(cancellationToken));
+        if (offline)
+            return null;
+
         var startTimestamp = Stopwatch.GetTimestamp();
         var response = await requestExecutor.ExecuteAsync(requestMessage, cancellationToken);
         var requestDuration = ProfilerHelper.GetElapsedTime(startTimestamp);

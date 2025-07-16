@@ -17,7 +17,7 @@ public class AuthorizationMiddlewareTest
             .AddLogging()
             .RegisterApplicationServices()
             .BuildServiceProvider();
-        await services.Handle(input, _ => Task.CompletedTask);
+        await services.Handle(input, (_, _) => Task.CompletedTask);
         var httpContext = services.GetRequiredService<HttpContext>();
         var middleware = new AuthorizationMiddleware();
         await middleware.InvokeAsync(httpContext.Request, _ => Task.CompletedTask);
@@ -33,7 +33,7 @@ public class AuthorizationMiddlewareTest
             .AddLogging()
             .RegisterApplicationServices()
             .BuildServiceProvider();
-        await services.Handle(input, _ => Task.CompletedTask);
+        await services.Handle(input, (_, _) => Task.CompletedTask);
         var httpContext = services.GetRequiredService<HttpContext>();
         var middleware = new AuthorizationMiddleware();
         await middleware.InvokeAsync(httpContext.Request, _ => Task.CompletedTask);
@@ -54,7 +54,7 @@ public class AuthorizationMiddlewareTest
             .AddLogging()
             .RegisterApplicationServices()
             .BuildServiceProvider();
-        await services.Handle(input, _ => Task.CompletedTask);
+        await services.Handle(input, (_, _) => Task.CompletedTask);
         var httpContext = services.GetRequiredService<HttpContext>();
         var middleware = new AuthorizationMiddleware();
         await middleware.InvokeAsync(httpContext.Request, _ => Task.CompletedTask);

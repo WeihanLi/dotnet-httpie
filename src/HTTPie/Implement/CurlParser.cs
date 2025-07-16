@@ -5,16 +5,60 @@ using HTTPie.Abstractions;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using System.Runtime.CompilerServices;
+using CommandLineParser = WeihanLi.Common.Helpers.CommandLineParser;
 
 namespace HTTPie.Implement;
 
-public sealed class CurlParser : ICurlParser
+public sealed class CurlParser : AbstractHttpRequestParser, ICurlParser
 {
-    public string? Environment { get; set; }
+    public override async IAsyncEnumerable<HttpRequestMessageWrapper> ParseScriptAsync
+        (string script, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Guard.NotNullOrEmpty(script);
+        await foreach (var request in ParseHttpRequestsAsync(
+                           script.Split("\n###\n").ToAsyncEnumerable(), null,
+                           cancellationToken))
+        {
+            yield return request;
+        }
+    }
 
-    public Task<HttpRequestMessage> ParseScriptAsync(string curlScript, CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<HttpRequestMessageWrapper> ParseFileAsync(
+        string filePath, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Guard.NotNullOrEmpty(filePath);
+        var script = await File.ReadAllTextAsync(filePath, cancellationToken);
+        await foreach (var request in ParseHttpRequestsAsync(
+                           script.Split("\n###\n").ToAsyncEnumerable(), filePath,
+                           cancellationToken))
+        {
+            yield return request;
+        }
+    }
+
+    protected override async IAsyncEnumerable<HttpRequestMessageWrapper> ParseHttpRequestsAsync
+        (
+            IAsyncEnumerable<string> chunks,
+            string? filePath,
+            [EnumeratorCancellation] CancellationToken cancellationToken
+        )
+    {
+        var index = 0;
+        await foreach (var chunk in chunks.WithCancellation(cancellationToken))
+        {
+            var request = ParseCurlScript(chunk, cancellationToken);
+            var requestName = $"request#{index}";
+            index++;
+            yield return new HttpRequestMessageWrapper(requestName, request);
+        }
+    }
+
+    private static HttpRequestMessage ParseCurlScript(
+        string curlScript, CancellationToken cancellationToken = default
+        )
     {
         Guard.NotNullOrEmpty(curlScript);
+        cancellationToken.ThrowIfCancellationRequested();
         var normalizedScript = curlScript
             .Replace("\\\n", " ")
             .Replace("\\\r\n", " ")
@@ -26,7 +70,9 @@ public sealed class CurlParser : ICurlParser
             throw new ArgumentException($"Invalid curl script: {curlScript}", nameof(curlScript));
         }
 
-        var splits = CommandLineParser.ParseLine(normalizedScript).ToArray();
+        var splits = CommandLineParser.ParseLine(normalizedScript)
+            .Where(s => !string.IsNullOrEmpty(s))
+            .ToArray();
         string requestMethod = string.Empty, requestBody = string.Empty;
         Uri? uri = null;
         var headers = new List<KeyValuePair<string, string>>();
@@ -76,15 +122,20 @@ public sealed class CurlParser : ICurlParser
                 {
                     var header = splits[i].Trim('\'', '"');
                     var headerSplits = header.Split(':', 2, StringSplitOptions.TrimEntries);
-                    headers.Add(new KeyValuePair<string, string>(headerSplits[0],
-                        headerSplits.Length > 1 ? headerSplits[1] : string.Empty));
+                    if (headerSplits.Length == 2)
+                    {
+                        headers.Add(new KeyValuePair<string, string>(headerSplits[0], headerSplits[1].Trim()));
+                    }
                 }
             }
         }
 
-        if (string.IsNullOrEmpty(requestMethod)) requestMethod = "GET";
+        if (string.IsNullOrEmpty(requestMethod))
+        {
+            requestMethod = requestBody.IsNullOrEmpty() ? HttpMethod.Get.Method : HttpMethod.Post.Method;
+        }
 
-        if (uri is null) throw new ArgumentException("Url info not found");
+        if (uri is null) throw new ArgumentException("Request url info not found");
 
         var request = new HttpRequestMessage(new HttpMethod(requestMethod), uri);
         // request body
@@ -98,23 +149,10 @@ public sealed class CurlParser : ICurlParser
         {
             request.TryAddHeader(
                 headerGroup.Key,
-                headerGroup.Select(x => x.Value).StringJoin(",")
+                headerGroup.Select(x => x.Value).StringJoin(",").Trim(',', ' ')
             );
         }
 
-        return request.WrapTask();
-    }
-
-    public async IAsyncEnumerable<HttpRequestMessageWrapper> ParseFileAsync(string filePath,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        var scripts = await File.ReadAllTextAsync(filePath, cancellationToken);
-        var index = 0;
-        foreach (var script in scripts.Split("\n###\n"))
-        {
-            var request = await ParseScriptAsync(script, cancellationToken);
-            yield return new HttpRequestMessageWrapper($"request#{index}", request);
-            index++;
-        }
+        return request;
     }
 }

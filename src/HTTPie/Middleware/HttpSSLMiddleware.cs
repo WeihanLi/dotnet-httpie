@@ -3,6 +3,7 @@
 
 using HTTPie.Abstractions;
 using HTTPie.Models;
+using HTTPie.Utilities;
 using System.Security.Authentication;
 
 namespace HTTPie.Middleware;
@@ -10,10 +11,16 @@ namespace HTTPie.Middleware;
 public sealed class HttpSslMiddleware(HttpRequestModel requestModel) : IHttpHandlerMiddleware
 {
     private static readonly Option<bool> DisableSslVerifyOption =
-        new(["--no-verify", "--verify=no"], "disable ssl cert check");
+        new("--no-verify")
+        {
+            Description = "disable ssl cert check"
+        };
 
     private static readonly Option<SslProtocols?> SslProtocalsOption =
-        new("--ssl", "specific the ssl protocols, ssl3, tls, tls1.1, tls1.2, tls1.3");
+        new("--ssl")
+        {
+            Description = "specific the ssl protocols, ssl3, tls, tls1.1, tls1.2, tls1.3"
+        };
 
     public Option[] SupportedOptions() => [DisableSslVerifyOption, SslProtocalsOption];
 
@@ -26,7 +33,7 @@ public sealed class HttpSslMiddleware(HttpRequestModel requestModel) : IHttpHand
         }
 
         // sslProtocols
-        var sslOption = requestModel.ParseResult.GetValueForOption(SslProtocalsOption);
+        var sslOption = requestModel.ParseResult.GetValue(SslProtocalsOption);
         if (sslOption.HasValue)
         {
             httpClientHandler.SslProtocols = sslOption.Value;
