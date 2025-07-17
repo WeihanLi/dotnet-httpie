@@ -110,7 +110,6 @@ public class RequestDataMiddlewareTest(IServiceProvider serviceProvider)
     }
 
     [Theory]
-    [Theory]
     [InlineData("httpbin.org/post [0]=first [1]=second", """["first","second"]""")]
     [InlineData("httpbin.org/post []=first []=second", """["first","second"]""")]
     [InlineData("httpbin.org/post [0]=first [2]=third", """["first",null,"third"]""")]
