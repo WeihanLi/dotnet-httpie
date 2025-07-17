@@ -96,7 +96,7 @@ public sealed class DownloadMiddleware : IResponseMiddleware
     {
         const string filenameSeparator = "filename=";
 
-        var value = headerValues.ToString().Split([';'],
+        var value = headerValues.ToString().Split(new char[] {';'},
                 StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
             .FirstOrDefault(x => x.StartsWith(filenameSeparator));
         if (value is null || value.Length == filenameSeparator.Length)
