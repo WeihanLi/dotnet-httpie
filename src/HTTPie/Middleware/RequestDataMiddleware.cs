@@ -196,7 +196,13 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
                 if (currentNode is JsonArray currentArray)
                 {
                     // We're working with an array, need to access by index
-                    if (int.TryParse(key.Name, out int index))
+                    if (key.Name == "root" || string.IsNullOrEmpty(key.Name))
+                    {
+                        // Array append operation - add new object to continue navigation
+                        currentArray.Add(new JsonObject());
+                        currentNode = currentArray[^1]!;
+                    }
+                    else if (int.TryParse(key.Name, out int index))
                     {
                         while (currentArray.Count <= index)
                         {

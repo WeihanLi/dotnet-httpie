@@ -79,13 +79,16 @@ public class RequestDataMiddlewareTest(IServiceProvider serviceProvider)
     }
 
     [Theory]
-    [InlineData("httpbin.org/post platform[name]=HTTPie", @"{""platform"":{""name"":""HTTPie""}}")]
+    [InlineData("httpbin.org/post platform[name]=HTTPie", """{"platform":{"name":"HTTPie"}}""")]
     [InlineData("httpbin.org/post platform[about][mission]=MakeAPIsSimple platform[about][stars]:=54000", 
-                @"{""platform"":{""about"":{""mission"":""MakeAPIsSimple"",""stars"":54000}}}")]
+                """{"platform":{"about":{"mission":"MakeAPIsSimple","stars":54000}}}""")]
     [InlineData("httpbin.org/post platform[apps][]=Terminal platform[apps][]=Desktop", 
-                @"{""platform"":{""apps"":[""Terminal"",""Desktop""]}}")]
+                """{"platform":{"apps":["Terminal","Desktop"]}}""")]
     [InlineData("httpbin.org/post obj[key]=value nested[deep][prop]:=true", 
-                @"{""obj"":{""key"":""value""},""nested"":{""deep"":{""prop"":true}}}")]
+                """{"obj":{"key":"value"},"nested":{"deep":{"prop":true}}}""")]
+    [InlineData("httpbin.org/post [][name]=test", """[{"name":"test"}]""")]
+    [InlineData("httpbin.org/post [][name]=test [][age]:=25", """[{"name":"test"},{"age":25}]""")]
+    [InlineData("httpbin.org/post [][name]=first [][name]=second", """[{"name":"first"},{"name":"second"}]""")]
     public async Task NestedJsonTest(string input, string expectedJsonPattern)
     {
         var services = new ServiceCollection()
@@ -107,10 +110,11 @@ public class RequestDataMiddlewareTest(IServiceProvider serviceProvider)
     }
 
     [Theory]
-    [InlineData("httpbin.org/post [0]=first [1]=second", @"[""first"",""second""]")]
-    [InlineData("httpbin.org/post []=first []=second", @"[""first"",""second""]")]
-    [InlineData("httpbin.org/post [0]=first [2]=third", @"[""first"",null,""third""]")]
-    [InlineData("httpbin.org/post [0]:=123 [1]:=true", @"[123,true]")]
+    [Theory]
+    [InlineData("httpbin.org/post [0]=first [1]=second", """["first","second"]""")]
+    [InlineData("httpbin.org/post []=first []=second", """["first","second"]""")]
+    [InlineData("httpbin.org/post [0]=first [2]=third", """["first",null,"third"]""")]
+    [InlineData("httpbin.org/post [0]:=123 [1]:=true", """[123,true]""")]
     public async Task RootArrayJsonTest(string input, string expectedJsonPattern)
     {
         var services = new ServiceCollection()
