@@ -72,15 +72,14 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
                     if (dataInput.Any(x => x.IndexOf('[') > 0))
                     {
                         // nested json exists
-                        JsonNode jsonNode = dataInput[0].StartsWith("[]") ? new JsonObject() : new JsonArray();
+                        var rootJsonObject = new JsonObject();
+                        
                         foreach (var item in dataInput)
                         {
-                            var idx = item.IndexOf('[');
-                            if (idx > -1)
-                            {
-
-                            }
+                            ParseNestedJsonItem(item, rootJsonObject);
                         }
+
+                        requestModel.Body = rootJsonObject.ToJsonString(Helpers.JsonSerializerOptions);
                     }
                     else
                     {
@@ -131,4 +130,140 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
 
         return next(requestModel);
     }
+
+    private static void ParseNestedJsonItem(string item, JsonObject rootObject)
+    {
+        // Determine if this is a raw value (:=) or string value (=)
+        var isRawValue = item.Contains(":=");
+        var separator = isRawValue ? ":=" : "=";
+        var separatorIndex = item.IndexOf(separator, StringComparison.Ordinal);
+        
+        if (separatorIndex <= 0) return;
+
+        var path = item[..separatorIndex];
+        var value = item[(separatorIndex + separator.Length)..];
+
+        // Parse the path to extract keys
+        var keys = ParsePropertyPath(path);
+        if (keys.Count == 0) return;
+
+        // Navigate/create the nested structure
+        JsonNode currentNode = rootObject;
+        
+        for (int i = 0; i < keys.Count - 1; i++)
+        {
+            var key = keys[i];
+            
+            if (key.IsArrayIndex)
+            {
+                // Handle array navigation
+                var arrayNode = currentNode.AsObject();
+                if (!arrayNode.ContainsKey(key.Name))
+                {
+                    arrayNode[key.Name] = new JsonArray();
+                }
+                currentNode = arrayNode[key.Name]!;
+            }
+            else
+            {
+                // Handle object navigation
+                var objectNode = currentNode.AsObject();
+                if (!objectNode.ContainsKey(key.Name))
+                {
+                    objectNode[key.Name] = new JsonObject();
+                }
+                currentNode = objectNode[key.Name]!;
+            }
+        }
+
+        // Set the final value
+        var finalKey = keys[^1];
+        if (finalKey.IsArrayIndex)
+        {
+            // Add to array
+            var arrayNode = currentNode.AsObject();
+            if (!arrayNode.ContainsKey(finalKey.Name))
+            {
+                arrayNode[finalKey.Name] = new JsonArray();
+            }
+            var array = arrayNode[finalKey.Name]!.AsArray();
+            array.Add(CreateJsonValue(value, isRawValue));
+        }
+        else
+        {
+            // Set object property
+            var objectNode = currentNode.AsObject();
+            objectNode[finalKey.Name] = CreateJsonValue(value, isRawValue);
+        }
+    }
+
+    private static List<PropertyKey> ParsePropertyPath(string path)
+    {
+        var keys = new List<PropertyKey>();
+        var current = 0;
+        
+        while (current < path.Length)
+        {
+            var bracketIndex = path.IndexOf('[', current);
+            
+            if (bracketIndex == -1)
+            {
+                // No more brackets, take the rest as a simple property
+                if (current < path.Length)
+                {
+                    keys.Add(new PropertyKey(path[current..], false));
+                }
+                break;
+            }
+            
+            // Add the property name before the bracket
+            if (bracketIndex > current)
+            {
+                keys.Add(new PropertyKey(path[current..bracketIndex], false));
+            }
+            
+            // Find the closing bracket
+            var closingBracket = path.IndexOf(']', bracketIndex);
+            if (closingBracket == -1) break; // Malformed path
+            
+            var bracketContent = path[(bracketIndex + 1)..closingBracket];
+            
+            if (string.IsNullOrEmpty(bracketContent))
+            {
+                // Empty brackets indicate array append operation
+                keys.Add(new PropertyKey(keys.Count > 0 ? keys[^1].Name : "root", true));
+                keys.RemoveAt(keys.Count - 2); // Remove the duplicate key
+            }
+            else
+            {
+                // Named property in brackets
+                keys.Add(new PropertyKey(bracketContent, false));
+            }
+            
+            current = closingBracket + 1;
+        }
+        
+        return keys;
+    }
+
+    private static JsonNode CreateJsonValue(string value, bool isRawValue)
+    {
+        if (!isRawValue)
+        {
+            return JsonValue.Create(value);
+        }
+
+        // Try to parse as JSON for raw values
+        try
+        {
+            return JsonNode.Parse(value) ?? JsonValue.Create(value);
+        }
+        catch
+        {
+            // If parsing fails, treat as string
+            return JsonValue.Create(value);
+        }
+    }
+
+    private record PropertyKey(string Name, bool IsArrayIndex);
 }
