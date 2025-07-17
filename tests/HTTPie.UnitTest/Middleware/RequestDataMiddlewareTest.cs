@@ -80,11 +80,11 @@ public class RequestDataMiddlewareTest(IServiceProvider serviceProvider)
 
     [Theory]
     [InlineData("httpbin.org/post platform[name]=HTTPie", """{"platform":{"name":"HTTPie"}}""")]
-    [InlineData("httpbin.org/post platform[about][mission]=MakeAPIsSimple platform[about][stars]:=54000", 
+    [InlineData("httpbin.org/post platform[about][mission]=MakeAPIsSimple platform[about][stars]:=54000",
                 """{"platform":{"about":{"mission":"MakeAPIsSimple","stars":54000}}}""")]
-    [InlineData("httpbin.org/post platform[apps][]=Terminal platform[apps][]=Desktop", 
+    [InlineData("httpbin.org/post platform[apps][]=Terminal platform[apps][]=Desktop",
                 """{"platform":{"apps":["Terminal","Desktop"]}}""")]
-    [InlineData("httpbin.org/post obj[key]=value nested[deep][prop]:=true", 
+    [InlineData("httpbin.org/post obj[key]=value nested[deep][prop]:=true",
                 """{"obj":{"key":"value"},"nested":{"deep":{"prop":true}}}""")]
     [InlineData("httpbin.org/post [][name]=test", """[{"name":"test"}]""")]
     [InlineData("httpbin.org/post [][name]=test [][age]:=25", """[{"name":"test"},{"age":25}]""")]
@@ -99,13 +99,13 @@ public class RequestDataMiddlewareTest(IServiceProvider serviceProvider)
         var httpContext = services.GetRequiredService<HttpContext>();
         var middleware = new RequestDataMiddleware(httpContext);
         await middleware.InvokeAsync(httpContext.Request, _ => Task.CompletedTask);
-        
+
         Assert.NotNull(httpContext.Request.Body);
-        
+
         // Parse both actual and expected JSON to compare structure
         var actualJson = JsonNode.Parse(httpContext.Request.Body);
         var expectedJson = JsonNode.Parse(expectedJsonPattern);
-        
+
         Assert.Equal(expectedJson?.ToJsonString(), actualJson?.ToJsonString());
     }
 
@@ -124,13 +124,13 @@ public class RequestDataMiddlewareTest(IServiceProvider serviceProvider)
         var httpContext = services.GetRequiredService<HttpContext>();
         var middleware = new RequestDataMiddleware(httpContext);
         await middleware.InvokeAsync(httpContext.Request, _ => Task.CompletedTask);
-        
+
         Assert.NotNull(httpContext.Request.Body);
-        
+
         // Parse both actual and expected JSON to compare structure
         var actualJson = JsonNode.Parse(httpContext.Request.Body);
         var expectedJson = JsonNode.Parse(expectedJsonPattern);
-        
+
         Assert.Equal(expectedJson?.ToJsonString(), actualJson?.ToJsonString());
     }
 }

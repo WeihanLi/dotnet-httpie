@@ -73,7 +73,7 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
                     {
                         // nested json exists or root array
                         JsonNode rootNode;
-                        
+
                         // Check if all inputs start with '[' indicating root array
                         if (dataInput.All(x => x.StartsWith('[')))
                         {
@@ -83,7 +83,7 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
                         {
                             rootNode = new JsonObject();
                         }
-                        
+
                         foreach (var item in dataInput)
                         {
                             ParseNestedJsonItem(item, rootNode);
@@ -147,7 +147,7 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
         var isRawValue = item.Contains(":=");
         var separator = isRawValue ? ":=" : "=";
         var separatorIndex = item.IndexOf(separator, StringComparison.Ordinal);
-        
+
         if (separatorIndex <= 0) return;
 
         var path = item[..separatorIndex];
@@ -185,11 +185,11 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
 
         // Navigate/create the nested structure
         JsonNode currentNode = rootNode;
-        
+
         for (int i = 0; i < keys.Count - 1; i++)
         {
             var key = keys[i];
-            
+
             if (key.IsArrayIndex)
             {
                 // Handle array navigation
@@ -281,15 +281,15 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
     {
         var keys = new List<PropertyKey>();
         var current = 0;
-        
+
         // Handle root array case where path starts with [
         if (path.StartsWith('['))
         {
             var closingBracket = path.IndexOf(']', 1);
             if (closingBracket == -1) return keys; // Malformed
-            
+
             var bracketContent = path[1..closingBracket];
-            
+
             if (string.IsNullOrEmpty(bracketContent))
             {
                 // Empty brackets indicate array append operation []
@@ -300,14 +300,14 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
                 // Indexed array access [0], [1], etc.
                 keys.Add(new PropertyKey(bracketContent, true));
             }
-            
+
             current = closingBracket + 1;
         }
-        
+
         while (current < path.Length)
         {
             var bracketIndex = path.IndexOf('[', current);
-            
+
             if (bracketIndex == -1)
             {
                 // No more brackets, take the rest as a simple property
@@ -317,19 +317,19 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
                 }
                 break;
             }
-            
+
             // Add the property name before the bracket
             if (bracketIndex > current)
             {
                 keys.Add(new PropertyKey(path[current..bracketIndex], false));
             }
-            
+
             // Find the closing bracket
             var closingBracket = path.IndexOf(']', bracketIndex);
             if (closingBracket == -1) break; // Malformed path
-            
+
             var bracketContent = path[(bracketIndex + 1)..closingBracket];
-            
+
             if (string.IsNullOrEmpty(bracketContent))
             {
                 // Empty brackets indicate array append operation
@@ -341,10 +341,10 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
                 // Named property in brackets
                 keys.Add(new PropertyKey(bracketContent, false));
             }
-            
+
             current = closingBracket + 1;
         }
-        
+
         return keys;
     }
 
