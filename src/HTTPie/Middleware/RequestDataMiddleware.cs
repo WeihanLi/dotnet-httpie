@@ -69,17 +69,27 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
                 }
                 else
                 {
-                    if (dataInput.Any(x => x.IndexOf('[') > 0))
+                    if (dataInput.Any(x => x.IndexOf('[') > 0) || dataInput.Any(x => x.StartsWith('[')))
                     {
-                        // nested json exists
-                        var rootJsonObject = new JsonObject();
+                        // nested json exists or root array
+                        JsonNode rootNode;
+                        
+                        // Check if all inputs start with '[' indicating root array
+                        if (dataInput.All(x => x.StartsWith('[')))
+                        {
+                            rootNode = new JsonArray();
+                        }
+                        else
+                        {
+                            rootNode = new JsonObject();
+                        }
                         
                         foreach (var item in dataInput)
                         {
-                            ParseNestedJsonItem(item, rootJsonObject);
+                            ParseNestedJsonItem(item, rootNode);
                         }
 
-                        requestModel.Body = rootJsonObject.ToJsonString(Helpers.JsonSerializerOptions);
+                        requestModel.Body = rootNode.ToJsonString(Helpers.JsonSerializerOptions);
                     }
                     else
                     {
@@ -131,7 +141,7 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
         return next(requestModel);
     }
 
-    private static void ParseNestedJsonItem(string item, JsonObject rootObject)
+    private static void ParseNestedJsonItem(string item, JsonNode rootNode)
     {
         // Determine if this is a raw value (:=) or string value (=)
         var isRawValue = item.Contains(":=");
@@ -147,8 +157,34 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
         var keys = ParsePropertyPath(path);
         if (keys.Count == 0) return;
 
+        // Handle root array case
+        if (rootNode is JsonArray rootArray && keys.Count == 1 && keys[0].IsArrayIndex)
+        {
+            // Direct array access like [0]= or []=
+            var rootArrayKey = keys[0];
+            if (rootArrayKey.Name == "root" || string.IsNullOrEmpty(rootArrayKey.Name))
+            {
+                // Array append operation []= 
+                rootArray.Add(CreateJsonValue(value, isRawValue));
+            }
+            else
+            {
+                // Indexed array access [0]= 
+                if (int.TryParse(rootArrayKey.Name, out int index))
+                {
+                    // Extend array if necessary
+                    while (rootArray.Count <= index)
+                    {
+                        rootArray.Add(JsonValue.Create((string?)null));
+                    }
+                    rootArray[index] = CreateJsonValue(value, isRawValue);
+                }
+            }
+            return;
+        }
+
         // Navigate/create the nested structure
-        JsonNode currentNode = rootObject;
+        JsonNode currentNode = rootNode;
         
         for (int i = 0; i < keys.Count - 1; i++)
         {
@@ -157,22 +193,45 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
             if (key.IsArrayIndex)
             {
                 // Handle array navigation
-                var arrayNode = currentNode.AsObject();
-                if (!arrayNode.ContainsKey(key.Name))
+                if (currentNode is JsonArray currentArray)
                 {
-                    arrayNode[key.Name] = new JsonArray();
+                    // We're working with an array, need to access by index
+                    if (int.TryParse(key.Name, out int index))
+                    {
+                        while (currentArray.Count <= index)
+                        {
+                            currentArray.Add(new JsonObject());
+                        }
+                        currentNode = currentArray[index]!;
+                    }
                 }
-                currentNode = arrayNode[key.Name]!;
+                else
+                {
+                    var objectNode = currentNode.AsObject();
+                    if (!objectNode.ContainsKey(key.Name))
+                    {
+                        objectNode[key.Name] = new JsonArray();
+                    }
+                    currentNode = objectNode[key.Name]!;
+                }
             }
             else
             {
                 // Handle object navigation
-                var objectNode = currentNode.AsObject();
-                if (!objectNode.ContainsKey(key.Name))
+                if (currentNode is JsonArray currentArray)
                 {
-                    objectNode[key.Name] = new JsonObject();
+                    // Convert array to object if needed (shouldn't happen in normal usage)
+                    throw new InvalidOperationException("Cannot access object property on array");
                 }
-                currentNode = objectNode[key.Name]!;
+                else
+                {
+                    var objectNode = currentNode.AsObject();
+                    if (!objectNode.ContainsKey(key.Name))
+                    {
+                        objectNode[key.Name] = new JsonObject();
+                    }
+                    currentNode = objectNode[key.Name]!;
+                }
             }
         }
 
@@ -181,19 +240,34 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
         if (finalKey.IsArrayIndex)
         {
             // Add to array
-            var arrayNode = currentNode.AsObject();
-            if (!arrayNode.ContainsKey(finalKey.Name))
+            if (currentNode is JsonArray currentArray)
             {
-                arrayNode[finalKey.Name] = new JsonArray();
+                // Direct array access
+                currentArray.Add(CreateJsonValue(value, isRawValue));
             }
-            var array = arrayNode[finalKey.Name]!.AsArray();
-            array.Add(CreateJsonValue(value, isRawValue));
+            else
+            {
+                var objectNode = currentNode.AsObject();
+                if (!objectNode.ContainsKey(finalKey.Name))
+                {
+                    objectNode[finalKey.Name] = new JsonArray();
+                }
+                var array = objectNode[finalKey.Name]!.AsArray();
+                array.Add(CreateJsonValue(value, isRawValue));
+            }
         }
         else
         {
             // Set object property
-            var objectNode = currentNode.AsObject();
-            objectNode[finalKey.Name] = CreateJsonValue(value, isRawValue);
+            if (currentNode is JsonArray)
+            {
+                throw new InvalidOperationException("Cannot set object property on array");
+            }
+            else
+            {
+                var objectNode = currentNode.AsObject();
+                objectNode[finalKey.Name] = CreateJsonValue(value, isRawValue);
+            }
         }
     }
 
@@ -201,6 +275,28 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
     {
         var keys = new List<PropertyKey>();
         var current = 0;
+        
+        // Handle root array case where path starts with [
+        if (path.StartsWith('['))
+        {
+            var closingBracket = path.IndexOf(']', 1);
+            if (closingBracket == -1) return keys; // Malformed
+            
+            var bracketContent = path[1..closingBracket];
+            
+            if (string.IsNullOrEmpty(bracketContent))
+            {
+                // Empty brackets indicate array append operation []
+                keys.Add(new PropertyKey("root", true));
+            }
+            else
+            {
+                // Indexed array access [0], [1], etc.
+                keys.Add(new PropertyKey(bracketContent, true));
+            }
+            
+            current = closingBracket + 1;
+        }
         
         while (current < path.Length)
         {
@@ -232,7 +328,7 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
             {
                 // Empty brackets indicate array append operation
                 keys.Add(new PropertyKey(keys.Count > 0 ? keys[^1].Name : "root", true));
-                keys.RemoveAt(keys.Count - 2); // Remove the duplicate key
+                if (keys.Count > 1) keys.RemoveAt(keys.Count - 2); // Remove the duplicate key
             }
             else
             {

@@ -105,4 +105,29 @@ public class RequestDataMiddlewareTest(IServiceProvider serviceProvider)
         
         Assert.Equal(expectedJson?.ToJsonString(), actualJson?.ToJsonString());
     }
+
+    [Theory]
+    [InlineData("httpbin.org/post [0]=first [1]=second", @"[""first"",""second""]")]
+    [InlineData("httpbin.org/post []=first []=second", @"[""first"",""second""]")]
+    [InlineData("httpbin.org/post [0]=first [2]=third", @"[""first"",null,""third""]")]
+    [InlineData("httpbin.org/post [0]:=123 [1]:=true", @"[123,true]")]
+    public async Task RootArrayJsonTest(string input, string expectedJsonPattern)
+    {
+        var services = new ServiceCollection()
+            .AddLogging()
+            .RegisterApplicationServices()
+            .BuildServiceProvider();
+        await services.Handle(input, (_, _) => Task.CompletedTask);
+        var httpContext = services.GetRequiredService<HttpContext>();
+        var middleware = new RequestDataMiddleware(httpContext);
+        await middleware.InvokeAsync(httpContext.Request, _ => Task.CompletedTask);
+        
+        Assert.NotNull(httpContext.Request.Body);
+        
+        // Parse both actual and expected JSON to compare structure
+        var actualJson = JsonNode.Parse(httpContext.Request.Body);
+        var expectedJson = JsonNode.Parse(expectedJsonPattern);
+        
+        Assert.Equal(expectedJson?.ToJsonString(), actualJson?.ToJsonString());
+    }
 }
