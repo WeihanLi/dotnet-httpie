@@ -16,10 +16,10 @@ using WeihanLi.Common.Http;
 
 namespace HTTPie.Implement;
 
-public abstract class AbstractHttpRequestParser: IHttpParser
+public abstract class AbstractHttpRequestParser : IHttpParser
 {
     public string? Environment { get; set; }
-    
+
     public virtual IAsyncEnumerable<HttpRequestMessageWrapper> ParseScriptAsync(string script, CancellationToken cancellationToken = default)
     {
         var lines = script.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
@@ -30,8 +30,8 @@ public abstract class AbstractHttpRequestParser: IHttpParser
         string filePath, CancellationToken cancellationToken = default
     ) =>
         ParseHttpRequestsAsync(
-            File.ReadLinesAsync(filePath, cancellationToken), 
-            filePath, 
+            File.ReadLinesAsync(filePath, cancellationToken),
+            filePath,
             cancellationToken
         );
 
@@ -47,7 +47,7 @@ public sealed partial class HttpParser(ILogger logger) : AbstractHttpRequestPars
 #if NET8_0
     private readonly ILogger _logger = logger;
 #endif
-    
+
     private const string DotEnvFileName = ".env";
     private const string HttpEnvFileName = "httpenv.json";
     private const string UserHttpEnvFileName = "httpenv.json.user";
@@ -112,7 +112,7 @@ public sealed partial class HttpParser(ILogger logger) : AbstractHttpRequestPars
         var dotEnvVariables = new Dictionary<string, string>();
         var fileScopedVariables = new Dictionary<string, string>();
 
-        var dir =  filePath is null ? Directory.GetCurrentDirectory() : Path.GetDirectoryName(Path.GetFullPath(filePath));
+        var dir = filePath is null ? Directory.GetCurrentDirectory() : Path.GetDirectoryName(Path.GetFullPath(filePath));
         // Load environment variables from .env file
         await LoadEnvVariables(DotEnvFileName, dir, dotEnvVariables);
         if (!string.IsNullOrEmpty(Environment))
@@ -302,9 +302,9 @@ public sealed partial class HttpParser(ILogger logger) : AbstractHttpRequestPars
     {
         var filePath = GetFilePath(fileName, dir);
         if (filePath is null) return;
-        
+
         LogDebugLoadEnvVariablesFromFile(filePath);
-        
+
         await foreach (var line in File.ReadLinesAsync(filePath))
         {
             if (line.IsNullOrWhiteSpace()
@@ -330,7 +330,7 @@ public sealed partial class HttpParser(ILogger logger) : AbstractHttpRequestPars
         await using var jsonContentStream = File.OpenRead(filePath);
         var jsonNode = await JsonNode.ParseAsync(jsonContentStream);
         if (jsonNode is null) return;
-        
+
         // load environment shared variables
         LogDebugLoadVariablesFromEnvFile(filePath);
 
@@ -362,10 +362,10 @@ public sealed partial class HttpParser(ILogger logger) : AbstractHttpRequestPars
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "Load variables from env file {FileName}")]
     private partial void LogDebugLoadVariablesFromEnvFile(string fileName);
-    
+
     [LoggerMessage(Level = LogLevel.Debug, Message = "Load environment variables from {FileName}")]
     private partial void LogDebugLoadEnvVariablesFromFile(string fileName);
-    
+
     private static string? GetFilePath(string fileName, string? dir = null, int depth = 0)
     {
         dir ??= Directory.GetCurrentDirectory();

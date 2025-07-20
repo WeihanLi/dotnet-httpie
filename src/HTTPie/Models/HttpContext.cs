@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 using Newtonsoft.Json;
-using System.CommandLine.Invocation;
 using WeihanLi.Common.Abstractions;
 
 namespace HTTPie.Models;

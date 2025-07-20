@@ -1,8 +1,9 @@
 # dotnet-httpie release notes
 
-## Unreleased
+## [0.11.0](https://nuget.org/packages/dotnet-httpie/0.11.0)
 
-- upgrade System.CommandLine
+- Upgrade `System.CommandLine`
+- Execute support enhancements, support debug/offline mode and read from stdin
 
 ## [0.10.0](https://nuget.org/packages/dotnet-httpie/0.10.0)
 

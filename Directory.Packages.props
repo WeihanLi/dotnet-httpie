@@ -7,9 +7,9 @@
     <PackageVersion Include="JsonPath.Net" Version="2.1.1" />
     <PackageVersion Include="JsonSchema.Net" Version="7.3.4" />
     <PackageVersion Include="MathNet.Numerics.Signed" Version="5.0.0" />
-    <PackageVersion Include="System.CommandLine" Version="2.0.0-beta5.25306.1" />
-    <PackageVersion Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net10.0'))" Include="System.Linq.AsyncEnumerable" Version="10.0.0-preview.5.25277.114" />
-    <PackageVersion Include="WeihanLi.Common" Version="1.0.80-preview-20250704-234428" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.0-beta6.25358.103" />
+    <PackageVersion Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net10.0'))" Include="System.Linq.AsyncEnumerable" Version="10.0.0-preview.6.25358.103" />
+    <PackageVersion Include="WeihanLi.Common" Version="1.0.80" />
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />

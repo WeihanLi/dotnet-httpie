@@ -27,13 +27,13 @@ public sealed class DownloadMiddleware : IResponseMiddleware
     };
     private static readonly Option<string> CheckSumOption = new("--checksum")
     {
-        Description =  "Checksum to validate"
+        Description = "Checksum to validate"
     };
 
     private static readonly Option<HashType> CheckSumAlgOption =
         new("--checksum-alg")
         {
-            Description =  "Checksum hash algorithm type",
+            Description = "Checksum hash algorithm type",
             DefaultValueFactory = _ => HashType.SHA1
         };
 

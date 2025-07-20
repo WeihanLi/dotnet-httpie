@@ -11,7 +11,7 @@ public sealed class CurlParserTest
     public async Task InvalidParseTest(string script)
     {
         var parser = new CurlParser();
-        
+
         await Assert.ThrowsAnyAsync<ArgumentException>(async () =>
         {
             await foreach (var request in parser.ParseScriptAsync(script))
@@ -26,7 +26,7 @@ public sealed class CurlParserTest
     public async Task ParseTest(string script)
     {
         var parser = new CurlParser();
-        
+
         var requests = await parser.ParseScriptAsync(script).ToArrayAsync();
         Assert.NotNull(requests);
         Assert.Single(requests);
