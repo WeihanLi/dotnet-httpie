@@ -44,7 +44,7 @@ jobs:
     - name: Upload platform-specific package
       uses: actions/upload-artifact@v4
       with:
-        name: dotnet-http-${{ matrix.rid }}
+        name: dotnet-http-${{ matrix.rid }}.zip
         path: artifacts/dist/dotnet-httpie*
         retention-days: 10
         if-no-files-found: error
