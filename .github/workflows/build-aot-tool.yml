@@ -41,10 +41,10 @@ jobs:
 
     - name: verify dotnet runtime-info
       run: |
-        dnx -v=d -y dotnet-execute info
+        dnx -y dotnet-execute info
 
     - name: Build AOT package for ${{ matrix.rid }}
-      run: dotnet pack src/HTTPie/HTTPie.csproj -p:ToolType=aot --use-current-runtime -o artifacts/packages
+      run: dotnet pack src/HTTPie/HTTPie.csproj -p:ToolType=aot -p:PackageVersion=${{ github.event.inputs.tag }} --use-current-runtime -o artifacts/packages
 
     - name: Upload platform-specific package
       uses: actions/upload-artifact@v4
@@ -67,10 +67,10 @@ jobs:
 
     - name: verify dotnet runtime-info
       run: |
-        dnx -v=d -y dotnet-execute info
+        dnx -y dotnet-execute info
 
     - name: Build agnostic AOT package
-      run: dotnet pack src/HTTPie/HTTPie.csproj -p:ToolType=aot -o artifacts/packages
+      run: dotnet pack src/HTTPie/HTTPie.csproj -p:ToolType=aot -p:PackageVersion=${{ github.event.inputs.tag }} -o artifacts/packages
 
     - name: Upload agnostic package
       uses: actions/upload-artifact@v4
