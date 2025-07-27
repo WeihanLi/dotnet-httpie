@@ -36,6 +36,8 @@ jobs:
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
 
     - name: Build AOT package for ${{ matrix.rid }}
       run: dotnet pack src/HTTPie/HTTPie.csproj -p:ToolType=aot --use-current-runtime
