@@ -1,9 +1,14 @@
 name: Build AOT Tool Packages
 
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
+  # https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#onworkflow_dispatchinputs
+    inputs:
+      tag:
+        type: string
+        default: ''
+        description: "package version"
+        required: true
 
 jobs:
   build-platform-specific:
@@ -79,8 +84,9 @@ jobs:
         find collected-packages -name "*.nupkg" -type f | sort
         echo ""
         echo "Package count: $(find collected-packages -name "*.nupkg" -type f | wc -l)"
+        
 
-    - name: Upload all packages as single artifact
+    - name: Upload all packages as a single artifact
       uses: actions/upload-artifact@v4
       with:
         name: all-aot-packages
