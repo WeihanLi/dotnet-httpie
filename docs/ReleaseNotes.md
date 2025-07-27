@@ -1,8 +1,13 @@
 # dotnet-httpie release notes
 
-## Unreleased
+## [0.12.0](https://nuget.org/packages/dotnet-httpie/0.12.0)
 
-- upgrade System.CommandLine
+- Nested JSON builder, fixes <https://github.com/WeihanLi/dotnet-httpie/issues/55>
+
+## [0.11.0](https://nuget.org/packages/dotnet-httpie/0.11.0)
+
+- Upgrade `System.CommandLine`
+- Execute support enhancements, support debug/offline mode and read from stdin
 
 ## [0.10.0](https://nuget.org/packages/dotnet-httpie/0.10.0)
 

@@ -25,6 +25,8 @@ jobs:
       run: dotnet tool install --global dotnet-outdated-tool
     - name: Run dotnet-outdated
       run: dotnet-outdated -u
+      env:
+        DOTNET_NUGET_SIGNATURE_VERIFICATION: false
     - name: Build again
       run: dotnet build
     - name: check for changes

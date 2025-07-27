@@ -5,6 +5,46 @@ on:
     branches: [ main ]
     
 jobs:
+  build-platform-specific:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            rid: linux-x64
+          - os: ubuntu-24.04-arm
+            rid: linux-arm64
+          - os: windows-2025
+            rid: win-x64
+          - os: windows-11-arm
+            rid: win-arm64
+          - os: macos-15
+            rid: osx-x64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+
+    - name: verify dotnet runtime-info
+      run: dnx -y dotnet-execute info
+
+    - name: Build AOT package for ${{ matrix.rid }}
+      run: dotnet publish src/HTTPie/HTTPie.csproj -f net10.0 --use-current-runtime -o artifacts/dist
+
+    - name: Upload platform-specific package
+      uses: actions/upload-artifact@v4
+      with:
+        name: dotnet-http-${{ matrix.rid }}
+        path: artifacts/dist/*
+        retention-days: 10
+        if-no-files-found: error
+
   release:
     runs-on: windows-latest
 
@@ -15,16 +55,17 @@ jobs:
       with:
         dotnet-version: 10.0.x
     - name: dotnet info
-      run: |
-        dotnet --info
-        dotnet tool install -g dotnet-execute
-        dotnet-exec info
+      run: dnx -y dotnet-execute info
     - name: Export Release Version
       run: dotnet-exec https://github.com/OpenReservation/scripts/blob/main/build/export-gh-release-version.cs
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
     - name: Create Github Release
       shell: pwsh
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         ./build.ps1 --stable=true
-        gh release create ${{ env.ReleaseVersion }} --generate-notes
+        gh release create ${{ env.ReleaseVersion }} --generate-notes ./artifacts/*
