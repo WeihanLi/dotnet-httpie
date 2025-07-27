@@ -62,11 +62,11 @@ jobs:
     - name: Download artifacts
       uses: actions/download-artifact@v4
       with:
-        path: artifacts
+        path: dist
     - name: Create Github Release
       shell: pwsh
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        ./build.ps1 --stable=true
-        gh release create ${{ env.ReleaseVersion }} --generate-notes ./artifacts/*
+        ls ./dist
+        gh release create ${{ env.ReleaseVersion }} --generate-notes ./dist/*
