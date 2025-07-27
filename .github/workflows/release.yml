@@ -2,7 +2,9 @@ name: release
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - dev
     
 jobs:
   build-platform-specific:
@@ -35,19 +37,21 @@ jobs:
       run: dnx -y dotnet-execute info
 
     - name: Build AOT package for ${{ matrix.rid }}
-      run: dotnet publish src/HTTPie/HTTPie.csproj -f net10.0 --use-current-runtime -o artifacts/dist
+      run: |
+          dotnet publish src/HTTPie/HTTPie.csproj -f net10.0 --use-current-runtime -o artifacts/dist
+          ls -R ./artifacts/dist 
 
     - name: Upload platform-specific package
       uses: actions/upload-artifact@v4
       with:
-        name: dotnet-http-${{ matrix.rid }}
-        path: artifacts/dist/*
+        name: dotnet-http-${{ matrix.rid }}.zip
+        path: artifacts/dist/dotnet-httpie*
         retention-days: 10
         if-no-files-found: error
 
   release:
     needs: [build-platform-specific]
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -64,9 +68,8 @@ jobs:
       with:
         path: dist
     - name: Create Github Release
-      shell: pwsh
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        ls ./dist
+        ls -R ./dist
         gh release create ${{ env.ReleaseVersion }} --target main --generate-notes ./dist/*
