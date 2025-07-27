@@ -66,9 +66,8 @@ jobs:
       with:
         path: dist
     - name: Create Github Release
-      shell: pwsh
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        ls ./dist
+        ls -R ./dist
         gh release create ${{ env.ReleaseVersion }} --generate-notes ./dist/**/*
