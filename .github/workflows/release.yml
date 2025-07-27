@@ -49,7 +49,7 @@ jobs:
 
   release:
     needs: [build-platform-specific]
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
