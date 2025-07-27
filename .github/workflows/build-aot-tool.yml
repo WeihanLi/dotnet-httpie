@@ -44,13 +44,13 @@ jobs:
         dnx -v=d -y dotnet-execute info
 
     - name: Build AOT package for ${{ matrix.rid }}
-      run: dotnet pack src/HTTPie/HTTPie.csproj -p:ToolType=aot --use-current-runtime
+      run: dotnet pack src/HTTPie/HTTPie.csproj -p:ToolType=aot --use-current-runtime -o artifacts/packages
 
     - name: Upload platform-specific package
       uses: actions/upload-artifact@v4
       with:
         name: aot-package-${{ matrix.rid }}
-        path: artifacts/package/release/*.nupkg
+        path: artifacts/packages/*.nupkg
         retention-days: 30
         if-no-files-found: error
 
@@ -70,13 +70,13 @@ jobs:
         dnx -v=d -y dotnet-execute info
 
     - name: Build agnostic AOT package
-      run: dotnet pack src/HTTPie/HTTPie.csproj -p:ToolType=aot
+      run: dotnet pack src/HTTPie/HTTPie.csproj -p:ToolType=aot -o artifacts/packages
 
     - name: Upload agnostic package
       uses: actions/upload-artifact@v4
       with:
         name: aot-package-agnostic
-        path: artifacts/package/release/*.nupkg
+        path: artifacts/packages/*.nupkg
         retention-days: 30
         if-no-files-found: error
 
