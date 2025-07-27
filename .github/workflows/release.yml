@@ -22,8 +22,6 @@ jobs:
             rid: win-arm64
           - os: macos-15
             rid: osx-arm64
-          - os: macos-15-large
-            rid: osx-x64
 
     runs-on: ${{ matrix.os }}
 
@@ -78,6 +76,5 @@ jobs:
           ./dist/dotnet-http-linux-arm64/dotnet-httpie \
           ./dist/dotnet-http-linux-x64/dotnet-httpie \
           ./dist/dotnet-http-osx-arm64/dotnet-httpie \
-          ./dist/dotnet-http-osx-x64/dotnet-httpie \
           ./dist/dotnet-http-win-arm64/dotnet-httpie.exe \
           ./dist/dotnet-http-win-x64/dotnet-httpie.exe
