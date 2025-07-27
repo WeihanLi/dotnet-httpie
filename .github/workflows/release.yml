@@ -72,4 +72,4 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         ls -R ./dist
-        gh release create ${{ env.ReleaseVersion }} --generate-notes ./dist/**/*
+        gh release create ${{ env.ReleaseVersion }} --generate-notes ./dist/*.zip
