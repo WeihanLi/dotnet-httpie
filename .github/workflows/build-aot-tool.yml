@@ -102,5 +102,5 @@ jobs:
       with:
         name: all-aot-packages
         path: collected-packages/**/*.nupkg
-        retention-days: 90
+        retention-days: 10
         if-no-files-found: error
