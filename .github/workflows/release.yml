@@ -2,7 +2,9 @@ name: release
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - dev
     
 jobs:
   build-platform-specific:
@@ -69,4 +71,4 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         ls ./dist
-        gh release create ${{ env.ReleaseVersion }} --generate-notes ./dist/*
+        gh release create ${{ env.ReleaseVersion }} --generate-notes ./dist/**/*
