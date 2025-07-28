@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - dev
     
 jobs:
   build-platform-specific:
@@ -49,8 +48,8 @@ jobs:
     - name: Upload platform-specific package
       uses: actions/upload-artifact@v4
       with:
-        name: dotnet-http-${{ matrix.rid }}${{matrix.artifact_extension}}
-        path: dist/dotnet-http${{matrix.artifact_extension}}
+        name: dotnet-http-${{ matrix.rid }}
+        path: dist/dotnet-http-${{ matrix.rid }}${{matrix.artifact_extension}}
         retention-days: 10
         if-no-files-found: error
 
