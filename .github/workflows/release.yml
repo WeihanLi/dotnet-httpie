@@ -43,7 +43,7 @@ jobs:
 
     - name: Build AOT package for ${{ matrix.rid }}
       run: |
-          dotnet publish src/HTTPie/HTTPie.csproj -f net10.0 --use-current-runtime -p:AssemblyName=dotnet-http -o artifacts/dist
+          dotnet publish src/HTTPie/HTTPie.csproj -f net10.0 --use-current-runtime -p:AssemblyName=dotnet-http -o dist
           ls -R ./dist 
 
     - name: Upload platform-specific package
