@@ -14,14 +14,19 @@ jobs:
         include:
           - os: ubuntu-24.04
             rid: linux-x64
+            artifact_extension: '' 
           - os: ubuntu-24.04-arm
             rid: linux-arm64
+            artifact_extension: ''
           - os: windows-2025
             rid: win-x64
+            artifact_extension: '.exe'
           - os: windows-11-arm
             rid: win-arm64
+            artifact_extension: '.exe'
           - os: macos-15
             rid: osx-arm64
+            artifact_extension: ''
 
     runs-on: ${{ matrix.os }}
 
@@ -38,14 +43,14 @@ jobs:
 
     - name: Build AOT package for ${{ matrix.rid }}
       run: |
-          dotnet publish src/HTTPie/HTTPie.csproj -f net10.0 --use-current-runtime -o artifacts/dist
-          ls -R ./artifacts/dist 
+          dotnet publish src/HTTPie/HTTPie.csproj -f net10.0 --use-current-runtime -p:AssemblyName=dotnet-http -o artifacts/dist
+          ls -R ./dist 
 
     - name: Upload platform-specific package
       uses: actions/upload-artifact@v4
       with:
-        name: dotnet-http-${{ matrix.rid }}
-        path: artifacts/dist/dotnet-httpie*
+        name: dotnet-http-${{ matrix.rid }}${{matrix.artifact_extension}}
+        path: dist/dotnet-http${{matrix.artifact_extension}}
         retention-days: 10
         if-no-files-found: error
 
@@ -60,7 +65,9 @@ jobs:
       with:
         dotnet-version: 10.0.x
     - name: dotnet info
-      run: dnx -y dotnet-execute info
+      run: |
+        dotnet --info
+        dnx -y dotnet-execute info
     - name: Export Release Version
       run: dnx -y dotnet-execute https://github.com/OpenReservation/scripts/blob/main/build/export-gh-release-version.cs
     - name: Download artifacts
@@ -72,9 +79,4 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         ls -R ./dist
-        gh release create ${{ env.ReleaseVersion }} --target main --generate-notes \
-          ./dist/dotnet-http-linux-arm64/dotnet-httpie \
-          ./dist/dotnet-http-linux-x64/dotnet-httpie \
-          ./dist/dotnet-http-osx-arm64/dotnet-httpie \
-          ./dist/dotnet-http-win-arm64/dotnet-httpie.exe \
-          ./dist/dotnet-http-win-x64/dotnet-httpie.exe
+        gh release create ${{ env.ReleaseVersion }} --target main --generate-notes ./dist/*
