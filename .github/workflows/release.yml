@@ -2,7 +2,8 @@ name: release
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
     
 jobs:
   build-platform-specific:
@@ -12,14 +13,19 @@ jobs:
         include:
           - os: ubuntu-24.04
             rid: linux-x64
+            artifact_extension: '' 
           - os: ubuntu-24.04-arm
             rid: linux-arm64
+            artifact_extension: ''
           - os: windows-2025
             rid: win-x64
+            artifact_extension: '.exe'
           - os: windows-11-arm
             rid: win-arm64
+            artifact_extension: '.exe'
           - os: macos-15
-            rid: osx-x64
+            rid: osx-arm64
+            artifact_extension: ''
 
     runs-on: ${{ matrix.os }}
 
@@ -35,19 +41,21 @@ jobs:
       run: dnx -y dotnet-execute info
 
     - name: Build AOT package for ${{ matrix.rid }}
-      run: dotnet publish src/HTTPie/HTTPie.csproj -f net10.0 --use-current-runtime -o artifacts/dist
+      run: |
+          dotnet publish src/HTTPie/HTTPie.csproj -f net10.0 --use-current-runtime -p:AssemblyName=dotnet-http -o dist
+          ls -R ./dist 
 
     - name: Upload platform-specific package
       uses: actions/upload-artifact@v4
       with:
         name: dotnet-http-${{ matrix.rid }}
-        path: artifacts/dist/*
+        path: dist/dotnet-http-${{ matrix.rid }}${{matrix.artifact_extension}}
         retention-days: 10
         if-no-files-found: error
 
   release:
     needs: [build-platform-specific]
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -56,17 +64,20 @@ jobs:
       with:
         dotnet-version: 10.0.x
     - name: dotnet info
-      run: dnx -y dotnet-execute info
+      run: |
+        dotnet --info
+        dnx -y dotnet-execute info
     - name: Export Release Version
       run: dnx -y dotnet-execute https://github.com/OpenReservation/scripts/blob/main/build/export-gh-release-version.cs
     - name: Download artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v4 # https://github.com/actions/download-artifact
       with:
         path: dist
+        merge-multiple: true
+
     - name: Create Github Release
-      shell: pwsh
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        ls ./dist
-        gh release create ${{ env.ReleaseVersion }} --generate-notes ./dist/*
+        ls -R ./dist
+        gh release create ${{ env.ReleaseVersion }} --target main --generate-notes ./dist/*
