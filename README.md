@@ -8,6 +8,8 @@
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/weihanli/dotnet-httpie)](https://hub.docker.com/r/weihanli/dotnet-httpie/tags)
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/WeihanLi/dotnet-httpie)
+
 ## Intro
 
 dotnet tool version of [httpie](https://github.com/httpie/httpie), Modern, user-friendly command-line HTTP client for the API era.
