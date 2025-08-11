@@ -263,7 +263,7 @@ public static class Helpers
                 .ExecuteAsync(context);
             var output = await serviceProvider.ResolveRequiredService<IOutputFormatter>()
                 .GetOutput(context);
-            Console.Out.WriteLine(output.Trim());
+            await Console.Out.WriteLineAsync(output.Trim());
         }
         else
         {
@@ -275,5 +275,16 @@ public static class Helpers
     {
         var result = parseResult.GetResult(option);
         return result is { Implicit: false };
+    }
+
+    public static HttpClientHandler GetHttpClientHandler()
+    {
+        return new HttpClientHandler
+        {
+            AllowAutoRedirect = false,
+            CheckCertificateRevocationList = false,
+            UseCookies = false,
+            UseDefaultCredentials = false
+        };
     }
 }

@@ -1,0 +1,106 @@
+name: Build AOT Tool Packages
+
+on:
+  workflow_dispatch:
+  # https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#onworkflow_dispatchinputs
+    inputs:
+      tag:
+        type: string
+        default: ''
+        description: "package version"
+        required: true
+
+jobs:
+  build-platform-specific:
+    strategy:
+      fail-fast: false
+      matrix:
+        # the rid isn't required to _make_ the packages (we use --use-current-runtime), 
+        # but it helps name the artifacts clearly and allows us to use the same workflow for all platforms.
+        include:
+          - os: ubuntu-24.04
+            rid: linux-x64
+          - os: ubuntu-24.04-arm
+            rid: linux-arm64
+          - os: windows-2025
+            rid: win-x64
+          - os: windows-11-arm
+            rid: win-arm64
+          - os: macos-15
+            rid: osx-x64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+
+    - name: verify dotnet runtime-info
+      run: |
+        dnx -y dotnet-execute info
+
+    - name: Build AOT package for ${{ matrix.rid }}
+      run: dotnet pack src/HTTPie/HTTPie.csproj -p:ToolType=aot -p:PackageVersion=${{ github.event.inputs.tag }} --use-current-runtime -o artifacts/packages
+
+    - name: Upload platform-specific package
+      uses: actions/upload-artifact@v4
+      with:
+        name: aot-package-${{ matrix.rid }}
+        path: artifacts/packages/*.nupkg
+        retention-days: 30
+        if-no-files-found: error
+
+  build-agnostic:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+
+    - name: verify dotnet runtime-info
+      run: |
+        dnx -y dotnet-execute info
+
+    - name: Build agnostic AOT package
+      run: dotnet pack src/HTTPie/HTTPie.csproj -p:ToolType=aot -p:PackageVersion=${{ github.event.inputs.tag }} -o artifacts/packages
+
+    - name: Upload agnostic package
+      uses: actions/upload-artifact@v4
+      with:
+        name: aot-package-agnostic
+        path: artifacts/packages/*.nupkg
+        retention-days: 30
+        if-no-files-found: error
+
+  collect-all-packages:
+    needs: [build-platform-specific, build-agnostic]
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: collected-packages
+
+    - name: List all collected packages
+      run: |
+        echo "All collected AOT packages:"
+        find collected-packages -name "*.nupkg" -type f | sort
+        echo ""
+        echo "Package count: $(find collected-packages -name "*.nupkg" -type f | wc -l)"
+
+    - name: Upload all packages as a single artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: all-aot-packages
+        path: collected-packages/**/*.nupkg
+        retention-days: 10
+        if-no-files-found: error
