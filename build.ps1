@@ -1,4 +1,4 @@
-dotnet tool update -g dotnet-execute
+dotnet tool install -g dotnet-execute --prerelease
 
 Write-Host 'dotnet-exec ./build/build.cs "--args=$ARGS"' -ForegroundColor GREEN
  

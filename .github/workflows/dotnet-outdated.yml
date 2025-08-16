@@ -1,8 +1,8 @@
 name: dotnet-outdated
 
 on:
-  # schedule:
-  #   - cron:  '0 1 * * *'
+  schedule:
+    - cron:  '0 1 * * *'
   push:
     branches: 
       # - "main"
@@ -28,7 +28,7 @@ jobs:
       env:
         DOTNET_NUGET_SIGNATURE_VERIFICATION: false
     - name: Build again
-      run: dotnet build
+      run: bash ./build.sh
     - name: check for changes
       run: |
         if git diff --exit-code; then
