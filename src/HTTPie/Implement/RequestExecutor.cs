@@ -66,8 +66,7 @@ public sealed partial class RequestExecutor(
             return;
         }
 
-        using var httpClientHandler = new HttpClientHandler();
-        httpClientHandler.AllowAutoRedirect = false;
+        using var httpClientHandler = Helpers.GetHttpClientHandler();
         await httpHandlerPipeline(httpClientHandler);
         using var client = new HttpClient(httpClientHandler);
         var timeout = requestModel.ParseResult.GetValue(TimeoutOption);

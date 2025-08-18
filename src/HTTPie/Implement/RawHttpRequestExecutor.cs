@@ -2,17 +2,13 @@
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
+using HTTPie.Utilities;
 
 namespace HTTPie.Implement;
 
 public sealed class RawHttpRequestExecutor : IRawHttpRequestExecutor
 {
-    private readonly HttpClient _client = new(new HttpClientHandler
-    {
-        AllowAutoRedirect = false,
-        UseCookies = false,
-        UseDefaultCredentials = false
-    });
+    private readonly HttpClient _client = new(Helpers.GetHttpClientHandler());
 
     public async Task<HttpResponseMessage> ExecuteAsync(HttpRequestMessage httpRequestMessage,
         CancellationToken cancellationToken)

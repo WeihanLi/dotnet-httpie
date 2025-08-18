@@ -73,27 +73,11 @@ public static class Helpers
         return serviceCollection;
     }
 
-    private static CommandLineConfiguration ConstructCommand(this IServiceProvider serviceProvider,
+    private static Command ConstructCommand(this IServiceProvider serviceProvider,
         Func<ParseResult, CancellationToken, Task>? handler = null)
     {
         var command = InitializeCommandInternal(serviceProvider, handler);
-        var configuration = new CommandLineConfiguration(command);
-        // var builder = new CommandLineBuilder(command);
-        // // builder.UseDefaults();
-        // builder
-        //     .UseHelp("--help", "-?", "/?")
-        //     .UseEnvironmentVariableDirective()
-        //     .UseParseDirective()
-        //     .UseSuggestDirective()
-        //     .RegisterWithDotnetSuggest()
-        //     .UseTypoCorrections()
-        //     .UseParseErrorReporting()
-        //     .UseExceptionHandler()
-        //     .CancelOnProcessTermination()
-        //     // required when try to resolve IServiceProvider from invocationContext
-        //     .AddMiddleware(invocationContext => invocationContext.BindingContext.AddService(_ => serviceProvider))
-        //     ;
-        return configuration;
+        return command;
     }
 
     private static Command InitializeCommandInternal(IServiceProvider serviceProvider,
@@ -212,14 +196,14 @@ public static class Helpers
     public static async Task<int> Handle(this IServiceProvider services, string[] args)
     {
         var commandParser = services.ConstructCommand();
-        return await commandParser.InvokeAsync(args);
+        return await commandParser.Parse(args).InvokeAsync();
     }
 
     public static async Task<int> Handle(this IServiceProvider services, string commandLine,
         Func<ParseResult, CancellationToken, Task>? handler = null)
     {
         var commandParser = services.ConstructCommand(handler);
-        return await commandParser.InvokeAsync(commandLine);
+        return await commandParser.Parse(commandLine).InvokeAsync();
     }
 
     private static async Task HttpCommandHandler(ParseResult parseResult, CancellationToken cancellationToken, IServiceProvider serviceProvider,
@@ -263,7 +247,7 @@ public static class Helpers
                 .ExecuteAsync(context);
             var output = await serviceProvider.ResolveRequiredService<IOutputFormatter>()
                 .GetOutput(context);
-            Console.Out.WriteLine(output.Trim());
+            await Console.Out.WriteLineAsync(output.Trim());
         }
         else
         {
@@ -275,5 +259,16 @@ public static class Helpers
     {
         var result = parseResult.GetResult(option);
         return result is { Implicit: false };
+    }
+
+    public static HttpClientHandler GetHttpClientHandler()
+    {
+        return new HttpClientHandler
+        {
+            AllowAutoRedirect = false,
+            CheckCertificateRevocationList = false,
+            UseCookies = false,
+            UseDefaultCredentials = false
+        };
     }
 }
