@@ -13,10 +13,17 @@ public sealed class RequestMapper : IRequestMapper
     public Task<HttpRequestMessage> ToRequestMessage(HttpContext httpContext)
     {
         var requestModel = httpContext.Request;
-        var request = new HttpRequestMessage(requestModel.Method, requestModel.Url)
+        var request = new HttpRequestMessage(requestModel.Method, requestModel.Url);
+        if (requestModel.HttpVersion is not null)
         {
-            Version = requestModel.HttpVersion
-        };
+            request.Version = requestModel.HttpVersion;
+            request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+        }
+        else
+        {
+            request.Version = new Version(2, 0);
+        }
+        
         if (!string.IsNullOrEmpty(requestModel.Body))
             request.Content = new StringContent(requestModel.Body, Encoding.UTF8,
                 httpContext.GetFlag(Constants.FlagNames.IsFormContentType)

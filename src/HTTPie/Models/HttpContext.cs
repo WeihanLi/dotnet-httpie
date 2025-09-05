@@ -16,7 +16,7 @@ public sealed class HttpContext(HttpRequestModel request, HttpResponseModel? res
 
     public HttpRequestModel Request { get; } = request;
     public HttpResponseModel Response { get; set; } = response ?? new HttpResponseModel();
-
+    
     [System.Text.Json.Serialization.JsonIgnore]
     [JsonIgnore]
     public CancellationToken RequestCancelled { get; set; }
