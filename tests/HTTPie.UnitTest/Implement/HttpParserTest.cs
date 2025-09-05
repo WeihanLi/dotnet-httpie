@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Weihan Li.All rights reserved.
 // Licensed under the MIT license.
 
-using Xunit.Abstractions;
+using Xunit;
 
 namespace HTTPie.UnitTest.Implement;
 

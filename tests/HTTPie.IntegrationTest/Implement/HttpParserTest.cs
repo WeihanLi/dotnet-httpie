@@ -4,7 +4,7 @@
 using HTTPie.Implement;
 using HTTPie.Utilities;
 using Microsoft.Extensions.Logging.Abstractions;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace HTTPie.IntegrationTest.Implement;
 
@@ -35,7 +35,7 @@ public class HttpParserTest(ITestOutputHelper outputHelper)
             count++;
 
             outputHelper.WriteLine(request.Name);
-            outputHelper.WriteLine(await request.RequestMessage.ToRawMessageAsync());
+            outputHelper.WriteLine(await request.RequestMessage.ToRawMessageAsync(TestContext.Current.CancellationToken));
         }
 
         Assert.NotEqual(0, count);
