@@ -1,6 +1,6 @@
 #!/bin/sh
 
-dotnet tool install -g dotnet-execute --prerelease
+dotnet tool install -g dotnet-execute
 export PATH="$PATH:$HOME/.dotnet/tools"
 
 echo "dotnet-exec ./build/build.cs --args $@"

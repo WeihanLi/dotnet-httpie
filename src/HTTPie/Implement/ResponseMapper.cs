@@ -13,6 +13,7 @@ public sealed class ResponseMapper : IResponseMapper
     {
         var responseModel = new HttpResponseModel
         {
+            RequestHttpVersion = responseMessage.RequestMessage?.Version,
             HttpVersion = responseMessage.Version,
             StatusCode = responseMessage.StatusCode,
             Headers = responseMessage.Headers

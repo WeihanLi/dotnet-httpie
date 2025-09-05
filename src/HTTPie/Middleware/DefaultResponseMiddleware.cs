@@ -13,13 +13,13 @@ public sealed class DefaultResponseMiddleware : IResponseMiddleware
     public Task InvokeAsync(HttpContext context, Func<HttpContext, Task> next)
     {
         var outputFormat = OutputFormatter.GetOutputFormat(context);
-        if ((outputFormat & OutputFormat.Timestamp) != 0)
+        if ((outputFormat & OutputFormat.Properties) != 0)
         {
-            context.Request.Headers.TryAdd(Constants.RequestTimestampHeaderName, context.Request.Timestamp.ToString());
+            context.Request.Properties.TryAdd(Constants.RequestTimestampHeaderName, context.Request.Timestamp.ToString());
             if (context.Response.Elapsed > TimeSpan.Zero)
             {
-                context.Response.Headers.TryAdd(Constants.ResponseTimestampHeaderName, context.Response.Timestamp.ToString());
-                context.Response.Headers.TryAdd(Constants.RequestDurationHeaderName, $"{context.Response.Elapsed.TotalMilliseconds}ms");
+                context.Response.Properties.TryAdd(Constants.ResponseTimestampHeaderName, context.Response.Timestamp.ToString());
+                context.Response.Properties.TryAdd(Constants.RequestDurationHeaderName, $"{context.Response.Elapsed.TotalMilliseconds}ms");
             }
         }
         return next(context);

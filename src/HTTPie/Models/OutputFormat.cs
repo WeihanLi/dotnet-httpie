@@ -29,12 +29,9 @@ public enum OutputFormat
     [Description("HB")]
     RequestInfo = RequestHeaders | RequestBody,
 
-    [Description("t")]
-    Timestamp = 16,
+    [Description("p")]
+    Properties = 16,
 
-    [Description("hbt")]
-    ResponseInfoWithTimestamp = ResponseHeaders | ResponseBody | Timestamp,
-
-    [Description("HBhbt")]
-    All = RequestInfo | ResponseInfo | Timestamp
+    [Description("HBhbp")]
+    All = RequestInfo | ResponseInfo | Properties
 }

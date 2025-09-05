@@ -18,7 +18,7 @@ public sealed class DefaultRequestMiddleware(ILogger logger) : IRequestMiddlewar
     {
         Description = "The HTTP request schema"
     };
-    private static readonly Option<Version> HttpVersionOption = new("--httpVersion")
+    private static readonly Option<string> HttpVersionOption = new("--httpVersion")
     {
         Description = "The HTTP request HTTP version"
     };
@@ -55,12 +55,12 @@ public sealed class DefaultRequestMiddleware(ILogger logger) : IRequestMiddlewar
 
         requestModel.Url = url;
 
-        var httpVersionOption =
+        var httpVersionValue =
             requestModel.ParseResult.GetValue(HttpVersionOption);
-        if (httpVersionOption != default)
+        if (httpVersionValue.IsNotNullOrEmpty() && Version.TryParse(httpVersionValue, out var httpVersion))
         {
-            logger.LogDebug($"httpVersion: {httpVersionOption}");
-            requestModel.HttpVersion = httpVersionOption;
+            logger.LogDebug("httpVersion specified: {HttpVersion}", httpVersionValue);
+            requestModel.HttpVersion = httpVersion;
         }
 
         requestModel.Headers.TryAdd("User-Agent", Constants.DefaultUserAgent);

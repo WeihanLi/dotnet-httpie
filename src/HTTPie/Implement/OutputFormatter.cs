@@ -23,7 +23,8 @@ public enum PrettyOptions
     All = 3
 }
 
-public sealed class OutputFormatter(IServiceProvider serviceProvider, ILogger<OutputFormatter> logger) : IOutputFormatter
+public sealed class OutputFormatter(IServiceProvider serviceProvider, ILogger<OutputFormatter> logger)
+    : IOutputFormatter
 {
     private static readonly Option<PrettyOptions> PrettyOption = new("--pretty")
     {
@@ -43,16 +44,10 @@ public sealed class OutputFormatter(IServiceProvider serviceProvider, ILogger<Ou
         };
 
     private static readonly Option<bool> OutputHeadersOption =
-        new("-h", "--headers")
-        {
-            Description = "output response headers only"
-        };
+        new("-h", "--headers") { Description = "output response headers only" };
 
     private static readonly Option<bool> OutputBodyOption =
-        new("-b", "--body")
-        {
-            Description = "output response headers and response body only"
-        };
+        new("-b", "--body") { Description = "output response headers and response body only" };
 
     private static readonly Option<bool> OutputVerboseOption = new("-v", "--verbose")
     {
@@ -111,7 +106,7 @@ public sealed class OutputFormatter(IServiceProvider serviceProvider, ILogger<Ou
                         'B' => OutputFormat.RequestBody,
                         'h' => OutputFormat.ResponseHeaders,
                         'b' => OutputFormat.ResponseBody,
-                        't' => OutputFormat.Timestamp,
+                        'p' => OutputFormat.Properties,
                         _ => OutputFormat.None
                     })
                     .Aggregate(OutputFormat.None, (current, format) => current | format);
@@ -133,12 +128,23 @@ public sealed class OutputFormatter(IServiceProvider serviceProvider, ILogger<Ou
     private static string GetCommonOutput(HttpContext httpContext, OutputFormat outputFormat)
     {
         var requestModel = httpContext.Request;
+        var responseModel = httpContext.Response;
+
+        var hasValidResponse = (int)responseModel.StatusCode > 0;
+        var requestVersion = hasValidResponse
+            ? httpContext.Response.RequestHttpVersion ?? httpContext.Response.HttpVersion
+            : httpContext.Request.HttpVersion ?? new Version(2, 0)
+            ;
         var prettyOption = requestModel.ParseResult.GetValue(PrettyOption);
         var output = new StringBuilder();
         if (outputFormat.HasFlag(OutputFormat.RequestHeaders))
         {
-            output.AppendLine(GetRequestVersionAndStatus(requestModel));
+            output.AppendLine(GetRequestVersionAndStatus(httpContext, requestVersion));
             output.AppendLine(GetHeadersString(requestModel.Headers));
+            if (outputFormat.HasFlag(OutputFormat.Properties) && requestModel.Properties.Count > 0)
+            {
+                output.AppendLine(GetPropertiesString(requestModel.Properties));
+            }
         }
 
         if (outputFormat.HasFlag(OutputFormat.RequestBody) && !string.IsNullOrEmpty(requestModel.Body))
@@ -147,14 +153,19 @@ public sealed class OutputFormatter(IServiceProvider serviceProvider, ILogger<Ou
             output.AppendLine(Prettify(requestModel.Body, prettyOption));
         }
 
+        var requestLength = output.Length;
+        if ((int)responseModel.StatusCode <= 0) return output.ToString();
+
         output.AppendLineIf(string.Empty, output.Length > 0 && (outputFormat & OutputFormat.ResponseInfo) != 0);
 
-        var requestLength = output.Length;
-        var responseModel = httpContext.Response;
         if (outputFormat.HasFlag(OutputFormat.ResponseHeaders))
         {
             output.AppendLine(GetResponseVersionAndStatus(responseModel));
             output.AppendLine(GetHeadersString(responseModel.Headers));
+            if (outputFormat.HasFlag(OutputFormat.Properties) && responseModel.Properties.Count > 0)
+            {
+                output.AppendLine(GetPropertiesString(responseModel.Properties));
+            }
         }
 
         if (outputFormat.HasFlag(OutputFormat.ResponseBody) && !string.IsNullOrEmpty(responseModel.Body))
@@ -231,21 +242,30 @@ Requests per second: {reportModel.RequestsPerSecond}
             return body;
         try
         {
-            var formattedJson = JsonNode.Parse(body)?.ToJsonString(Helpers.JsonSerializerOptions)
-                                ?? body;
-            return formattedJson;
+            if (body.Length > 2 &&
+                (body[0] == '[' && body[^1] == ']'
+                 || body[0] == '{' && body[^1] == '}')
+               )
+            {
+                var formattedJson = JsonNode.Parse(body)?.ToJsonString(Helpers.JsonSerializerOptions)
+                                    ?? body;
+                return formattedJson;
+            }
         }
-        catch (Exception)
+        catch
         {
-            return body;
+            // ignore
         }
+
+        return body;
     }
 
-    private static string GetRequestVersionAndStatus(HttpRequestModel requestModel)
+    private static string GetRequestVersionAndStatus(HttpContext httpContext, Version requestVersion)
     {
+        var requestModel = httpContext.Request;
         var uri = new Uri(requestModel.Url);
         return
-            $@"{requestModel.Method.Method.ToUpper()} {uri.PathAndQuery} HTTP/{requestModel.HttpVersion.ToString(2)}
+            $@"{requestModel.Method.Method.ToUpper()} {uri.PathAndQuery} HTTP/{requestVersion.ToString(2).TrimEnd('0', '.')}
 Host: {uri.Host}{(uri.IsDefaultPort ? "" : $":{uri.Port}")}
 Schema: {uri.Scheme}";
     }
@@ -260,5 +280,13 @@ Schema: {uri.Scheme}";
     {
         return
             $"{headers.Select(h => $"{h.Key}: {h.Value}").OrderBy(h => h).StringJoin(Environment.NewLine)}";
+    }
+
+    private static string GetPropertiesString(Dictionary<string, string> headers)
+    {
+        return
+            $"{headers.Select(h => $"[{h.Key}]: {h.Value}")
+                .OrderBy(h => h)
+                .StringJoin(Environment.NewLine)}";
     }
 }

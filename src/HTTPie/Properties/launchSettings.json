@@ -71,6 +71,10 @@
     "http-env-file-execution": {
       "commandName": "Project",
       "commandLineArgs": "exec C:\\projects\\sources\\dotnet-httpie\\tests\\HTTPie.IntegrationTest\\TestAssets\\HttpEnvFileVariableSample.http --env=test"
+    },
+    "http-version-test": {
+      "commandName": "Project",
+      "commandLineArgs": "-v https://reservation.weihanli.xyz/health --httpVersion=2.0"
     }
   }
 }

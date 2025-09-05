@@ -8,9 +8,12 @@ namespace HTTPie.Models;
 
 public sealed class HttpResponseModel
 {
+    public Version? RequestHttpVersion { get; set; }
     public Version HttpVersion { get; init; } = new(1, 1);
     public HttpStatusCode StatusCode { get; init; }
     public Dictionary<string, StringValues> Headers { get; init; } = new();
+
+    public Dictionary<string, string> Properties { get; set; } = new();
 
     [Newtonsoft.Json.JsonIgnore]
     [System.Text.Json.Serialization.JsonIgnore]
