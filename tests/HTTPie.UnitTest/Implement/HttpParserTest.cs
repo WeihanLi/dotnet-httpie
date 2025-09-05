@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Weihan Li.All rights reserved.
 // Licensed under the MIT license.
 
-using Xunit;
-
 namespace HTTPie.UnitTest.Implement;
 
 public class HttpParserTest(ITestOutputHelper testOutputHelper)

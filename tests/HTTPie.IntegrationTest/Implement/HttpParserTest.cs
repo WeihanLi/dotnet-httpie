@@ -4,7 +4,6 @@
 using HTTPie.Implement;
 using HTTPie.Utilities;
 using Microsoft.Extensions.Logging.Abstractions;
-using Xunit;
 
 namespace HTTPie.IntegrationTest.Implement;
 
