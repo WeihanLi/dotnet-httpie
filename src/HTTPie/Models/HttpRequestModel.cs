@@ -21,7 +21,7 @@ public sealed class HttpRequestModel
     public IDictionary<string, StringValues> Headers { get; } = new Dictionary<string, StringValues>();
     public IDictionary<string, StringValues> Query { get; set; } = new Dictionary<string, StringValues>();
     public string? Body { get; set; }
-    
+
     public Dictionary<string, string> Properties { get; set; } = new();
 
     public List<string> RequestItems { get; set; } = [];

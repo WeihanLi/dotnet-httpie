@@ -23,7 +23,7 @@ public sealed class RequestMapper : IRequestMapper
         {
             request.Version = new Version(2, 0);
         }
-        
+
         if (!string.IsNullOrEmpty(requestModel.Body))
             request.Content = new StringContent(requestModel.Body, Encoding.UTF8,
                 httpContext.GetFlag(Constants.FlagNames.IsFormContentType)

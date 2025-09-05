@@ -28,7 +28,8 @@ public sealed class OutputFormatter(IServiceProvider serviceProvider, ILogger<Ou
 {
     private static readonly Option<PrettyOptions> PrettyOption = new("--pretty")
     {
-        Description = "pretty output", DefaultValueFactory = _ => PrettyOptions.All
+        Description = "pretty output",
+        DefaultValueFactory = _ => PrettyOptions.All
     };
 
     private static readonly Option<bool> QuietOption = new("--quiet", "-q")
@@ -130,7 +131,7 @@ public sealed class OutputFormatter(IServiceProvider serviceProvider, ILogger<Ou
         var responseModel = httpContext.Response;
 
         var hasValidResponse = (int)responseModel.StatusCode > 0;
-        var requestVersion = hasValidResponse 
+        var requestVersion = hasValidResponse
             ? httpContext.Response.RequestHttpVersion ?? httpContext.Response.HttpVersion
             : httpContext.Request.HttpVersion ?? new Version(2, 0)
             ;
@@ -151,12 +152,12 @@ public sealed class OutputFormatter(IServiceProvider serviceProvider, ILogger<Ou
             output.AppendLineIf(string.Empty, output.Length > 0);
             output.AppendLine(Prettify(requestModel.Body, prettyOption));
         }
-        
+
         var requestLength = output.Length;
         if ((int)responseModel.StatusCode <= 0) return output.ToString();
 
         output.AppendLineIf(string.Empty, output.Length > 0 && (outputFormat & OutputFormat.ResponseInfo) != 0);
-        
+
         if (outputFormat.HasFlag(OutputFormat.ResponseHeaders))
         {
             output.AppendLine(GetResponseVersionAndStatus(responseModel));
@@ -280,7 +281,7 @@ Schema: {uri.Scheme}";
         return
             $"{headers.Select(h => $"{h.Key}: {h.Value}").OrderBy(h => h).StringJoin(Environment.NewLine)}";
     }
-    
+
     private static string GetPropertiesString(Dictionary<string, string> headers)
     {
         return
