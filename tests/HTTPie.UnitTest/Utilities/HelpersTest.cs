@@ -32,7 +32,7 @@ public class HelpersTest
             .BuildServiceProvider();
         await services.Handle(input, (_, _) => Task.CompletedTask);
         var httpContext = services.GetRequiredService<HttpContext>();
-        
+
         Assert.Equal("reservation.weihanli.xyz/health", httpContext.Request.Url);
         Assert.NotEmpty(httpContext.Request.RequestItems);
         Assert.Equal(4, httpContext.Request.RequestItems.Count);
