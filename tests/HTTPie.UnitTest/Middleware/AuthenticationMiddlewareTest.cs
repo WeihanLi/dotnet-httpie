@@ -21,7 +21,7 @@ public class AuthorizationMiddlewareTest
         var httpContext = services.GetRequiredService<HttpContext>();
         var middleware = new AuthorizationMiddleware();
         await middleware.InvokeAsync(httpContext.Request, _ => Task.CompletedTask);
-        httpContext.Request.Headers.Should().BeEmpty();
+        Assert.Empty(httpContext.Request.Headers);
     }
 
     [Theory]
@@ -37,12 +37,12 @@ public class AuthorizationMiddlewareTest
         var httpContext = services.GetRequiredService<HttpContext>();
         var middleware = new AuthorizationMiddleware();
         await middleware.InvokeAsync(httpContext.Request, _ => Task.CompletedTask);
-        httpContext.Request.Headers.Should().NotBeEmpty();
-        httpContext.Request.Headers.Should().ContainKey(Constants.AuthorizationHeaderName);
+        Assert.NotEmpty(httpContext.Response.Headers);
+        Assert.True(httpContext.Request.Headers.ContainsKey(Constants.AuthorizationHeaderName));
         var value = httpContext.Request.Headers[Constants.AuthorizationHeaderName].ToString();
-        value.Should().NotBeNullOrEmpty();
-        value.Should().StartWith("Basic ");
-        value["Basic ".Length..].Should().Be(Convert.ToBase64String(Encoding.UTF8.GetBytes("uid:pwd")));
+        Assert.NotNull(value);
+        Assert.StartsWith("Basic ", value);
+        Assert.Equal(Convert.ToBase64String(Encoding.UTF8.GetBytes("uid:pwd")), value["Basic ".Length..]);
     }
 
     [Theory]
@@ -58,11 +58,11 @@ public class AuthorizationMiddlewareTest
         var httpContext = services.GetRequiredService<HttpContext>();
         var middleware = new AuthorizationMiddleware();
         await middleware.InvokeAsync(httpContext.Request, _ => Task.CompletedTask);
-        httpContext.Request.Headers.Should().NotBeEmpty();
-        httpContext.Request.Headers.Should().ContainKey(Constants.AuthorizationHeaderName);
+        Assert.NotEmpty(httpContext.Request.Headers);
+        Assert.True(httpContext.Request.Headers.ContainsKey(Constants.AuthorizationHeaderName));
         var value = httpContext.Request.Headers[Constants.AuthorizationHeaderName].ToString();
-        value.Should().NotBeNullOrEmpty();
-        value.Should().StartWith("Bearer ");
-        value["Bearer ".Length..].Should().Be("TestToken");
+        Assert.NotNull(value);
+        Assert.StartsWith(value, "Bearer ");
+        Assert.Equal("TestToken", value["Bearer ".Length..]);
     }
 }

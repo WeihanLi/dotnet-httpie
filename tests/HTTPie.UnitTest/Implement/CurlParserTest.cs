@@ -14,7 +14,7 @@ public sealed class CurlParserTest
 
         await Assert.ThrowsAnyAsync<ArgumentException>(async () =>
         {
-            await foreach (var request in parser.ParseScriptAsync(script))
+            await foreach (var request in parser.ParseScriptAsync(script, TestContext.Current.CancellationToken))
             {
                 Assert.NotNull(request);
             }
@@ -27,7 +27,7 @@ public sealed class CurlParserTest
     {
         var parser = new CurlParser();
 
-        var requests = await parser.ParseScriptAsync(script).ToArrayAsync();
+        var requests = await parser.ParseScriptAsync(script, TestContext.Current.CancellationToken).ToArrayAsync(TestContext.Current.CancellationToken);
         Assert.NotNull(requests);
         Assert.Single(requests);
         Assert.NotNull(requests[0].RequestMessage);

@@ -18,8 +18,8 @@ public class HelpersTest
             .BuildServiceProvider();
         await services.Handle(input, (_, _) => Task.CompletedTask);
         var httpContext = services.GetRequiredService<HttpContext>();
-        httpContext.Request.Url.Should().Be("reservation.weihanli.xyz/health");
-        httpContext.Request.RequestItems.Should().BeEmpty();
+        Assert.Equal("reservation.weihanli.xyz/health", httpContext.Request.Url);
+        Assert.Empty(httpContext.Request.RequestItems);
     }
 
     [Fact]
@@ -32,9 +32,10 @@ public class HelpersTest
             .BuildServiceProvider();
         await services.Handle(input, (_, _) => Task.CompletedTask);
         var httpContext = services.GetRequiredService<HttpContext>();
-        httpContext.Request.Url.Should().Be("reservation.weihanli.xyz/health");
-        httpContext.Request.RequestItems.Should().NotBeEmpty();
-        httpContext.Request.RequestItems.Count.Should().Be(4);
+        
+        Assert.Equal("reservation.weihanli.xyz/health", httpContext.Request.Url);
+        Assert.NotEmpty(httpContext.Request.RequestItems);
+        Assert.Equal(4, httpContext.Request.RequestItems.Count);
     }
 
     [Theory(Skip = "https://github.com/dotnet/command-line-api/issues/1755")]

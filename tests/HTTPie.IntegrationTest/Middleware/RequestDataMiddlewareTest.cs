@@ -12,7 +12,7 @@ public class RequestDataMiddlewareTest : HttpTestBase
         await Handle(input);
 
         var request = GetRequest();
-        request.Body.Should().BeNull();
+        Assert.Null(request.Body);
     }
 
     [Theory]
@@ -22,6 +22,6 @@ public class RequestDataMiddlewareTest : HttpTestBase
         await Handle(input);
 
         var request = GetRequest();
-        request.Body.Should().BeNull();
+        Assert.Null(request.Body);
     }
 }
