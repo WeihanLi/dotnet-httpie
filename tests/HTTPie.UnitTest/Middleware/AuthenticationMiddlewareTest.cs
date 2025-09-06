@@ -37,7 +37,7 @@ public class AuthorizationMiddlewareTest
         var httpContext = services.GetRequiredService<HttpContext>();
         var middleware = new AuthorizationMiddleware();
         await middleware.InvokeAsync(httpContext.Request, _ => Task.CompletedTask);
-        Assert.NotEmpty(httpContext.Response.Headers);
+        Assert.NotEmpty(httpContext.Request.Headers);
         Assert.True(httpContext.Request.Headers.ContainsKey(Constants.AuthorizationHeaderName));
         var value = httpContext.Request.Headers[Constants.AuthorizationHeaderName].ToString();
         Assert.NotNull(value);
@@ -62,7 +62,7 @@ public class AuthorizationMiddlewareTest
         Assert.True(httpContext.Request.Headers.ContainsKey(Constants.AuthorizationHeaderName));
         var value = httpContext.Request.Headers[Constants.AuthorizationHeaderName].ToString();
         Assert.NotNull(value);
-        Assert.StartsWith(value, "Bearer ");
+        Assert.StartsWith("Bearer ", value);
         Assert.Equal("TestToken", value["Bearer ".Length..]);
     }
 }
