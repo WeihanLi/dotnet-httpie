@@ -265,15 +265,18 @@ Requests per second: {reportModel.RequestsPerSecond}
         var requestModel = httpContext.Request;
         var uri = new Uri(requestModel.Url);
         return
-            $@"{requestModel.Method.Method.ToUpper()} {uri.PathAndQuery} HTTP/{requestVersion.ToString(2).TrimEnd('0', '.')}
-Host: {uri.Host}{(uri.IsDefaultPort ? "" : $":{uri.Port}")}
-Schema: {uri.Scheme}";
+            $"""
+             {requestModel.Method.Method.ToUpper()} {uri.PathAndQuery} HTTP/{requestVersion.NormalizeHttpVersion()}
+             Host: {uri.Host}{(uri.IsDefaultPort ? "" : $":{uri.Port}")}
+             Schema: {uri.Scheme}
+             Url: {requestModel.Url}
+             """;
     }
 
     private static string GetResponseVersionAndStatus(HttpResponseModel responseModel)
     {
         return
-            $"HTTP/{responseModel.HttpVersion.ToString(2)} {(int)responseModel.StatusCode} {responseModel.StatusCode}";
+            $"HTTP/{responseModel.HttpVersion.NormalizeHttpVersion()} {(int)responseModel.StatusCode} {responseModel.StatusCode}";
     }
 
     private static string GetHeadersString(IDictionary<string, StringValues> headers)

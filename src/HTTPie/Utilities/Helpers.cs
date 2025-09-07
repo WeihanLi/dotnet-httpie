@@ -261,6 +261,12 @@ public static class Helpers
         return result is { Implicit: false };
     }
 
+    public static string NormalizeHttpVersion(this Version version)
+    {
+        var versionString = version.ToString(2);
+        return versionString.TrimEnd('0', '.');
+    }
+
     public static HttpClientHandler GetHttpClientHandler()
     {
         return new HttpClientHandler
