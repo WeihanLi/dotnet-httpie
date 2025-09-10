@@ -19,7 +19,7 @@ args = args switch
     ["-h"] or ["/h"] => ["--help"],
     _ => args
 };
-if (args.Contains("--version"))
+if (args is ["--version"])
 {
     Console.WriteLine(Constants.DefaultUserAgent);
     return 0;
