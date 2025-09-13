@@ -250,20 +250,6 @@ dotnet-http exec api-calls.curl --type curl
 
 ## Advanced Features
 
-### Conditional Execution
-
-```http
-# Only run in development
-GET {{baseUrl}}/debug/info
-# @condition env === 'development'
-
-###
-
-# Skip in production
-DELETE {{baseUrl}}/test-data
-# @condition env !== 'production'
-```
-
 ### Request Chaining
 
 ```http

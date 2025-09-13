@@ -22,14 +22,15 @@ dotnet-http httpbin.org/get Authorization:"Bearer token"
 ### POST Requests
 
 ```bash
-# POST with JSON data
+```bash
+# JSON POST request
 dotnet-http POST httpbin.org/post name=John email=john@example.com
 
-# POST with form data
+# Form data POST request  
 dotnet-http POST httpbin.org/post --form name=John email=john@example.com
 
-# POST with file upload
-dotnet-http POST httpbin.org/post @/path/to/file.json
+# Raw data POST request
+dotnet-http POST httpbin.org/post --raw "Custom raw data"
 ```
 
 ### PUT Requests
@@ -157,21 +158,17 @@ dotnet-http POST api.example.com/users profile:='{"name": "John", "age": 30}'
 ### Form Data
 
 ```bash
+```bash
 # URL-encoded form data
 dotnet-http POST httpbin.org/post --form name=John email=john@example.com
-
-# Multipart form data
-dotnet-http POST httpbin.org/post --multipart name=John file@/path/to/file.txt
 ```
 
 ### Raw Data
 
 ```bash
+```bash
 # Send raw string
 dotnet-http POST api.example.com/webhook --raw "Raw webhook payload"
-
-# Send file content
-dotnet-http POST api.example.com/upload @/path/to/data.json
 
 # Send from stdin
 echo "data" | dotnet-http POST api.example.com/data

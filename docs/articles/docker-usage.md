@@ -11,7 +11,6 @@ The official Docker image is available at: `weihanli/dotnet-httpie`
 - `latest` - Latest stable release
 - `preview` - Latest preview/pre-release version
 - `0.12.0` - Specific version tags
-- Platform-specific tags for multi-arch support
 
 ## Quick Start
 
@@ -216,7 +215,6 @@ test-api:
 
 ```yaml
 # docker-compose.yml
-version: '3.8'
 
 services:
   api:
@@ -271,15 +269,6 @@ docker run --rm -v $(pwd):/workspace -w /workspace \
 docker run --rm -v $(pwd):/workspace -w /workspace \
   -e API_BASE_URL="https://api.example.com" \
   weihanli/dotnet-httpie:latest exec tests/health-check.http --env production
-```
-
-### Load Testing
-
-```bash
-# Run load test
-docker run --rm -v $(pwd):/workspace -w /workspace \
-  weihanli/dotnet-httpie:latest exec tests/load-test.http \
-  --iterations 100 --concurrent 10
 ```
 
 ### Proxy Testing

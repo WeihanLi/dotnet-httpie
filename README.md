@@ -245,9 +245,9 @@ http POST httpbin.org/post name=John
 - **Basic Auth**: `Authorization:"Basic base64"`
 
 ### File Operations
-- **Upload**: `--multipart file@path/to/file`
-- **Download**: `--download` flag with progress indicators
-- **Send file as body**: `@path/to/file.json`
+- **Form data**: `--form field=value`
+- **Download**: `--download` flag
+- **Send raw data**: `--raw "data"`
 
 ### Request Features
 - **Query parameters**: `param==value`
@@ -281,7 +281,7 @@ http POST httpbin.org/post name=John
 We welcome contributions! Here's how you can help:
 
 1. **Report Issues**: Found a bug? [Open an issue](https://github.com/WeihanLi/dotnet-httpie/issues)
-2. **Feature Requests**: Have an idea? [Start a discussion](https://github.com/WeihanLi/dotnet-httpie/discussions)
+2. **Feature Requests**: Have an idea? [Open an issue](https://github.com/WeihanLi/dotnet-httpie/issues)
 3. **Documentation**: Help improve the docs
 4. **Code**: Submit pull requests for bug fixes or features
 
@@ -309,7 +309,7 @@ dotnet tool install --global --add-source ./artifacts dotnet-httpie
 - **🎯 [Examples](docs/articles/examples/common-use-cases.md)** - Real-world usage patterns
 - **🐳 [Docker Guide](docs/articles/docker-usage.md)** - Containerized usage
 - **📄 [Release Notes](docs/ReleaseNotes.md)** - What's new in each version
-- **💬 [Discussions](https://github.com/WeihanLi/dotnet-httpie/discussions)** - Community Q&A
+- **💬 [Issues](https://github.com/WeihanLi/dotnet-httpie/issues)** - Community Q&A and Bug Reports
 - **🐛 [Issues](https://github.com/WeihanLi/dotnet-httpie/issues)** - Bug reports and feature requests
 
 ## 🙏 Acknowledgments

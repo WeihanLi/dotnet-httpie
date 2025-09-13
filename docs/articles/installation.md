@@ -27,6 +27,22 @@ dotnet tool update --global dotnet-httpie --prerelease
 dotnet tool install --global dotnet-httpie --version 0.12.0
 ```
 
+## Alternative Installation Methods
+
+### Option 2: Pre-built Binaries
+
+Download platform-specific executables from [GitHub Releases](https://github.com/WeihanLi/dotnet-httpie/releases):
+
+- **Windows**: `dotnet-httpie-win-x64.exe`
+- **Linux**: `dotnet-httpie-linux-x64`  
+- **macOS**: `dotnet-httpie-osx-x64`
+
+Extract and add to your system PATH for global access.
+
+### Option 3: Docker
+
+See the [Docker Usage Guide](docker-usage.md) for containerized usage.
+
 ## Verification
 
 After installation, verify that dotnet-httpie is working correctly:
