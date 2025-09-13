@@ -16,7 +16,7 @@ Always reference these instructions first and fallback to search or bash command
 - The project can build with .NET 8 SDK with minor code adjustments, but .NET 10 is the target framework
 
 ### Build and Test Process
-- **NEVER CANCEL builds or tests** - Build takes 3-5 seconds, tests take 3-4 seconds. Set timeout to 60+ seconds.
+- **NEVER CANCEL builds or tests** - Builds and tests typically complete quickly. Set timeout to 60+ seconds.
 - Bootstrap and build:
   ```bash
   # Recommended: Use build script (builds and runs tests)
@@ -28,15 +28,15 @@ Always reference these instructions first and fallback to search or bash command
   # Or specify solution file explicitly (when needed)
   dotnet build dotnet-httpie.slnx
   ```
-- Run unit tests (44 tests, ~3-4 seconds):
+- Run unit tests:
   ```bash
   dotnet test tests/HTTPie.UnitTest/HTTPie.UnitTest.csproj
   ```
-- Run integration tests (expect 5-8 failures in sandboxed environments due to network restrictions):
+- Run integration tests (expect some failures in sandboxed environments due to network restrictions):
   ```bash
   dotnet test tests/HTTPie.IntegrationTest/HTTPie.IntegrationTest.csproj
   ```
-- Package the tool (~4-5 seconds):
+- Package the tool:
   ```bash
   dotnet pack src/HTTPie/HTTPie.csproj --configuration Release
   ```
@@ -83,8 +83,8 @@ Always reference these instructions first and fallback to search or bash command
 ├── .github/workflows/     # CI/CD pipelines (dotnet.yml is main build)
 ├── src/HTTPie/           # Main application project (multi-targets net8.0;net10.0)
 ├── tests/                # Test projects
-│   ├── HTTPie.UnitTest/  # Unit tests (44 tests, all should pass)
-│   └── HTTPie.IntegrationTest/  # Integration tests (5-8 may fail in sandbox)
+│   ├── HTTPie.UnitTest/  # Unit tests (all should pass)
+│   └── HTTPie.IntegrationTest/  # Integration tests (some may fail in sandbox)
 ├── build/                # Build scripts and dotnet-execute configuration
 ├── docs/                 # Release notes and documentation
 ├── dotnet-httpie.slnx   # Solution file (requires .NET 10 SDK)
