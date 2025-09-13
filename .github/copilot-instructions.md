@@ -26,7 +26,7 @@ Always reference these instructions first and fallback to search or bash command
   dotnet build dotnet-httpie.slnx
   
   # Alternative: Use build script
-  ./build.sh --target=build
+  ./build.sh
   ```
 - Run unit tests (44 tests, ~3-4 seconds):
   ```bash
