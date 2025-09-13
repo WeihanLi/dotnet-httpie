@@ -39,7 +39,7 @@ All standard HTTP methods are supported:
 ```bash
 # GET (default)
 dotnet-http GET api.example.com/users
-dotnet-http api.example.com/users  # GET is default
+dotnet-http api.example.com/users  # GET is default when there's no body data parameter
 
 # POST
 dotnet-http POST api.example.com/users
