@@ -92,9 +92,6 @@ dotnet-http OPTIONS api.example.com/users
 |------|-------------|---------|
 | `--timeout` | Request timeout in seconds | `dotnet-http GET api.example.com --timeout 30` |
 | `--proxy` | Proxy server URL | `dotnet-http GET api.example.com --proxy http://proxy:8080` |
-| `--verify` | SSL certificate verification | `dotnet-http GET https://api.example.com --verify=no` |
-| `--cert` | Client certificate file | `dotnet-http GET api.example.com --cert client.pem` |
-| `--cert-key` | Client certificate key | `dotnet-http GET api.example.com --cert-key client.key` |
 
 ### Redirect Handling
 
