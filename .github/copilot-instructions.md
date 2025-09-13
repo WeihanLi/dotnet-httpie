@@ -19,14 +19,14 @@ Always reference these instructions first and fallback to search or bash command
 - **NEVER CANCEL builds or tests** - Build takes 3-5 seconds, tests take 3-4 seconds. Set timeout to 60+ seconds.
 - Bootstrap and build:
   ```bash
-  # Build with dotnet CLI
-  dotnet build  # Uses default solution/project in current directory
+  # Recommended: Use build script (builds and runs tests)
+  ./build.sh
   
+  # Alternative: Build with dotnet CLI
+  dotnet build
+
   # Or specify solution file explicitly (when needed)
   dotnet build dotnet-httpie.slnx
-  
-  # Alternative: Use build script
-  ./build.sh
   ```
 - Run unit tests (44 tests, ~3-4 seconds):
   ```bash
@@ -64,9 +64,9 @@ Always reference these instructions first and fallback to search or bash command
 - **ALWAYS run complete build and test suite** before submitting changes
 - Build validation commands that MUST pass:
   ```bash
-  dotnet build  # ~3-5 seconds
-  dotnet test tests/HTTPie.UnitTest/HTTPie.UnitTest.csproj  # ~3-4 seconds  
-  dotnet pack src/HTTPie/HTTPie.csproj --configuration Release  # ~4-5 seconds
+  dotnet build # build
+  dotnet test # run test cases  
+  dotnet pack src/HTTPie/HTTPie.csproj # pack artifacts
   ```
 - **MANUAL VALIDATION SCENARIOS**: After code changes, test these workflows:
   1. **CLI Help**: `dotnet-http --help` - verify all options display correctly
@@ -99,8 +99,8 @@ Always reference these instructions first and fallback to search or bash command
 - `Directory.Build.props` - Common MSBuild properties (sets LangVersion to preview)
 
 ## Build System Details
-- **Primary Build Method**: `dotnet build` (direct dotnet CLI)
-- **Alternative Build Method**: `./build.sh --target=build` (uses dotnet-execute, may fail with .NET 10 preview)
+- **Recommended Build Method**: `./build.sh` (uses dotnet-execute, builds and runs tests)
+- **Alternative Build Method**: `dotnet build` (direct dotnet CLI)
 - **Target Frameworks**: net8.0 and net10.0 (multi-targeting enabled)
 - **Package Output**: `src/HTTPie/bin/Release/dotnet-httpie.{version}.nupkg`
 - **AOT Compilation**: Enabled for Release builds on .NET 10 (PublishAot=true)
@@ -122,18 +122,19 @@ export DOTNET_ROOT="$HOME/.dotnet"
 
 ### Full Development Workflow
 ```bash
-# 1. Build (3-5 seconds, NEVER CANCEL)
-dotnet build
+# 1. Build and test (recommended - runs both build and tests)
+./build.sh
 
-# 2. Run tests (3-4 seconds each, NEVER CANCEL)
-dotnet test tests/HTTPie.UnitTest/HTTPie.UnitTest.csproj
-dotnet test tests/HTTPie.IntegrationTest/HTTPie.IntegrationTest.csproj  # Some failures expected
+# Alternative: Build and test separately
+# dotnet build
+# dotnet test tests/HTTPie.UnitTest/HTTPie.UnitTest.csproj
+# dotnet test tests/HTTPie.IntegrationTest/HTTPie.IntegrationTest.csproj  # Some failures expected
 
-# 3. Test functionality
+# 2. Test functionality
 dotnet run --project src/HTTPie/HTTPie.csproj --framework net10.0 -- --help
 dotnet run --project src/HTTPie/HTTPie.csproj --framework net10.0 -- https://httpbin.org/get --offline
 
-# 4. Package and install
+# 3. Package and install
 dotnet pack src/HTTPie/HTTPie.csproj --configuration Release
 dotnet tool install --global --add-source src/HTTPie/bin/Release dotnet-httpie --version {version}
 ```
