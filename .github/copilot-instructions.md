@@ -6,37 +6,33 @@ Always reference these instructions first and fallback to search or bash command
 
 ## Working Effectively
 
-### Prerequisites
+### Prerequisites and Setup
 - Install .NET 10 SDK (RC or later) for full compatibility:
   ```bash
   curl -sSL https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh | bash -s -- --channel 10.0 --version latest
   export PATH="$HOME/.dotnet:$PATH"
   export DOTNET_ROOT="$HOME/.dotnet"
   ```
+- Install build tools:
+  ```bash
+  dotnet tool install -g dotnet-execute
+  ```
 - The project can build with .NET 8 SDK with minor code adjustments, but .NET 10 is the target framework
 
 ### Build and Test Process
 - **NEVER CANCEL builds or tests** - Builds and tests typically complete quickly. Set timeout to 60+ seconds.
-- Bootstrap and build:
+- **Recommended Build Method**: `./build.sh` (uses dotnet-execute, builds and runs tests automatically)
+- **Alternative Build Methods**:
   ```bash
-  # Recommended: Use build script (builds and runs tests)
-  ./build.sh
-  
-  # Alternative: Build with dotnet CLI
-  dotnet build
-
-  # Or specify solution file explicitly (when needed)
-  dotnet build dotnet-httpie.slnx
+  dotnet build                    # Direct dotnet CLI
+  dotnet build dotnet-httpie.slnx # Specify solution file explicitly
   ```
-- Run unit tests:
+- **Individual Test Commands**:
   ```bash
-  dotnet test tests/HTTPie.UnitTest/HTTPie.UnitTest.csproj
+  dotnet test tests/HTTPie.UnitTest/HTTPie.UnitTest.csproj      # Unit tests
+  dotnet test tests/HTTPie.IntegrationTest/HTTPie.IntegrationTest.csproj # Integration tests
   ```
-- Run integration tests:
-  ```bash
-  dotnet test tests/HTTPie.IntegrationTest/HTTPie.IntegrationTest.csproj
-  ```
-- Package the tool:
+- **Package the tool**:
   ```bash
   dotnet pack src/HTTPie/HTTPie.csproj --configuration Release
   ```
@@ -98,37 +94,21 @@ Always reference these instructions first and fallback to search or bash command
 - `build/build.cs` - Build script executed by dotnet-execute tool
 - `Directory.Build.props` - Common MSBuild properties (sets LangVersion to preview)
 
-## Build System Details
-- **Recommended Build Method**: `./build.sh` (uses dotnet-execute, builds and runs tests)
-- **Alternative Build Method**: `dotnet build` (direct dotnet CLI)
+### Technical Details
 - **Target Frameworks**: net8.0 and net10.0 (multi-targeting enabled)
 - **Package Output**: `src/HTTPie/bin/Release/dotnet-httpie.{version}.nupkg`
 - **AOT Compilation**: Enabled for Release builds on .NET 10 (PublishAot=true)
 
-## Common Tasks
+## Common Development Tasks
 
-### Installing Prerequisites
-```bash
-# Install .NET 10 SDK
-curl -sSL https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh | bash -s -- --channel 10.0 --version latest
-
-# Install build tools
-dotnet tool install -g dotnet-execute
-
-# Set environment
-export PATH="$HOME/.dotnet:$PATH:$HOME/.dotnet/tools"
-export DOTNET_ROOT="$HOME/.dotnet"
-```
-
-### Full Development Workflow
+### Complete Development Workflow
 ```bash
 # 1. Build and test (recommended - runs both build and tests)
 ./build.sh
 
 # Alternative: Build and test separately
 # dotnet build
-# dotnet test tests/HTTPie.UnitTest/HTTPie.UnitTest.csproj
-# dotnet test tests/HTTPie.IntegrationTest/HTTPie.IntegrationTest.csproj
+# dotnet test
 
 # 2. Test functionality
 dotnet run --project src/HTTPie/HTTPie.csproj --framework net10.0 -- --help
@@ -139,19 +119,6 @@ dotnet pack src/HTTPie/HTTPie.csproj --configuration Release
 dotnet tool install --global --add-source src/HTTPie/bin/Release dotnet-httpie --version {version}
 ```
 
-### Git Workflow
-- Pre-commit hook automatically runs `dotnet build` 
-- Always ensure builds pass before pushing
-- CI/CD runs on macOS, Linux, and Windows with .NET 10 SDK
-
-## Troubleshooting
-
-### Common Issues
-- **Build fails with "unrecognized Solution element"**: Install .NET 10 SDK, .NET 8 doesn't support .slnx format
-- **Tests fail with "Framework not found"**: Ensure .NET 10 runtime is installed and DOTNET_ROOT is set
-- **dotnet-execute build script fails**: The tool has compatibility issues with .NET 10 preview, use direct `dotnet build` instead
-- **Integration tests fail**: Ensure network connectivity is available for external service calls
-
 ### Environment Setup Verification
 ```bash
 # Verify .NET installation
@@ -160,7 +127,20 @@ dotnet --list-runtimes  # Should show Microsoft.NETCore.App 10.0.x
 
 # Verify tools
 dotnet-exec --info  # Should show dotnet-execute tool info
-which dotnet-http      # Should show path after global tool install
+which dotnet-http   # Should show path after global tool install
 ```
+
+## Troubleshooting
+
+### Git Workflow
+- Pre-commit hook automatically runs `dotnet build` 
+- Always ensure builds pass before pushing
+- CI/CD runs on macOS, Linux, and Windows with .NET 10 SDK
+
+### Common Issues
+- **Build fails with "unrecognized Solution element"**: Install .NET 10 SDK, .NET 8 doesn't support .slnx format
+- **Tests fail with "Framework not found"**: Ensure .NET 10 runtime is installed and DOTNET_ROOT is set
+- **dotnet-execute build script fails**: The tool has compatibility issues with .NET 10 preview, use direct `dotnet build` instead
+- **Integration tests fail**: Ensure network connectivity is available for external service calls
 
 This project is a modern .NET tool that showcases advanced features like multi-targeting, AOT compilation, and global tool packaging. Always test the complete user workflow after making changes.
