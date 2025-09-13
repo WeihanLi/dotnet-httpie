@@ -157,24 +157,6 @@ dotnet-http POST api.example.com/users name=John email=john@example.com
 dotnet-http POST api.example.com/users age:=30 active:=true
 ```
 
-### File Uploads
-
-```bash
-# Syntax: name@/path/to/file
-dotnet-http POST api.example.com/upload file@document.pdf
-```
-
-## Environment Variables
-
-dotnet-httpie respects several environment variables:
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `HTTP_PROXY` | HTTP proxy server | `export HTTP_PROXY=http://proxy:8080` |
-| `HTTPS_PROXY` | HTTPS proxy server | `export HTTPS_PROXY=https://proxy:8443` |
-| `NO_PROXY` | Hosts to bypass proxy | `export NO_PROXY=localhost,127.0.0.1` |
-| `DOTNET_HTTP_TIMEOUT` | Default timeout | `export DOTNET_HTTP_TIMEOUT=60` |
-
 ## Configuration Files
 
 ### HTTP Client Environment Files
