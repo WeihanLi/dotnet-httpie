@@ -230,7 +230,7 @@ docker run --rm -e API_TOKEN="your-token" \
 
 ```bash
 # Add to your shell profile (.bashrc, .zshrc, etc.)
-alias http='docker run --rm -i weihanli/dotnet-httpie:latest'
+alias http='docker run --rm weihanli/dotnet-httpie:latest'
 
 # Now use it like the installed version
 http GET httpbin.org/get
