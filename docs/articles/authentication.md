@@ -128,9 +128,13 @@ dotnet-http GET api.example.com/secure \
 ### HTTPie-style Basic Auth
 
 ```bash
-# If supported by middleware
+# Using --auth flag (username:password format)
 dotnet-http GET api.example.com/secure \
   --auth username:password
+
+# With explicit auth type
+dotnet-http GET api.example.com/secure \
+  --auth-type Basic --auth username:password
 ```
 
 ## OAuth 2.0 Flows

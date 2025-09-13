@@ -242,7 +242,7 @@ http POST httpbin.org/post name=John
 ### Authentication
 - **JWT Tokens**: `Authorization:"Bearer token"`
 - **API Keys**: `X-API-Key:"key"` or `api_key==key`  
-- **Basic Auth**: `Authorization:"Basic base64"`
+- **Basic Auth**: `--auth username:password` or `Authorization:"Basic base64"`
 
 ### File Operations
 - **Form data**: `--form field=value`

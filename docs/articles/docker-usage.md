@@ -300,15 +300,20 @@ echo "Testing API at $API_BASE_URL..."
 echo "Checking API health..."
 docker run --rm $DOCKER_IMAGE GET "$API_BASE_URL/health"
 
-# Authentication test
-echo "Testing authentication..."
+# Login to get token (JSON data, not Basic Auth)
+echo "Testing login..."
 TOKEN=$(docker run --rm $DOCKER_IMAGE POST "$API_BASE_URL/auth/login" \
   username=testuser password=testpass --body | jq -r '.token')
 
-# Protected endpoint test
+# Protected endpoint test with Bearer token
 echo "Testing protected endpoint..."
 docker run --rm $DOCKER_IMAGE GET "$API_BASE_URL/protected" \
   Authorization:"Bearer $TOKEN"
+
+# Basic Auth test (HTTP Basic Authentication)
+echo "Testing Basic Auth..."
+docker run --rm $DOCKER_IMAGE GET "$API_BASE_URL/basic-protected" \
+  --auth testuser:testpass
 
 echo "All tests passed!"
 ```
