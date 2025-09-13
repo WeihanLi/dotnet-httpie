@@ -19,12 +19,14 @@ Always reference these instructions first and fallback to search or bash command
 - **NEVER CANCEL builds or tests** - Build takes 3-5 seconds, tests take 3-4 seconds. Set timeout to 60+ seconds.
 - Bootstrap and build:
   ```bash
-  # Build directly with dotnet CLI (recommended method)
-  dotnet build dotnet-httpie.slnx --configuration Release
+  # Build with dotnet CLI
+  dotnet build  # Uses default solution/project in current directory
   
-  # Alternative: Build script with dotnet-execute (may fail with .NET 10 preview)
-  dotnet tool install -g dotnet-execute --prerelease
-  ./build.sh --target=build  # NOTE: Currently fails with .NET 10 RC due to compatibility issues
+  # Or specify solution file explicitly (when needed)
+  dotnet build dotnet-httpie.slnx
+  
+  # Alternative: Use build script
+  ./build.sh --target=build
   ```
 - Run unit tests (44 tests, ~3-4 seconds):
   ```bash
@@ -62,7 +64,7 @@ Always reference these instructions first and fallback to search or bash command
 - **ALWAYS run complete build and test suite** before submitting changes
 - Build validation commands that MUST pass:
   ```bash
-  dotnet build dotnet-httpie.slnx --configuration Release  # ~3-5 seconds
+  dotnet build  # ~3-5 seconds
   dotnet test tests/HTTPie.UnitTest/HTTPie.UnitTest.csproj  # ~3-4 seconds  
   dotnet pack src/HTTPie/HTTPie.csproj --configuration Release  # ~4-5 seconds
   ```
@@ -97,7 +99,7 @@ Always reference these instructions first and fallback to search or bash command
 - `Directory.Build.props` - Common MSBuild properties (sets LangVersion to preview)
 
 ## Build System Details
-- **Primary Build Method**: `dotnet build dotnet-httpie.slnx` (direct dotnet CLI)
+- **Primary Build Method**: `dotnet build` (direct dotnet CLI)
 - **Alternative Build Method**: `./build.sh --target=build` (uses dotnet-execute, may fail with .NET 10 preview)
 - **Target Frameworks**: net8.0 and net10.0 (multi-targeting enabled)
 - **Package Output**: `src/HTTPie/bin/Release/dotnet-httpie.{version}.nupkg`
@@ -111,7 +113,7 @@ Always reference these instructions first and fallback to search or bash command
 curl -sSL https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh | bash -s -- --channel 10.0 --version latest
 
 # Install build tools
-dotnet tool install -g dotnet-execute --prerelease
+dotnet tool install -g dotnet-execute
 
 # Set environment
 export PATH="$HOME/.dotnet:$PATH:$HOME/.dotnet/tools"
@@ -121,7 +123,7 @@ export DOTNET_ROOT="$HOME/.dotnet"
 ### Full Development Workflow
 ```bash
 # 1. Build (3-5 seconds, NEVER CANCEL)
-dotnet build dotnet-httpie.slnx --configuration Release
+dotnet build
 
 # 2. Run tests (3-4 seconds each, NEVER CANCEL)
 dotnet test tests/HTTPie.UnitTest/HTTPie.UnitTest.csproj
