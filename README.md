@@ -8,7 +8,7 @@
 
 > **Modern, user-friendly command-line HTTP client for the .NET ecosystem**
 
-dotnet-httpie is a .NET global tool that brings the power and simplicity of [HTTPie](https://github.com/httpie/httpie) to .NET developers. It's designed for testing, debugging, and interacting with APIs and HTTP servers with an intuitive command-line interface.
+dotnet-httpie is a .NET tool that brings the power and simplicity of [HTTPie](https://github.com/httpie/httpie) to .NET developers. It's designed for testing, debugging, and interacting with APIs and HTTP servers with an intuitive command-line interface.
 
 ![httpie](https://raw.githubusercontent.com/httpie/httpie/master/docs/httpie-animation.gif)
 
