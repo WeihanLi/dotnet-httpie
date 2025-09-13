@@ -111,11 +111,7 @@ dotnet-http POST api.example.com/users \
   address[zipcode]:=98101 \
   tags:='["developer", "api"]'
 
-# File upload
-dotnet-http POST api.example.com/upload \
-  --multipart \
-  file@/path/to/document.pdf \
-  description="Important document"
+
 
 # Download files
 dotnet-http GET api.example.com/files/report.pdf --download

@@ -75,7 +75,6 @@ dotnet-http OPTIONS api.example.com/users
 |------|-------------|---------|
 | `--json`, `-j` | Force JSON content type | `dotnet-http POST api.example.com --json` |
 | `--form`, `-f` | Send as form data | `dotnet-http POST api.example.com --form` |
-| `--multipart` | Send as multipart form | `dotnet-http POST api.example.com --multipart` |
 | `--raw` | Send raw data | `dotnet-http POST api.example.com --raw "text data"` |
 
 ### File Operations
@@ -86,19 +85,7 @@ dotnet-http OPTIONS api.example.com/users
 | `--output`, `-o` | Save response to specific file | `dotnet-http GET api.example.com/data --output data.json` |
 | `--continue`, `-C` | Resume interrupted download | `dotnet-http GET api.example.com/large.zip --download --continue` |
 
-### Network Options
 
-| Flag | Description | Example |
-|------|-------------|---------|
-| `--timeout` | Request timeout in seconds | `dotnet-http GET api.example.com --timeout 30` |
-| `--proxy` | Proxy server URL | `dotnet-http GET api.example.com --proxy http://proxy:8080` |
-
-### Redirect Handling
-
-| Flag | Description | Example |
-|------|-------------|---------|
-| `--follow`, `-F` | Follow redirects | `dotnet-http GET api.example.com/redirect --follow` |
-| `--max-redirects` | Maximum number of redirects | `dotnet-http GET api.example.com --follow --max-redirects 5` |
 
 ## Execute Command Options
 
@@ -154,27 +141,7 @@ dotnet-http POST api.example.com/users name=John email=john@example.com
 dotnet-http POST api.example.com/users age:=30 active:=true
 ```
 
-## Configuration Files
 
-### HTTP Client Environment Files
-
-```json
-{
-  "development": {
-    "baseUrl": "http://localhost:3000",
-    "apiKey": "dev-key"
-  },
-  "production": {
-    "baseUrl": "https://api.example.com",
-    "apiKey": "prod-key"
-  }
-}
-```
-
-File locations:
-- `http-client.env.json` (same directory)
-- `~/.httpie/env.json` (global)
-- Custom path via `--env-file`
 
 ## Output Formats
 
@@ -247,9 +214,6 @@ dotnet-http GET api.example.com/data X-API-Key:"key123"
 ### File Operations
 
 ```bash
-# Upload file
-dotnet-http POST api.example.com/upload --multipart file@document.pdf
-
 # Download file
 dotnet-http GET api.example.com/report.pdf --download
 
@@ -262,9 +226,6 @@ dotnet-http POST api.example.com/data @data.json
 ```bash
 # URL-encoded form
 dotnet-http POST httpbin.org/post --form name=John email=john@example.com
-
-# Multipart form
-dotnet-http POST httpbin.org/post --multipart name=John file@avatar.jpg
 ```
 
 ### Response Handling
