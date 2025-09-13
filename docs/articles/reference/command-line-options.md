@@ -86,14 +86,6 @@ dotnet-http OPTIONS api.example.com/users
 | `--output`, `-o` | Save response to specific file | `dotnet-http GET api.example.com/data --output data.json` |
 | `--continue`, `-C` | Resume interrupted download | `dotnet-http GET api.example.com/large.zip --download --continue` |
 
-### Response Options
-
-| Flag | Description | Example |
-|------|-------------|---------|
-| `--body`, `-b` | Show only response body | `dotnet-http GET api.example.com --body` |
-| `--headers`, `-h` | Show only response headers | `dotnet-http GET api.example.com --headers` |
-| `--meta`, `-m` | Show response metadata | `dotnet-http GET api.example.com --meta` |
-
 ### Network Options
 
 | Flag | Description | Example |
