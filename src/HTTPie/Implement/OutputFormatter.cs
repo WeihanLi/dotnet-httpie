@@ -51,7 +51,7 @@ public sealed class OutputFormatter(IServiceProvider serviceProvider, ILogger<Ou
 
     private static readonly Option<bool> OutputVerboseOption = new("-v", "--verbose")
     {
-        Description = "output request/response, response headers and response body"
+        Description = "output all request/response info, including request/response headers,properties,body"
     };
 
     private static readonly Option<string> OutputPrintModeOption = new("-p", "--print")
