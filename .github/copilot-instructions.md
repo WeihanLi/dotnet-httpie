@@ -32,7 +32,7 @@ Always reference these instructions first and fallback to search or bash command
   ```bash
   dotnet test tests/HTTPie.UnitTest/HTTPie.UnitTest.csproj
   ```
-- Run integration tests (expect some failures in sandboxed environments due to network restrictions):
+- Run integration tests:
   ```bash
   dotnet test tests/HTTPie.IntegrationTest/HTTPie.IntegrationTest.csproj
   ```
@@ -73,7 +73,7 @@ Always reference these instructions first and fallback to search or bash command
   2. **HTTP Request**: `dotnet-http https://httpbin.org/get --offline` - verify request formatting
   3. **HTTP File Execution**: `dotnet-http exec tests/HTTPie.IntegrationTest/TestAssets/HttpStartedSample.http --offline` - verify .http file parsing
   4. **Package Installation**: Install as global tool and verify `dotnet-http` command works
-- Integration tests may fail in network-restricted environments - this is expected and not a blocker
+- Integration tests should pass when network connectivity is available
 
 ## Key Project Structure
 
@@ -84,7 +84,7 @@ Always reference these instructions first and fallback to search or bash command
 ├── src/HTTPie/           # Main application project (multi-targets net8.0;net10.0)
 ├── tests/                # Test projects
 │   ├── HTTPie.UnitTest/  # Unit tests (all should pass)
-│   └── HTTPie.IntegrationTest/  # Integration tests (some may fail in sandbox)
+│   └── HTTPie.IntegrationTest/  # Integration tests
 ├── build/                # Build scripts and dotnet-execute configuration
 ├── docs/                 # Release notes and documentation
 ├── dotnet-httpie.slnx   # Solution file (requires .NET 10 SDK)
@@ -128,7 +128,7 @@ export DOTNET_ROOT="$HOME/.dotnet"
 # Alternative: Build and test separately
 # dotnet build
 # dotnet test tests/HTTPie.UnitTest/HTTPie.UnitTest.csproj
-# dotnet test tests/HTTPie.IntegrationTest/HTTPie.IntegrationTest.csproj  # Some failures expected
+# dotnet test tests/HTTPie.IntegrationTest/HTTPie.IntegrationTest.csproj
 
 # 2. Test functionality
 dotnet run --project src/HTTPie/HTTPie.csproj --framework net10.0 -- --help
@@ -150,7 +150,7 @@ dotnet tool install --global --add-source src/HTTPie/bin/Release dotnet-httpie -
 - **Build fails with "unrecognized Solution element"**: Install .NET 10 SDK, .NET 8 doesn't support .slnx format
 - **Tests fail with "Framework not found"**: Ensure .NET 10 runtime is installed and DOTNET_ROOT is set
 - **dotnet-execute build script fails**: The tool has compatibility issues with .NET 10 preview, use direct `dotnet build` instead
-- **Integration tests fail**: Expected in network-restricted environments, focus on unit tests for validation
+- **Integration tests fail**: Ensure network connectivity is available for external service calls
 
 ### Environment Setup Verification
 ```bash
@@ -159,7 +159,7 @@ dotnet --list-sdks  # Should show 10.0.x
 dotnet --list-runtimes  # Should show Microsoft.NETCore.App 10.0.x
 
 # Verify tools
-dotnet-exec --version  # Should show dotnet-execute version
+dotnet-exec --info  # Should show dotnet-execute tool info
 which dotnet-http      # Should show path after global tool install
 ```
 
