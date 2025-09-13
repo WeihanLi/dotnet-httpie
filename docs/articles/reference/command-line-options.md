@@ -223,7 +223,7 @@ dotnet-http GET api.example.com/users --print=HhBb
 | `B` | Request body |
 | `h` | Response headers |
 | `b` | Response body |
-| `m` | Response metadata |
+| `p` | Request/Response properties |
 
 ## Exit Codes
 
