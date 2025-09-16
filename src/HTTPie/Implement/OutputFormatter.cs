@@ -131,8 +131,9 @@ public sealed class OutputFormatter(IServiceProvider serviceProvider, ILogger<Ou
         var responseModel = httpContext.Response;
 
         var hasValidResponse = (int)responseModel.StatusCode > 0;
+        // The HttpVersion in ResponseMessage is the version used for the request after negotiation
         var requestVersion = hasValidResponse
-            ? httpContext.Response.RequestHttpVersion ?? httpContext.Response.HttpVersion
+            ? httpContext.Response.HttpVersion
             : httpContext.Request.HttpVersion ?? new Version(2, 0)
             ;
         var prettyOption = requestModel.ParseResult.GetValue(PrettyOption);
