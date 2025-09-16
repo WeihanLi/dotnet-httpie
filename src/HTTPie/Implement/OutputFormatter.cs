@@ -51,7 +51,7 @@ public sealed class OutputFormatter(IServiceProvider serviceProvider, ILogger<Ou
 
     private static readonly Option<bool> OutputVerboseOption = new("-v", "--verbose")
     {
-        Description = "output request/response, response headers and response body"
+        Description = "output all request/response info, including request/response headers,properties,body"
     };
 
     private static readonly Option<string> OutputPrintModeOption = new("-p", "--print")
@@ -131,8 +131,9 @@ public sealed class OutputFormatter(IServiceProvider serviceProvider, ILogger<Ou
         var responseModel = httpContext.Response;
 
         var hasValidResponse = (int)responseModel.StatusCode > 0;
+        // The HttpVersion in ResponseMessage is the version used for the request after negotiation
         var requestVersion = hasValidResponse
-            ? httpContext.Response.RequestHttpVersion ?? httpContext.Response.HttpVersion
+            ? httpContext.Response.HttpVersion
             : httpContext.Request.HttpVersion ?? new Version(2, 0)
             ;
         var prettyOption = requestModel.ParseResult.GetValue(PrettyOption);
