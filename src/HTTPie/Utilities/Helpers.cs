@@ -263,8 +263,14 @@ public static class Helpers
 
     public static string NormalizeHttpVersion(this Version version)
     {
-        var versionString = version.ToString(2);
-        return versionString.TrimEnd('0', '.');
+        if (version.Major < 2)
+        {
+            // http/1.1
+            return $"http/{version.Major}.{version.Minor}";
+        }
+
+        // h2, h3
+        return $"h{version.Major}";
     }
 
     public static HttpClientHandler GetHttpClientHandler()
