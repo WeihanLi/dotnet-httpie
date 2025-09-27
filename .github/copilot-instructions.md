@@ -6,20 +6,8 @@ Always reference these instructions first and fallback to search or bash command
 
 ## Working Effectively
 
-### Prerequisites and Setup
-- Install .NET 10 SDK (RC or later) for full compatibility:
-  ```bash
-  curl -sSL https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.sh | bash -s -- --channel 10.0 --version latest
-  export PATH="$HOME/.dotnet:$PATH"
-  export DOTNET_ROOT="$HOME/.dotnet"
-  ```
-- Install build tools:
-  ```bash
-  dotnet tool install -g dotnet-execute
-  ```
-- The project can build with .NET 8 SDK with minor code adjustments, but .NET 10 is the target framework
-
 ### Build and Test Process
+
 - **NEVER CANCEL builds or tests** - Builds and tests typically complete quickly. Set timeout to 60+ seconds.
 - **Recommended Build Method**: `./build.sh` (uses dotnet-execute, builds and runs tests automatically)
 - **Alternative Build Methods**:
@@ -38,15 +26,18 @@ Always reference these instructions first and fallback to search or bash command
   ```
 
 ### Running the Application
+
 - Run in development:
   ```bash
   dotnet run --project src/HTTPie/HTTPie.csproj --framework net10.0 -- --help
   ```
+
 - Install as global tool:
   ```bash
   dotnet tool install --global --add-source src/HTTPie/bin/Release dotnet-httpie
   dotnet-http --help
   ```
+
 - Test basic functionality:
   ```bash
   # Test in offline mode (no network required)
@@ -57,6 +48,7 @@ Always reference these instructions first and fallback to search or bash command
   ```
 
 ## Validation
+
 - **ALWAYS run complete build and test suite** before submitting changes
 - Build validation commands that MUST pass:
   ```bash
