@@ -270,7 +270,7 @@ Requests per second: {reportModel.RequestsPerSecond}
              {requestModel.Method.Method.ToUpper()} {uri.PathAndQuery} {requestVersion.NormalizeHttpVersion()}
              Host: {uri.Host}{(uri.IsDefaultPort ? "" : $":{uri.Port}")}
              Schema: {uri.Scheme}
-             Url: {requestModel.Url}
+             [Url]: {requestModel.Url}
              """;
     }
 
