@@ -35,8 +35,8 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
 
     public Option[] SupportedOptions() => [FormOption, JsonOption, RawDataOption];
 
-    [RequiresDynamicCode()]
-    [RequiresUnreferencedCode()]
+    [RequiresDynamicCode("")]
+    [RequiresUnreferencedCode("")]
     public Task InvokeAsync(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
         var isFormData = requestModel.ParseResult.HasOption(FormOption);
