@@ -258,9 +258,10 @@ public sealed partial class RequestExecutor(
                     {
                         responseModel.Body = responseModel.Bytes.GetString();
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // ignored
+                        // Unable to decode response as text, likely encoding issue
+                        LogException(ex);
                     }
                 }
                 return;
@@ -279,7 +280,13 @@ public sealed partial class RequestExecutor(
             if (outputFormat.HasFlag(OutputFormat.ResponseBody) || outputFormat == OutputFormat.ResponseInfo)
             {
                 await using var stream = await responseMessage.Content.ReadAsStreamAsync(cancellationToken);
-                using var reader = new StreamReader(stream);
+                
+                // Get encoding from Content-Type header or default to UTF-8
+                var encoding = responseMessage.Content.Headers.ContentType?.CharSet is { } charset
+                    ? System.Text.Encoding.GetEncoding(charset)
+                    : System.Text.Encoding.UTF8;
+                
+                using var reader = new StreamReader(stream, encoding);
                 
                 var bodyBuilder = new StringBuilder();
                 string? line;
@@ -291,7 +298,7 @@ public sealed partial class RequestExecutor(
                 
                 // Store the body for potential later use
                 responseModel.Body = bodyBuilder.ToString();
-                responseModel.Bytes = System.Text.Encoding.UTF8.GetBytes(responseModel.Body);
+                responseModel.Bytes = encoding.GetBytes(responseModel.Body);
             }
             else
             {
@@ -314,6 +321,8 @@ public sealed partial class RequestExecutor(
 
     private static bool IsTextResponse(HttpResponseMessage response)
     {
+        // When ContentType is null, assume text response for compatibility
+        // This matches the behavior of ResponseMapper.IsTextResponse
         if (response.Content.Headers.ContentType?.MediaType is null)
         {
             return true;
