@@ -2,12 +2,15 @@
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
+using HTTPie.Middleware;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
+using System.Text;
 using WeihanLi.Common.Extensions;
 
 namespace HTTPie.Implement;
@@ -50,9 +53,14 @@ public sealed partial class RequestExecutor(
         Description = "Request duration, 10s/1m or 00:01:00 ..."
     };
 
+    private static readonly Option<bool> StreamOption = new("--stream", "-S")
+    {
+        Description = "Stream response body output as it arrives (text responses only)"
+    };
+
     public Option[] SupportedOptions()
     {
-        return [TimeoutOption, IterationOption, DurationOption, VirtualUserOption];
+        return [TimeoutOption, IterationOption, DurationOption, VirtualUserOption, StreamOption];
     }
 
     public async ValueTask ExecuteAsync(HttpContext httpContext)
@@ -60,6 +68,11 @@ public sealed partial class RequestExecutor(
         var requestModel = httpContext.Request;
         await requestPipeline(requestModel);
         LogRequestModel(requestModel);
+        
+        // Set streaming mode flag early, before any early returns
+        var streamMode = requestModel.ParseResult.HasOption(StreamOption);
+        httpContext.UpdateFlag(Constants.FlagNames.IsStreamingMode, streamMode);
+        
         if (requestModel.ParseResult.HasOption(OutputFormatter.OfflineOption))
         {
             RequestShouldBeOffline();
@@ -104,8 +117,15 @@ public sealed partial class RequestExecutor(
         }
         else
         {
-            httpContext.Response = await InvokeRequest(client, httpContext, httpContext.RequestCancelled);
-            await responsePipeline(httpContext);
+            if (streamMode)
+            {
+                await InvokeStreamingRequest(client, httpContext, httpContext.RequestCancelled);
+            }
+            else
+            {
+                httpContext.Response = await InvokeRequest(client, httpContext, httpContext.RequestCancelled);
+                await responsePipeline(httpContext);
+            }
         }
 
         async Task InvokeLoadTest(HttpClient httpClient)
@@ -185,6 +205,167 @@ public sealed partial class RequestExecutor(
         }
 
         return responseModel;
+    }
+
+    private async Task InvokeStreamingRequest(HttpClient httpClient, HttpContext httpContext,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            using var requestMessage = await requestMapper.ToRequestMessage(httpContext);
+            LogRequestMessage(requestMessage);
+            httpContext.Request.Timestamp = DateTimeOffset.Now;
+            var startTime = Stopwatch.GetTimestamp();
+            
+            // Send request with HttpCompletionOption.ResponseHeadersRead to start streaming
+            using var responseMessage = await httpClient.SendAsync(requestMessage, 
+                HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            
+            var elapsed = ProfilerHelper.GetElapsedTime(startTime);
+            LogResponseMessage(responseMessage);
+            
+            // Build response model with headers only
+            var responseModel = new HttpResponseModel
+            {
+                RequestHttpVersion = responseMessage.RequestMessage?.Version,
+                HttpVersion = responseMessage.Version,
+                StatusCode = responseMessage.StatusCode,
+                Headers = responseMessage.Headers
+                    .Union(responseMessage.Content.Headers)
+                    .ToDictionary(x => x.Key, x => new Microsoft.Extensions.Primitives.StringValues(x.Value.ToArray())),
+                Timestamp = httpContext.Request.Timestamp.Add(elapsed),
+                Elapsed = elapsed
+            };
+            
+            httpContext.Response = responseModel;
+            
+            // Run response pipeline for headers (e.g., to set properties)
+            await responsePipeline(httpContext);
+            
+            // Check if we should stream based on content type
+            var isTextResponse = IsTextResponse(responseMessage);
+            var downloadMode = httpContext.Request.ParseResult.HasOption(DownloadMiddleware.DownloadOption);
+            
+            if (!isTextResponse || downloadMode)
+            {
+                // Fall back to buffered mode for binary content or downloads
+                responseModel.Bytes = await responseMessage.Content.ReadAsByteArrayAsync(cancellationToken);
+                if (isTextResponse)
+                {
+                    try
+                    {
+                        responseModel.Body = responseModel.Bytes.GetString();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+                return;
+            }
+            
+            // Output headers immediately
+            var outputFormat = OutputFormatter.GetOutputFormat(httpContext);
+            
+            if (outputFormat.HasFlag(OutputFormat.ResponseHeaders) || outputFormat == OutputFormat.ResponseInfo)
+            {
+                var headerOutput = GetStreamingHeaderOutput(httpContext);
+                await Console.Out.WriteLineAsync(headerOutput);
+            }
+            
+            // Stream the body
+            if (outputFormat.HasFlag(OutputFormat.ResponseBody) || outputFormat == OutputFormat.ResponseInfo)
+            {
+                await using var stream = await responseMessage.Content.ReadAsStreamAsync(cancellationToken);
+                using var reader = new StreamReader(stream);
+                
+                var bodyBuilder = new StringBuilder();
+                string? line;
+                while ((line = await reader.ReadLineAsync(cancellationToken)) is not null)
+                {
+                    await Console.Out.WriteLineAsync(line);
+                    bodyBuilder.AppendLine(line);
+                }
+                
+                // Store the body for potential later use
+                responseModel.Body = bodyBuilder.ToString();
+                responseModel.Bytes = System.Text.Encoding.UTF8.GetBytes(responseModel.Body);
+            }
+            else
+            {
+                // Even if not outputting body, we need to consume it
+                responseModel.Bytes = await responseMessage.Content.ReadAsByteArrayAsync(cancellationToken);
+                responseModel.Body = responseModel.Bytes.GetString();
+            }
+            
+            LogRequestDuration(httpContext.Request.Url, httpContext.Request.Method, responseModel.StatusCode, elapsed);
+        }
+        catch (OperationCanceledException operationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            LogRequestCancelled(operationCanceledException);
+        }
+        catch (Exception exception)
+        {
+            LogException(exception);
+        }
+    }
+
+    private static bool IsTextResponse(HttpResponseMessage response)
+    {
+        if (response.Content.Headers.ContentType?.MediaType is null)
+        {
+            return true;
+        }
+        var contentType = response.Content.Headers.ContentType;
+        var mediaType = contentType.MediaType;
+        var isTextContent = mediaType.StartsWith("text/", StringComparison.OrdinalIgnoreCase)
+            || mediaType.StartsWith("application/json", StringComparison.OrdinalIgnoreCase)
+            || mediaType.StartsWith("application/xml", StringComparison.OrdinalIgnoreCase)
+            || mediaType.StartsWith("application/javascript", StringComparison.OrdinalIgnoreCase)
+            ;
+        return isTextContent;
+    }
+
+    private string GetStreamingHeaderOutput(HttpContext httpContext)
+    {
+        var responseModel = httpContext.Response;
+        var requestModel = httpContext.Request;
+        var outputFormat = OutputFormatter.GetOutputFormat(httpContext);
+        var output = new StringBuilder();
+        
+        // Request headers if needed
+        if (outputFormat.HasFlag(OutputFormat.RequestHeaders))
+        {
+            var requestVersion = responseModel.HttpVersion;
+            var uri = new Uri(requestModel.Url);
+            output.AppendLine($"{requestModel.Method.Method.ToUpper()} {uri.PathAndQuery} {requestVersion.NormalizeHttpVersion()}");
+            output.AppendLine($"Host: {uri.Host}{(uri.IsDefaultPort ? "" : $":{uri.Port}")}");
+            output.AppendLine($"Schema: {uri.Scheme}");
+            output.AppendLine($"[Url]: {requestModel.Url}");
+            output.AppendLine(string.Join(Environment.NewLine, 
+                requestModel.Headers.Select(h => $"{h.Key}: {h.Value}").OrderBy(h => h)));
+            
+            if (outputFormat.HasFlag(OutputFormat.Properties) && requestModel.Properties.Count > 0)
+            {
+                output.AppendLine(string.Join(Environment.NewLine,
+                    requestModel.Properties.Select(h => $"[{h.Key}]: {h.Value}").OrderBy(h => h)));
+            }
+            output.AppendLine();
+        }
+        
+        // Response headers
+        output.AppendLine($"{responseModel.HttpVersion.NormalizeHttpVersion()} {(int)responseModel.StatusCode} {responseModel.StatusCode}");
+        output.AppendLine(string.Join(Environment.NewLine, 
+            responseModel.Headers.Select(h => $"{h.Key}: {h.Value}").OrderBy(h => h)));
+        
+        if (outputFormat.HasFlag(OutputFormat.Properties) && responseModel.Properties.Count > 0)
+        {
+            output.AppendLine(string.Join(Environment.NewLine,
+                responseModel.Properties.Select(h => $"[{h.Key}]: {h.Value}").OrderBy(h => h)));
+        }
+        
+        output.AppendLine();
+        return output.ToString();
     }
 
     [LoggerMessage(Level = LogLevel.Debug, EventId = 0, Message = "Request should be offline, wont send request")]

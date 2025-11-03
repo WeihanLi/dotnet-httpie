@@ -34,5 +34,6 @@ public static class Constants
     {
         public const string IsFormContentType = "IsFormContentType";
         public const string IsLoadTest = "IsLoadTest";
+        public const string IsStreamingMode = "IsStreamingMode";
     }
 }

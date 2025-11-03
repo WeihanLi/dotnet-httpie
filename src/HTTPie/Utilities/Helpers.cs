@@ -241,13 +241,26 @@ public static class Helpers
         await serviceProvider.GetRequiredService<IRequestItemParser>()
             .ParseAsync(requestModel);
 
+        // Check for streaming mode option early by checking tokens
+        // This is needed for tests that use an internal handler
+        var hasStreamOption = parseResult.Tokens.Any(t => 
+            t.Value.Equals("--stream", StringComparison.OrdinalIgnoreCase) || 
+            t.Value.Equals("-S", StringComparison.OrdinalIgnoreCase));
+        context.UpdateFlag(Constants.FlagNames.IsStreamingMode, hasStreamOption);
+
         if (internalHandler is null)
         {
             await serviceProvider.ResolveRequiredService<IRequestExecutor>()
                 .ExecuteAsync(context);
-            var output = await serviceProvider.ResolveRequiredService<IOutputFormatter>()
-                .GetOutput(context);
-            await Console.Out.WriteLineAsync(output.Trim());
+            
+            // Skip output formatting if in streaming mode (output already written)
+            var isStreamingMode = context.GetFlag(Constants.FlagNames.IsStreamingMode);
+            if (!isStreamingMode)
+            {
+                var output = await serviceProvider.ResolveRequiredService<IOutputFormatter>()
+                    .GetOutput(context);
+                await Console.Out.WriteLineAsync(output.Trim());
+            }
         }
         else
         {

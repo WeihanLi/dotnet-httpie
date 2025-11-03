@@ -49,4 +49,30 @@ public class HelpersTest
         Assert.Equal("--raw", args[0]);
         Assert.Equal(@"{""Id"":1,""Name"":""Test""}", args[1]);
     }
+
+    [Fact]
+    public async Task StreamingOption_IsRecognized()
+    {
+        var input = "GET reservation.weihanli.xyz/health --stream --offline";
+        var services = new ServiceCollection()
+            .AddLogging()
+            .RegisterApplicationServices()
+            .BuildServiceProvider();
+        await services.Handle(input, (_, _) => Task.CompletedTask);
+        var httpContext = services.GetRequiredService<HttpContext>();
+        Assert.True(httpContext.GetFlag(Constants.FlagNames.IsStreamingMode));
+    }
+
+    [Fact]
+    public async Task StreamingOption_NotSetByDefault()
+    {
+        var input = "GET reservation.weihanli.xyz/health --offline";
+        var services = new ServiceCollection()
+            .AddLogging()
+            .RegisterApplicationServices()
+            .BuildServiceProvider();
+        await services.Handle(input, (_, _) => Task.CompletedTask);
+        var httpContext = services.GetRequiredService<HttpContext>();
+        Assert.False(httpContext.GetFlag(Constants.FlagNames.IsStreamingMode));
+    }
 }
