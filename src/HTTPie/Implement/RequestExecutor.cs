@@ -120,6 +120,8 @@ public sealed partial class RequestExecutor(
             if (streamMode)
             {
                 await InvokeStreamingRequest(client, httpContext, httpContext.RequestCancelled);
+                // Mark that streaming actually completed
+                httpContext.UpdateFlag(Constants.FlagNames.StreamingCompleted, true);
             }
             else
             {

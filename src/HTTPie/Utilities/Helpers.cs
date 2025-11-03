@@ -253,9 +253,9 @@ public static class Helpers
             await serviceProvider.ResolveRequiredService<IRequestExecutor>()
                 .ExecuteAsync(context);
             
-            // Skip output formatting if in streaming mode (output already written)
-            var isStreamingMode = context.GetFlag(Constants.FlagNames.IsStreamingMode);
-            if (!isStreamingMode)
+            // Skip output formatting if streaming actually completed (output already written)
+            var streamingCompleted = context.GetFlag(Constants.FlagNames.StreamingCompleted);
+            if (!streamingCompleted)
             {
                 var output = await serviceProvider.ResolveRequiredService<IOutputFormatter>()
                     .GetOutput(context);
