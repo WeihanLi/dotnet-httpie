@@ -6,7 +6,6 @@ using HTTPie.Middleware;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
