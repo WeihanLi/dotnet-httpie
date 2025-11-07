@@ -6,7 +6,13 @@ using HTTPie.Middleware;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using Microsoft.Extensions.Logging;
+
+<<<<<<< TODO: Unmerged change from project 'HTTPie(net10.0)', Before:
 using Microsoft.Extensions.Primitives;
+using System.Collections.Concurrent;
+=======
+using System.Collections.Concurrent;
+>>>>>>> After
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
@@ -68,11 +74,11 @@ public sealed partial class RequestExecutor(
         var requestModel = httpContext.Request;
         await requestPipeline(requestModel);
         LogRequestModel(requestModel);
-        
+
         // Set streaming mode flag early, before any early returns
         var streamMode = requestModel.ParseResult.HasOption(StreamOption);
         httpContext.UpdateFlag(Constants.FlagNames.IsStreamingMode, streamMode);
-        
+
         if (requestModel.ParseResult.HasOption(OutputFormatter.OfflineOption))
         {
             RequestShouldBeOffline();
@@ -218,14 +224,14 @@ public sealed partial class RequestExecutor(
             LogRequestMessage(requestMessage);
             httpContext.Request.Timestamp = DateTimeOffset.Now;
             var startTime = Stopwatch.GetTimestamp();
-            
+
             // Send request with HttpCompletionOption.ResponseHeadersRead to start streaming
-            using var responseMessage = await httpClient.SendAsync(requestMessage, 
+            using var responseMessage = await httpClient.SendAsync(requestMessage,
                 HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-            
+
             var elapsed = ProfilerHelper.GetElapsedTime(startTime);
             LogResponseMessage(responseMessage);
-            
+
             // Build response model with headers only
             var responseModel = new HttpResponseModel
             {
@@ -238,16 +244,16 @@ public sealed partial class RequestExecutor(
                 Timestamp = httpContext.Request.Timestamp.Add(elapsed),
                 Elapsed = elapsed
             };
-            
+
             httpContext.Response = responseModel;
-            
+
             // Run response pipeline for headers (e.g., to set properties)
             await responsePipeline(httpContext);
-            
+
             // Check if we should stream based on content type
             var isTextResponse = IsTextResponse(responseMessage);
             var downloadMode = httpContext.Request.ParseResult.HasOption(DownloadMiddleware.DownloadOption);
-            
+
             if (!isTextResponse || downloadMode)
             {
                 // Fall back to buffered mode for binary content or downloads
@@ -266,28 +272,28 @@ public sealed partial class RequestExecutor(
                 }
                 return;
             }
-            
+
             // Output headers immediately
             var outputFormat = OutputFormatter.GetOutputFormat(httpContext);
-            
+
             if (outputFormat.HasFlag(OutputFormat.ResponseHeaders) || outputFormat == OutputFormat.ResponseInfo)
             {
                 var headerOutput = GetStreamingHeaderOutput(httpContext);
                 await Console.Out.WriteLineAsync(headerOutput);
             }
-            
+
             // Stream the body
             if (outputFormat.HasFlag(OutputFormat.ResponseBody) || outputFormat == OutputFormat.ResponseInfo)
             {
                 await using var stream = await responseMessage.Content.ReadAsStreamAsync(cancellationToken);
-                
+
                 // Get encoding from Content-Type header or default to UTF-8
                 var encoding = responseMessage.Content.Headers.ContentType?.CharSet is { } charset
                     ? System.Text.Encoding.GetEncoding(charset)
                     : System.Text.Encoding.UTF8;
-                
+
                 using var reader = new StreamReader(stream, encoding);
-                
+
                 var bodyBuilder = new StringBuilder();
                 string? line;
                 while ((line = await reader.ReadLineAsync(cancellationToken)) is not null)
@@ -295,7 +301,7 @@ public sealed partial class RequestExecutor(
                     await Console.Out.WriteLineAsync(line);
                     bodyBuilder.AppendLine(line);
                 }
-                
+
                 // Store the body for potential later use
                 responseModel.Body = bodyBuilder.ToString();
                 responseModel.Bytes = encoding.GetBytes(responseModel.Body);
@@ -306,7 +312,7 @@ public sealed partial class RequestExecutor(
                 responseModel.Bytes = await responseMessage.Content.ReadAsByteArrayAsync(cancellationToken);
                 responseModel.Body = responseModel.Bytes.GetString();
             }
-            
+
             LogRequestDuration(httpContext.Request.Url, httpContext.Request.Method, responseModel.StatusCode, elapsed);
         }
         catch (OperationCanceledException operationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -343,7 +349,7 @@ public sealed partial class RequestExecutor(
         var requestModel = httpContext.Request;
         var outputFormat = OutputFormatter.GetOutputFormat(httpContext);
         var output = new StringBuilder();
-        
+
         // Request headers if needed
         if (outputFormat.HasFlag(OutputFormat.RequestHeaders))
         {
@@ -353,9 +359,9 @@ public sealed partial class RequestExecutor(
             output.AppendLine($"Host: {uri.Host}{(uri.IsDefaultPort ? "" : $":{uri.Port}")}");
             output.AppendLine($"Schema: {uri.Scheme}");
             output.AppendLine($"[Url]: {requestModel.Url}");
-            output.AppendLine(string.Join(Environment.NewLine, 
+            output.AppendLine(string.Join(Environment.NewLine,
                 requestModel.Headers.Select(h => $"{h.Key}: {h.Value}").OrderBy(h => h)));
-            
+
             if (outputFormat.HasFlag(OutputFormat.Properties) && requestModel.Properties.Count > 0)
             {
                 output.AppendLine(string.Join(Environment.NewLine,
@@ -363,18 +369,18 @@ public sealed partial class RequestExecutor(
             }
             output.AppendLine();
         }
-        
+
         // Response headers
         output.AppendLine($"{responseModel.HttpVersion.NormalizeHttpVersion()} {(int)responseModel.StatusCode} {responseModel.StatusCode}");
-        output.AppendLine(string.Join(Environment.NewLine, 
+        output.AppendLine(string.Join(Environment.NewLine,
             responseModel.Headers.Select(h => $"{h.Key}: {h.Value}").OrderBy(h => h)));
-        
+
         if (outputFormat.HasFlag(OutputFormat.Properties) && responseModel.Properties.Count > 0)
         {
             output.AppendLine(string.Join(Environment.NewLine,
                 responseModel.Properties.Select(h => $"[{h.Key}]: {h.Value}").OrderBy(h => h)));
         }
-        
+
         output.AppendLine();
         return output.ToString();
     }

@@ -243,8 +243,8 @@ public static class Helpers
 
         // Check for streaming mode option early by checking tokens
         // This is needed for tests that use an internal handler
-        var hasStreamOption = parseResult.Tokens.Any(t => 
-            t.Value.Equals("--stream", StringComparison.OrdinalIgnoreCase) || 
+        var hasStreamOption = parseResult.Tokens.Any(t =>
+            t.Value.Equals("--stream", StringComparison.OrdinalIgnoreCase) ||
             t.Value.Equals("-S", StringComparison.OrdinalIgnoreCase));
         context.UpdateFlag(Constants.FlagNames.IsStreamingMode, hasStreamOption);
 
@@ -252,7 +252,7 @@ public static class Helpers
         {
             await serviceProvider.ResolveRequiredService<IRequestExecutor>()
                 .ExecuteAsync(context);
-            
+
             // Skip output formatting if streaming actually completed (output already written)
             var streamingCompleted = context.GetFlag(Constants.FlagNames.StreamingCompleted);
             if (!streamingCompleted)
