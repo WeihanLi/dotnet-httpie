@@ -6,13 +6,7 @@ using HTTPie.Middleware;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using Microsoft.Extensions.Logging;
-
-<<<<<<< TODO: Unmerged change from project 'HTTPie(net10.0)', Before:
 using Microsoft.Extensions.Primitives;
-using System.Collections.Concurrent;
-=======
-using System.Collections.Concurrent;
->>>>>>> After
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
