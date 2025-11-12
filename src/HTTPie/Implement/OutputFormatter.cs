@@ -267,17 +267,17 @@ Requests per second: {reportModel.RequestsPerSecond}
         var uri = new Uri(requestModel.Url);
         return
             $"""
-             {requestModel.Method.Method.ToUpper()} {uri.PathAndQuery} HTTP/{requestVersion.NormalizeHttpVersion()}
+             {requestModel.Method.Method.ToUpper()} {uri.PathAndQuery} {requestVersion.NormalizeHttpVersion()}
              Host: {uri.Host}{(uri.IsDefaultPort ? "" : $":{uri.Port}")}
              Schema: {uri.Scheme}
-             Url: {requestModel.Url}
+             [Url]: {requestModel.Url}
              """;
     }
 
     private static string GetResponseVersionAndStatus(HttpResponseModel responseModel)
     {
         return
-            $"HTTP/{responseModel.HttpVersion.NormalizeHttpVersion()} {(int)responseModel.StatusCode} {responseModel.StatusCode}";
+            $"{responseModel.HttpVersion.NormalizeHttpVersion()} {(int)responseModel.StatusCode} {responseModel.StatusCode}";
     }
 
     private static string GetHeadersString(IDictionary<string, StringValues> headers)

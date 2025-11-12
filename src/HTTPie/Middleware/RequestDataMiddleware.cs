@@ -5,6 +5,7 @@ using HTTPie.Abstractions;
 using HTTPie.Models;
 using HTTPie.Utilities;
 using Microsoft.Extensions.Primitives;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
@@ -34,6 +35,8 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
 
     public Option[] SupportedOptions() => [FormOption, JsonOption, RawDataOption];
 
+    [RequiresDynamicCode("")]
+    [RequiresUnreferencedCode("")]
     public Task InvokeAsync(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
         var isFormData = requestModel.ParseResult.HasOption(FormOption);
@@ -141,6 +144,8 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
         return next(requestModel);
     }
 
+    [RequiresDynamicCode("Calls System.Text.Json.Nodes.JsonArray.Add<T>(T)")]
+    [RequiresUnreferencedCode("Calls System.Text.Json.Nodes.JsonArray.Add<T>(T)")]
     private static void ParseNestedJsonItem(string item, JsonNode rootNode)
     {
         // Determine if this is a raw value (:=) or string value (=)
