@@ -22,7 +22,6 @@ dotnet-http httpbin.org/get Authorization:"Bearer token"
 ### POST Requests
 
 ```bash
-```bash
 # JSON POST request
 dotnet-http POST httpbin.org/post name=John email=john@example.com
 
