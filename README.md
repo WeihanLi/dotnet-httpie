@@ -305,8 +305,7 @@ dotnet tool install --global --add-source ./artifacts dotnet-httpie
 - **🎯 [Examples](docs/articles/examples/common-use-cases.md)** - Real-world usage patterns
 - **🐳 [Docker Guide](docs/articles/docker-usage.md)** - Containerized usage
 - **📄 [Release Notes](docs/ReleaseNotes.md)** - What's new in each version
-- **💬 [Issues](https://github.com/WeihanLi/dotnet-httpie/issues)** - Community Q&A and Bug Reports
-- **🐛 [Issues](https://github.com/WeihanLi/dotnet-httpie/issues)** - Bug reports and feature requests
+- **💬 [Issues](https://github.com/WeihanLi/dotnet-httpie/issues)** - Community Q&A, bug reports, and feature requests
 
 ## 🙏 Acknowledgments
 
