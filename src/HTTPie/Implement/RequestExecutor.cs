@@ -280,8 +280,8 @@ public sealed partial class RequestExecutor(
             {
                 await using var stream = await responseMessage.Content.ReadAsStreamAsync(cancellationToken);
 
-                // Use UTF-8 encoding for AOT compatibility
-                // Most modern APIs use UTF-8, and this matches the behavior of ResponseMapper
+                // Use UTF-8 encoding for AOT compatibility (Encoding.GetEncoding is not AOT-safe)
+                // Trade-off: responses using non-UTF-8 encodings may not display correctly in streaming mode
                 using var reader = new StreamReader(stream, Encoding.UTF8);
 
                 var bodyBuilder = new StringBuilder();
@@ -292,7 +292,7 @@ public sealed partial class RequestExecutor(
                     bodyBuilder.AppendLine(line);
                 }
 
-                // Store the body for potential later use
+                // Store the streamed content (re-encoded as UTF-8 bytes for consistency)
                 responseModel.Body = bodyBuilder.ToString();
                 responseModel.Bytes = Encoding.UTF8.GetBytes(responseModel.Body);
             }
