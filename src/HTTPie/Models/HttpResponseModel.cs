@@ -17,7 +17,7 @@ public sealed class HttpResponseModel
 
     [Newtonsoft.Json.JsonIgnore]
     [System.Text.Json.Serialization.JsonIgnore]
-    public byte[] Bytes { get; init; } = [];
+    public byte[] Bytes { get; set; } = [];
     public string Body { get; set; } = string.Empty;
     public DateTimeOffset Timestamp { get; set; }
     public TimeSpan Elapsed { get; set; }

@@ -165,7 +165,7 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
             if (rootArrayKey.Name == "root" || string.IsNullOrEmpty(rootArrayKey.Name))
             {
                 // Array append operation []= 
-                rootArray.Add(CreateJsonValue(value, isRawValue));
+                rootArray.Add((JsonNode?)CreateJsonValue(value, isRawValue));
             }
             else
             {
@@ -175,7 +175,7 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
                     // Extend array if necessary
                     while (rootArray.Count <= index)
                     {
-                        rootArray.Add(JsonValue.Create((string?)null));
+                        rootArray.Add((JsonNode?)null);
                     }
                     rootArray[index] = CreateJsonValue(value, isRawValue);
                 }
@@ -199,14 +199,14 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
                     if (key.Name == "root" || string.IsNullOrEmpty(key.Name))
                     {
                         // Array append operation - add new object to continue navigation
-                        currentArray.Add(new JsonObject());
+                        currentArray.Add((JsonNode?)new JsonObject());
                         currentNode = currentArray[^1]!;
                     }
                     else if (int.TryParse(key.Name, out int index))
                     {
                         while (currentArray.Count <= index)
                         {
-                            currentArray.Add(new JsonObject());
+                            currentArray.Add((JsonNode?)new JsonObject());
                         }
                         currentNode = currentArray[index]!;
                     }
@@ -249,7 +249,7 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
             if (currentNode is JsonArray currentArray)
             {
                 // Direct array access
-                currentArray.Add(CreateJsonValue(value, isRawValue));
+                currentArray.Add((JsonNode?)CreateJsonValue(value, isRawValue));
             }
             else
             {
@@ -259,7 +259,7 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
                     objectNode[finalKey.Name] = new JsonArray();
                 }
                 var array = objectNode[finalKey.Name]!.AsArray();
-                array.Add(CreateJsonValue(value, isRawValue));
+                array.Add((JsonNode?)CreateJsonValue(value, isRawValue));
             }
         }
         else
