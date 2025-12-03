@@ -280,12 +280,9 @@ public sealed partial class RequestExecutor(
             {
                 await using var stream = await responseMessage.Content.ReadAsStreamAsync(cancellationToken);
 
-                // Get encoding from Content-Type header or default to UTF-8
-                var encoding = responseMessage.Content.Headers.ContentType?.CharSet is { } charset
-                    ? System.Text.Encoding.GetEncoding(charset)
-                    : System.Text.Encoding.UTF8;
-
-                using var reader = new StreamReader(stream, encoding);
+                // Use UTF-8 encoding for AOT compatibility
+                // Most modern APIs use UTF-8, and this matches the behavior of ResponseMapper
+                using var reader = new StreamReader(stream, Encoding.UTF8);
 
                 var bodyBuilder = new StringBuilder();
                 string? line;
@@ -297,7 +294,7 @@ public sealed partial class RequestExecutor(
 
                 // Store the body for potential later use
                 responseModel.Body = bodyBuilder.ToString();
-                responseModel.Bytes = encoding.GetBytes(responseModel.Body);
+                responseModel.Bytes = Encoding.UTF8.GetBytes(responseModel.Body);
             }
             else
             {
