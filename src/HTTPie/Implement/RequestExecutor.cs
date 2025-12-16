@@ -23,11 +23,6 @@ public sealed partial class RequestExecutor(
     ILogger logger
     ) : IRequestExecutor
 {
-#if NET8_0
-    // needed for net8.0 only
-    private readonly ILogger _logger = logger;
-#endif
-
     private static readonly Option<double> TimeoutOption = new("--timeout")
     {
         Description = "Request timeout in seconds"

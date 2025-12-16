@@ -16,7 +16,7 @@ using WeihanLi.Common.Http;
 
 namespace HTTPie.Commands;
 
-public sealed class ExecuteCommand : Command
+public sealed partial class ExecuteCommand : Command
 {
     private static readonly Argument<string> FilePathArgument = new("scriptPath")
     {
@@ -158,11 +158,6 @@ public sealed class ExecuteCommand : Command
 
         return response;
     }
-
-    // use source generated regex when removing net8.0
-    private static readonly Regex RequestVariableNameReferenceRegex =
-        new(@"\{\{(?<requestName>\s?[a-zA-Z_]\w*)\.(request|response)\.(headers|body).*\s?\}\}",
-            RegexOptions.Compiled);
 
     private static async Task EnsureRequestVariableReferenceReplaced(HttpRequestMessage requestMessage,
         Dictionary<string, HttpResponseMessage> requests)
@@ -310,6 +305,9 @@ public sealed class ExecuteCommand : Command
 
         return string.Empty;
     }
+
+    [GeneratedRegex(@"\{\{(?<requestName>\s?[a-zA-Z_]\w*)\.(request|response)\.(headers|body).*\s?\}\}", RegexOptions.Compiled)]
+    private static partial Regex RequestVariableNameReferenceRegex { get; }
 }
 
 public enum ExecuteScriptType

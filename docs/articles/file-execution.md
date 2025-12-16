@@ -374,11 +374,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
       - name: Setup .NET
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: '8.0'
+          dotnet-version: '10.0.x'
       - name: Install dotnet-httpie
         run: dotnet tool install --global dotnet-httpie
       - name: Run API tests

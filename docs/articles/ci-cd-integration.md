@@ -28,7 +28,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.0'
+          dotnet-version: '10.0'
       
       - name: Install dotnet-httpie
         run: dotnet tool install --global dotnet-httpie
@@ -60,7 +60,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.0'
+          dotnet-version: '10.0'
           
       - name: Install dotnet-httpie
         run: dotnet tool install --global dotnet-httpie
@@ -172,7 +172,7 @@ steps:
   displayName: 'Setup .NET SDK'
   inputs:
     packageType: 'sdk'
-    version: '8.0.x'
+    version: '10.0.x'
 
 - script: dotnet tool install --global dotnet-httpie
   displayName: 'Install dotnet-httpie'
@@ -204,7 +204,7 @@ stages:
     - task: UseDotNet@2
       inputs:
         packageType: 'sdk'
-        version: '8.0.x'
+        version: '10.0.x'
     
     - script: dotnet tool install --global dotnet-httpie
       displayName: 'Install dotnet-httpie'
@@ -254,11 +254,11 @@ stages:
   - verify
 
 variables:
-  DOTNET_VERSION: "8.0"
+  DOTNET_VERSION: "10.0"
 
 before_script:
   - apt-get update -qy
-  - apt-get install -y dotnet-sdk-8.0
+  - apt-get install -y dotnet-sdk-10.0
   - dotnet tool install --global dotnet-httpie
   - export PATH="$PATH:/root/.dotnet/tools"
 
@@ -333,7 +333,7 @@ pipeline {
     agent any
     
     environment {
-        DOTNET_VERSION = '8.0'
+        DOTNET_VERSION = '10.0'
         API_BASE_URL = 'https://api.example.com'
     }
     
