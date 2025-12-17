@@ -44,10 +44,6 @@ public abstract class AbstractHttpRequestParser : IHttpParser
 
 public sealed partial class HttpParser(ILogger logger) : AbstractHttpRequestParser
 {
-#if NET8_0
-    private readonly ILogger _logger = logger;
-#endif
-
     private const string DotEnvFileName = ".env";
     private const string HttpEnvFileName = "httpenv.json";
     private const string UserHttpEnvFileName = "httpenv.json.user";

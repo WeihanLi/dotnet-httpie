@@ -22,7 +22,6 @@ dotnet-http httpbin.org/get Authorization:"Bearer token"
 ### POST Requests
 
 ```bash
-```bash
 # JSON POST request
 dotnet-http POST httpbin.org/post name=John email=john@example.com
 
@@ -158,14 +157,12 @@ dotnet-http POST api.example.com/users profile:='{"name": "John", "age": 30}'
 ### Form Data
 
 ```bash
-```bash
 # URL-encoded form data
 dotnet-http POST httpbin.org/post --form name=John email=john@example.com
 ```
 
 ### Raw Data
 
-```bash
 ```bash
 # Send raw string
 dotnet-http POST api.example.com/webhook --raw "Raw webhook payload"

@@ -4,7 +4,7 @@ This guide covers how to install dotnet-httpie on different platforms and enviro
 
 ## Prerequisites
 
-- .NET SDK 8.0 or later
+- .NET SDK 10.0 or later
 - Internet connection for package installation
 
 ## Global Tool Installation (Recommended)
@@ -106,7 +106,7 @@ docker rmi weihanli/dotnet-httpie:latest
 
 1. **Permission Denied**: Make sure you have proper permissions to install global tools
 2. **PATH Issues**: Ensure the .NET tools directory is in your PATH
-3. **Old .NET Version**: Verify you have .NET 8.0 or later installed
+3. **Old .NET Version**: Verify you have .NET 10.0 or later installed
 
 ### Check .NET Version
 

@@ -7,6 +7,7 @@ using HTTPie.Utilities;
 using Json.Schema;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Json;
+using System.Text.Json;
 using OutputFormat = Json.Schema.OutputFormat;
 
 namespace HTTPie.Middleware;
@@ -72,7 +73,8 @@ public sealed class JsonSchemaValidationMiddleware(ILogger<JsonSchemaValidationM
                         context.Request.ParseResult.GetValue(JsonSchemaValidationOutputFormatOption)
                 };
 
-                var validateResult = jsonSchema.Evaluate(context.Response.Body, options);
+                var responseJsonElement = JsonElement.Parse(context.Response.Body);
+                var validateResult = jsonSchema.Evaluate(responseJsonElement, options);
                 validationResultMessage = $"{validateResult.IsValid},{validateResult.Errors.ToJson()}".Trim(',');
             }
             catch (Exception e)
