@@ -73,8 +73,8 @@ public sealed class JsonSchemaValidationMiddleware(ILogger<JsonSchemaValidationM
                         context.Request.ParseResult.GetValue(JsonSchemaValidationOutputFormatOption)
                 };
 
-                var resposenJsonElement = JsonElement.Parse(context.Response.Body);
-                var validateResult = jsonSchema.Evaluate(resposenJsonElement, options);
+                var responseJsonElement = JsonElement.Parse(context.Response.Body);
+                var validateResult = jsonSchema.Evaluate(responseJsonElement, options);
                 validationResultMessage = $"{validateResult.IsValid},{validateResult.Errors.ToJson()}".Trim(',');
             }
             catch (Exception e)
