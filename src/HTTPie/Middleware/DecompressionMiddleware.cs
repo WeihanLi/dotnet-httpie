@@ -9,7 +9,7 @@ using System.Net;
 namespace HTTPie.Middleware;
 
 public class DecompressionMiddleware(HttpRequestModel requestModel) : IHttpHandlerMiddleware
-{  
+{
     private static readonly Option<bool> DeCompressOption = new("--decompress")
     {
         Description = "The HTTP request allows auto-decompress"
@@ -18,7 +18,7 @@ public class DecompressionMiddleware(HttpRequestModel requestModel) : IHttpHandl
     [
         DeCompressOption
     ];
-    
+
     public Task InvokeAsync(HttpClientHandler httpClientHandler, Func<HttpClientHandler, Task> next)
     {
         var decompress = requestModel.ParseResult.HasOption(DeCompressOption);
