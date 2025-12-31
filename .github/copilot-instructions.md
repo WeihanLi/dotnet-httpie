@@ -69,7 +69,7 @@ Always reference these instructions first and fallback to search or bash command
 ```
 /
 ├── .github/workflows/     # CI/CD pipelines (dotnet.yml is main build)
-├── src/HTTPie/           # Main application project (multi-targets net8.0;net10.0)
+├── src/HTTPie/           # Main application project (multi-targets net10.0)
 ├── tests/                # Test projects
 │   ├── HTTPie.UnitTest/  # Unit tests (all should pass)
 │   └── HTTPie.IntegrationTest/  # Integration tests
@@ -87,7 +87,7 @@ Always reference these instructions first and fallback to search or bash command
 - `Directory.Build.props` - Common MSBuild properties (sets LangVersion to preview)
 
 ### Technical Details
-- **Target Frameworks**: net8.0 and net10.0 (multi-targeting enabled)
+- **Target Frameworks**: net10.0
 - **Package Output**: `src/HTTPie/bin/Release/dotnet-httpie.{version}.nupkg`
 - **AOT Compilation**: Enabled for Release builds on .NET 10 (PublishAot=true)
 

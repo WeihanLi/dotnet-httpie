@@ -175,6 +175,7 @@ public static class Helpers
             .AddHttpHandlerMiddleware<FollowRedirectMiddleware>()
             .AddHttpHandlerMiddleware<HttpSslMiddleware>()
             .AddHttpHandlerMiddleware<ProxyMiddleware>()
+            .AddHttpHandlerMiddleware<DecompressionMiddleware>()
             ;
         // RequestMiddleware
         serviceCollection
