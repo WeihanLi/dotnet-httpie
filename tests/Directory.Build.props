@@ -4,12 +4,12 @@
     <NoWarn>$(NoWarn);xUnit1041</NoWarn>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <OutputType>Exe</OutputType>
     <!-- https://xunit.net/docs/getting-started/v3/microsoft-testing-platform -->
-    <!-- <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner> -->
-    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="GitHubActionsTestLogger" />
     <PackageReference Include="Moq" />
     <PackageReference Include="xunit.v3.mtp-v2" />
     <PackageReference Include="coverlet.collector">
