@@ -6,7 +6,7 @@
   <ItemGroup>
     <PackageVersion Include="GitHubActionsTestLogger" Version="3.0.1" />
     <PackageVersion Include="JsonPath.Net" Version="3.0.0" />
-    <PackageVersion Include="JsonSchema.Net" Version="9.0.0" />
+    <PackageVersion Include="JsonSchema.Net" Version="9.1.0" />
     <PackageVersion Include="MathNet.Numerics.Signed" Version="5.0.0" />
     <PackageVersion Include="System.CommandLine" Version="2.0.3" />
     <PackageVersion Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net10.0'))" Include="System.Linq.AsyncEnumerable" Version="10.0.0" />
