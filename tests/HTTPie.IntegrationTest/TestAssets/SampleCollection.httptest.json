@@ -1,0 +1,47 @@
+{
+  "name": "SampleCollection",
+  "variables": {
+    "baseUrl": "https://httpbin.org"
+  },
+  "preScript": "$request.headers.add(\"X-Collection-Header\", \"collection-value\")",
+  "groups": [
+    {
+      "name": "Get Requests",
+      "variables": {
+        "groupHeader": "group-value"
+      },
+      "requests": [
+        {
+          "name": "get anything",
+          "method": "GET",
+          "url": "{{baseUrl}}/get",
+          "headers": {
+            "Accept": "application/json"
+          },
+          "postScript": "$response.EnsureSuccessStatusCode()"
+        },
+        {
+          "name": "check status 200",
+          "method": "GET",
+          "url": "{{baseUrl}}/status/200",
+          "postScript": "$response.StatusCode == 200"
+        }
+      ]
+    },
+    {
+      "name": "Post Requests",
+      "requests": [
+        {
+          "name": "post json",
+          "method": "POST",
+          "url": "{{baseUrl}}/post",
+          "headers": {
+            "Content-Type": "application/json"
+          },
+          "body": "{\"message\": \"hello\"}",
+          "postScript": "$response.EnsureSuccessStatusCode()"
+        }
+      ]
+    }
+  ]
+}
