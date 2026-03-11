@@ -154,6 +154,8 @@ public sealed class HttpTestScriptGlobals
 ///     response.EnsureSuccessStatusCode();
 ///     var id = response.body.json.id;
 ///     response.Assert(id != null, "Response must contain an id field");
+///     response.StatusCode.ShouldBe(200);
+///     HttpAssert.Contains("token", response.body.text);
 /// </remarks>
 public static partial class HttpTestScriptRunner
 {
