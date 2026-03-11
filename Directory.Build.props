@@ -10,6 +10,11 @@
     <Product>dotnet-httpie</Product>
     <Authors>WeihanLi</Authors>
     <Copyright>Copyright 2021-$([System.DateTime]::Now.Year) (c) WeihanLi</Copyright>
+    <!-- NU1507: suppress single-feed warning when using central package management -->
+    <!-- NU1603: Microsoft.CodeAnalysis.CSharp.Scripting depends on a pre-release build of
+         Microsoft.CodeAnalysis.Analyzers (e.g. 5.3.0-2.25625.1) that is not published to NuGet;
+         the closest stable release (5.3.0-2.final) is resolved instead, which is functionally
+         equivalent and safe to use. -->
     <NoWarn>$(NoWarn);NU1507;NU1603;</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
