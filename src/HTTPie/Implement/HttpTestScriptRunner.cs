@@ -3,65 +3,67 @@
 
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
+using System.Dynamic;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace HTTPie.Implement;
 
 /// <summary>
-/// Exposes request mutation capabilities inside a preScript.
+/// Provides access to the response body in different formats inside test scripts.
 /// </summary>
-public sealed class HttpTestRequestScriptContext
+public sealed class ResponseBodyContext
 {
-    public HttpTestRequestScriptContext(Dictionary<string, string> headers)
+    private readonly HttpResponseMessage _response;
+    private string? _text;
+    private dynamic? _json;
+
+    internal ResponseBodyContext(HttpResponseMessage response) => _response = response;
+
+    /// <summary>The response body as a string (cached after first access).</summary>
+    public string text
     {
-        this.headers = new HeadersContext(headers);
+        get
+        {
+            _text ??= _response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            return _text;
+        }
     }
 
-    /// <summary>The request headers that can be manipulated by the script.</summary>
-    public HeadersContext headers { get; }
-
-    public sealed class HeadersContext(Dictionary<string, string> headers)
+    /// <summary>
+    /// The response body parsed as JSON, allowing property-path access such as
+    /// <c>response.body.json.id</c> or <c>response.body.json.user.name</c>.
+    /// </summary>
+    public dynamic json
     {
-        /// <summary>Adds the header if it does not already exist.</summary>
-        public void add(string name, string value) => headers.TryAdd(name, value);
-
-        /// <summary>Sets (replaces) the header value.</summary>
-        public void set(string name, string value) => headers[name] = value;
-
-        /// <summary>Removes a header by name.</summary>
-        public void remove(string name) => headers.Remove(name);
-
-        /// <summary>Returns the header value, or <c>null</c> if absent.</summary>
-        public string? get(string name) => headers.TryGetValue(name, out var v) ? v : null;
-
-        /// <summary>Returns whether a header with the given name is present.</summary>
-        public bool contains(string name) => headers.ContainsKey(name);
+        get
+        {
+            _json ??= HttpTestScriptRunner.ParseJsonToDynamic(text);
+            return _json;
+        }
     }
 }
 
 /// <summary>
-/// Exposes response data and assertion helpers inside a postScript.
+/// Wraps an <see cref="HttpResponseMessage"/> and exposes convenience members
+/// (status code, body access, assertion helpers) for use in postScript expressions.
 /// </summary>
-public sealed class HttpTestResponseScriptContext
+public sealed class HttpTestResponseContext
 {
-    private readonly Func<Task<string>> _getBody;
-    private string? _cachedBody;
-
-    public HttpTestResponseScriptContext(int statusCode, Func<Task<string>> getBody)
+    internal HttpTestResponseContext(HttpResponseMessage response)
     {
-        StatusCode = statusCode;
-        _getBody = getBody;
+        Response = response;
+        body = new ResponseBodyContext(response);
     }
 
-    /// <summary>The HTTP response status code.</summary>
-    public int StatusCode { get; }
+    /// <summary>The underlying raw <see cref="HttpResponseMessage"/>.</summary>
+    public HttpResponseMessage Response { get; }
 
-    /// <summary>Reads the response body text (result is cached after first call).</summary>
-    public async Task<string> GetBodyAsync()
-    {
-        _cachedBody ??= await _getBody();
-        return _cachedBody;
-    }
+    /// <summary>The HTTP status code as an integer.</summary>
+    public int StatusCode => (int)Response.StatusCode;
+
+    /// <summary>Provides access to the response body as text or parsed JSON.</summary>
+    public ResponseBodyContext body { get; }
 
     /// <summary>
     /// Throws <see cref="HttpTestAssertionException"/> if the response status code is not a 2xx success code.
@@ -83,18 +85,40 @@ public sealed class HttpTestResponseScriptContext
     }
 }
 
-/// <summary>Globals passed to a preScript when executing via Roslyn.</summary>
-public sealed class HttpTestPreScriptGlobals(Dictionary<string, string> headers)
+/// <summary>
+/// Globals object passed to both preScript and postScript when executing via Roslyn.
+/// Exposes the raw <see cref="HttpRequestMessage"/>, an <see cref="HttpTestResponseContext"/>
+/// wrapping the raw <see cref="HttpResponseMessage"/> (postScript only), and a mutable
+/// variables dictionary that scripts can read and update.
+/// </summary>
+public sealed class HttpTestScriptGlobals
 {
-    /// <summary>The request context available in the script as <c>request</c>.</summary>
-    public HttpTestRequestScriptContext request { get; } = new(headers);
-}
+    /// <summary>Constructs globals for a preScript (no response available).</summary>
+    internal HttpTestScriptGlobals(HttpRequestMessage request, Dictionary<string, string> variables)
+    {
+        this.request = request;
+        this.variables = variables;
+    }
 
-/// <summary>Globals passed to a postScript when executing via Roslyn.</summary>
-public sealed class HttpTestPostScriptGlobals(int statusCode, Func<Task<string>> getBody)
-{
-    /// <summary>The response context available in the script as <c>response</c>.</summary>
-    public HttpTestResponseScriptContext response { get; } = new(statusCode, getBody);
+    /// <summary>Constructs globals for a postScript.</summary>
+    internal HttpTestScriptGlobals(
+        HttpRequestMessage request,
+        HttpResponseMessage response,
+        Dictionary<string, string> variables)
+    {
+        this.request = request;
+        this.response = new HttpTestResponseContext(response);
+        this.variables = variables;
+    }
+
+    /// <summary>The raw <see cref="HttpRequestMessage"/>; scripts can inspect or mutate headers.</summary>
+    public HttpRequestMessage request { get; }
+
+    /// <summary>The response context (populated in postScript; <c>null</c> in preScript).</summary>
+    public HttpTestResponseContext? response { get; }
+
+    /// <summary>Merged variables dictionary; scripts can read and write values.</summary>
+    public Dictionary<string, string> variables { get; }
 }
 
 /// <summary>
@@ -115,18 +139,21 @@ public sealed class HttpTestPostScriptGlobals(int statusCode, Func<Task<string>>
 ///
 /// Complex C# scripts (compiled and executed via Roslyn CSharp scripting):
 ///   Scripts that contain any statement not matching the simple patterns above are
-///   executed as full C# scripts. <c>$request</c> and <c>$response</c> are
-///   automatically rewritten to the <c>request</c> and <c>response</c> globals so
-///   that the familiar shorthand syntax still works inside complex scripts.
+///   executed as full C# scripts. The globals object exposes:
+///     <c>request</c>   – the raw <see cref="HttpRequestMessage"/>
+///     <c>response</c>  – an <see cref="HttpTestResponseContext"/> with <c>.body.json.id</c> support
+///     <c>variables</c> – a <see cref="Dictionary{String,String}"/> that can be read/written
+///   <c>$request</c> and <c>$response</c> prefixes are rewritten to the global names so that
+///   the shorthand syntax still works inside complex scripts.
 ///
 ///   preScript example:
 ///     var key = System.Environment.GetEnvironmentVariable("API_KEY");
-///     request.headers.set("Authorization", $"Bearer {key}");
+///     request.Headers.TryAddWithoutValidation("Authorization", $"Bearer {key}");
 ///
 ///   postScript example:
 ///     response.EnsureSuccessStatusCode();
-///     var body = await response.GetBodyAsync();
-///     response.Assert(body.Contains("token"), "Response must contain a token");
+///     var id = response.body.json.id;
+///     response.Assert(id != null, "Response must contain an id field");
 /// </remarks>
 public static partial class HttpTestScriptRunner
 {
@@ -135,7 +162,7 @@ public static partial class HttpTestScriptRunner
     // -----------------------------------------------------------------------
 
     [GeneratedRegex(
-        @"^\$request\.headers\.(add|set)\(\s*""(?<name>[^""]+)""\s*,\s*""(?<value>[^""]*)""\s*\)\s*$",
+        @"^\$request\.headers\.(?<op>add|set)\(\s*""(?<name>[^""]+)""\s*,\s*""(?<value>[^""]*)""\s*\)\s*$",
         RegexOptions.IgnoreCase)]
     private static partial Regex RequestHeadersPattern { get; }
 
@@ -149,15 +176,13 @@ public static partial class HttpTestScriptRunner
     private static partial Regex BodyContainsPattern { get; }
 
     // -----------------------------------------------------------------------
-    // -----------------------------------------------------------------------
     // Roslyn script options (shared / lazy-initialized)
     // -----------------------------------------------------------------------
 
     /// <summary>
     /// Shared Roslyn <see cref="ScriptOptions"/> configured with common namespaces and a reference
-    /// to the HTTPie assembly so that context types (e.g. <see cref="HttpTestAssertionException"/>)
-    /// are available inside scripts. Lazy initialization defers the construction cost until the
-    /// first complex script is actually executed.
+    /// to the HTTPie assembly so that context types are available inside scripts.
+    /// Lazy initialization defers the construction cost until the first complex script is executed.
     /// </summary>
     private static readonly Lazy<ScriptOptions> RoslynScriptOptions = new(() =>
         ScriptOptions.Default
@@ -165,9 +190,11 @@ public static partial class HttpTestScriptRunner
                 "System",
                 "System.Collections.Generic",
                 "System.Linq",
+                "System.Net",
+                "System.Net.Http",
+                "System.Net.Http.Headers",
                 "System.Text",
                 "System.Text.Json",
-                "System.Net.Http",
                 "HTTPie.Implement")
             .AddReferences(typeof(HttpTestScriptRunner).Assembly));
 
@@ -176,22 +203,26 @@ public static partial class HttpTestScriptRunner
     // -----------------------------------------------------------------------
 
     /// <summary>
-    /// Executes a preScript, mutating the supplied <paramref name="headers"/> dictionary.
+    /// Executes a preScript, potentially mutating the supplied <paramref name="request"/> headers
+    /// and <paramref name="variables"/> dictionary.
     /// Simple patterns are evaluated via fast-path regex; any unrecognized statement
     /// causes the entire script to be compiled and run via Roslyn CSharp scripting.
     /// </summary>
-    public static async Task ExecutePreScriptAsync(string? script, Dictionary<string, string> headers)
+    public static async Task ExecutePreScriptAsync(
+        string? script,
+        HttpRequestMessage request,
+        Dictionary<string, string> variables)
     {
         if (string.IsNullOrWhiteSpace(script)) return;
 
         if (!HasComplexStatements(script, isPreScript: true))
         {
-            ExecutePreScriptSimple(script, headers);
+            ExecutePreScriptSimple(script, request);
             return;
         }
 
         var processedScript = PreprocessScript(script);
-        var globals = new HttpTestPreScriptGlobals(headers);
+        var globals = new HttpTestScriptGlobals(request, variables);
         try
         {
             await CSharpScript.RunAsync(processedScript, RoslynScriptOptions.Value, globals);
@@ -219,19 +250,20 @@ public static partial class HttpTestScriptRunner
     /// </summary>
     public static async Task ExecutePostScriptAsync(
         string? script,
-        int statusCode,
-        Func<Task<string>> getResponseBody)
+        HttpRequestMessage request,
+        HttpResponseMessage response,
+        Dictionary<string, string> variables)
     {
         if (string.IsNullOrWhiteSpace(script)) return;
 
         if (!HasComplexStatements(script, isPreScript: false))
         {
-            await ExecutePostScriptSimpleAsync(script, statusCode, getResponseBody);
+            await ExecutePostScriptSimpleAsync(script, response);
             return;
         }
 
         var processedScript = PreprocessScript(script);
-        var globals = new HttpTestPostScriptGlobals(statusCode, getResponseBody);
+        var globals = new HttpTestScriptGlobals(request, response, variables);
         try
         {
             await CSharpScript.RunAsync(processedScript, RoslynScriptOptions.Value, globals);
@@ -255,7 +287,7 @@ public static partial class HttpTestScriptRunner
     // Simple fast-path implementations (regex-based)
     // -----------------------------------------------------------------------
 
-    private static void ExecutePreScriptSimple(string script, Dictionary<string, string> headers)
+    private static void ExecutePreScriptSimple(string script, HttpRequestMessage request)
     {
         foreach (var rawLine in script.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
         {
@@ -263,14 +295,22 @@ public static partial class HttpTestScriptRunner
             if (line.StartsWith("//") || line.StartsWith("#")) continue;
 
             var match = RequestHeadersPattern.Match(line);
-            if (match.Success)
-                headers[match.Groups["name"].Value] = match.Groups["value"].Value;
+            if (!match.Success) continue;
+
+            var op = match.Groups["op"].Value;
+            var name = match.Groups["name"].Value;
+            var value = match.Groups["value"].Value;
+
+            if (op.Equals("set", StringComparison.OrdinalIgnoreCase))
+                request.Headers.Remove(name);
+
+            request.Headers.TryAddWithoutValidation(name, value);
         }
     }
 
-    private static async Task ExecutePostScriptSimpleAsync(
-        string script, int statusCode, Func<Task<string>> getResponseBody)
+    private static async Task ExecutePostScriptSimpleAsync(string script, HttpResponseMessage response)
     {
+        var statusCode = (int)response.StatusCode;
         string? cachedBody = null;
 
         foreach (var rawLine in script.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
@@ -301,7 +341,7 @@ public static partial class HttpTestScriptRunner
             var bodyMatch = BodyContainsPattern.Match(line);
             if (bodyMatch.Success)
             {
-                cachedBody ??= await getResponseBody();
+                cachedBody ??= await response.Content.ReadAsStringAsync();
                 var text = bodyMatch.Groups["text"].Value;
                 if (!cachedBody.Contains(text, StringComparison.Ordinal))
                     throw new HttpTestAssertionException(
@@ -309,6 +349,39 @@ public static partial class HttpTestScriptRunner
                 continue;
             }
         }
+    }
+
+    // -----------------------------------------------------------------------
+    // JSON helpers (used by ResponseBodyContext)
+    // -----------------------------------------------------------------------
+
+    /// <summary>Parses a JSON string into a dynamic object hierarchy.</summary>
+    internal static dynamic ParseJsonToDynamic(string json)
+    {
+        var element = JsonDocument.Parse(json).RootElement;
+        return ConvertJsonElement(element);
+    }
+
+    internal static dynamic ConvertJsonElement(JsonElement element) => element.ValueKind switch
+    {
+        JsonValueKind.Object => new JsonBodyAccessor(element),
+        JsonValueKind.Array => ConvertJsonArray(element),
+        JsonValueKind.String => element.GetString()!,
+        // Int64 is tried first so that whole-number JSON values surface as long rather than double.
+        // Values with a fractional part (e.g. 1.5) fall through to double automatically.
+        JsonValueKind.Number => element.TryGetInt64(out var l) ? (object)l : element.GetDouble(),
+        JsonValueKind.True => (object)true,
+        JsonValueKind.False => (object)false,
+        _ => (object?)null!
+    };
+
+    private static dynamic[] ConvertJsonArray(JsonElement array)
+    {
+        var items = new dynamic[array.GetArrayLength()];
+        var i = 0;
+        foreach (var item in array.EnumerateArray())
+            items[i++] = ConvertJsonElement(item);
+        return items;
     }
 
     // -----------------------------------------------------------------------
@@ -341,11 +414,43 @@ public static partial class HttpTestScriptRunner
 
     /// <summary>
     /// Replaces <c>$request</c> and <c>$response</c> prefixes with the C# global names
-    /// so that the shorthand syntax works in Roslyn-executed scripts too.
+    /// so that scripts can use either the shorthand or full identifier.
     /// </summary>
     private static string PreprocessScript(string script) =>
         script.Replace("$request", "request").Replace("$response", "response");
 }
+
+/// <summary>
+/// Dynamic accessor for a JSON object, enabling property-path access
+/// (e.g. <c>response.body.json.id</c>) inside test scripts.
+/// </summary>
+/// <remarks>
+/// This type extends <see cref="DynamicObject"/> and is only created within the Roslyn
+/// scripting path, which is itself not AOT-compatible. The IL3050 warning is suppressed
+/// intentionally because this code is never reached in an AOT-compiled binary.
+/// </remarks>
+#pragma warning disable IL3050
+internal sealed class JsonBodyAccessor : DynamicObject
+{
+    private readonly JsonElement _element;
+
+    internal JsonBodyAccessor(JsonElement element) => _element = element;
+
+    public override bool TryGetMember(GetMemberBinder binder, out object? result)
+    {
+        if (_element.TryGetProperty(binder.Name, out var prop))
+        {
+            result = HttpTestScriptRunner.ConvertJsonElement(prop);
+            return true;
+        }
+
+        result = null;
+        return false;
+    }
+
+    public override string ToString() => _element.ToString();
+}
+#pragma warning restore IL3050
 
 /// <summary>
 /// Thrown when an HTTP test assertion (postScript) fails.

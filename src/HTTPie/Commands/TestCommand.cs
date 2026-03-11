@@ -207,46 +207,40 @@ public sealed partial class TestCommand : Command
 
         try
         {
-            // Build mutable header dictionary starting from request headers
-            var headers = new Dictionary<string, string>(
-                request.Headers.ToDictionary(
-                    kv => kv.Key,
-                    kv => SubstituteVariables(kv.Value, variables),
-                    StringComparer.OrdinalIgnoreCase));
-
-            // Execute preScript – may modify headers
-            await HttpTestScriptRunner.ExecutePreScriptAsync(effectivePreScript, headers);
-
             // Substitute variables in URL, body
             var url = SubstituteVariables(request.Url, variables);
             var body = string.IsNullOrEmpty(request.Body)
                 ? null
                 : SubstituteVariables(request.Body, variables);
 
-            // Build HttpRequestMessage
+            // Build HttpRequestMessage with initial headers (with variable substitution)
             var requestMessage = new HttpRequestMessage(GetHttpMethod(request.Method), url);
             requestMessage.TryAddHeaderIfNotExists(HttpHeaderNames.UserAgent, Constants.DefaultUserAgent);
 
-            foreach (var (name, value) in headers)
+            foreach (var (name, value) in request.Headers)
             {
+                var resolvedValue = SubstituteVariables(value, variables);
                 if (HttpHelper.IsWellKnownContentHeader(name))
                 {
                     requestMessage.Content ??= new ByteArrayContent([]);
-                    requestMessage.Content.Headers.TryAddWithoutValidation(name, value);
+                    requestMessage.Content.Headers.TryAddWithoutValidation(name, resolvedValue);
                 }
                 else
                 {
-                    requestMessage.Headers.TryAddWithoutValidation(name, value);
+                    requestMessage.Headers.TryAddWithoutValidation(name, resolvedValue);
                 }
             }
 
             if (!string.IsNullOrEmpty(body))
             {
-                var contentType = headers.TryGetValue(HttpHeaderNames.ContentType, out var ct)
+                var contentType = request.Headers.TryGetValue(HttpHeaderNames.ContentType, out var ct)
                     ? ct
                     : HttpHelper.ApplicationJsonMediaType;
                 requestMessage.Content = new StringContent(body, Encoding.UTF8, contentType);
             }
+
+            // Execute preScript – may modify requestMessage.Headers or variables
+            await HttpTestScriptRunner.ExecutePreScriptAsync(effectivePreScript, requestMessage, variables);
 
             // Print request
             Console.WriteLine($"  [{request.Name}]");
@@ -268,11 +262,12 @@ public sealed partial class TestCommand : Command
             Console.WriteLine($"  Response ({elapsed.TotalMilliseconds:F0}ms):");
             Console.WriteLine(await response.ToRawMessageAsync(cancellationToken));
 
-            // Execute postScript
+            // Execute postScript – may assert against response or update variables
             await HttpTestScriptRunner.ExecutePostScriptAsync(
                 effectivePostScript,
-                (int)response.StatusCode,
-                () => response.Content.ReadAsStringAsync(cancellationToken));
+                requestMessage,
+                response,
+                variables);
 
             result.Passed = true;
             Console.WriteLine($"  ✓ {request.Name} PASSED ({elapsed.TotalMilliseconds:F0}ms)");
