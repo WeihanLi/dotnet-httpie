@@ -17,6 +17,7 @@ Welcome to the comprehensive documentation for dotnet-httpie, a modern command-l
 
 ### Advanced Features
 - [Executing .http/.rest Files](file-execution.md)
+- [HTTP API Test Collections](api-test-collections.md)
 - [Curl Command Execution](curl-execution.md)
 - [Variable Substitution](variables.md)
 - [Request Referencing](request-referencing.md)
