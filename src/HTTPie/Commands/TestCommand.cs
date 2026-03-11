@@ -215,7 +215,7 @@ public sealed partial class TestCommand : Command
                     StringComparer.OrdinalIgnoreCase));
 
             // Execute preScript – may modify headers
-            HttpTestScriptRunner.ExecutePreScript(effectivePreScript, headers);
+            await HttpTestScriptRunner.ExecutePreScriptAsync(effectivePreScript, headers);
 
             // Substitute variables in URL, body
             var url = SubstituteVariables(request.Url, variables);
