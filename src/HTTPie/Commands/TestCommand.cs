@@ -216,7 +216,7 @@ public sealed partial class TestCommand : Command
                 : SubstituteVariables(request.Body, variables);
 
             // Build HttpRequestMessage with initial headers (with variable substitution)
-            var requestMessage = new HttpRequestMessage(GetHttpMethod(request.Method), url);
+            using var requestMessage = new HttpRequestMessage(GetHttpMethod(request.Method), url);
             requestMessage.TryAddHeaderIfNotExists(HttpHeaderNames.UserAgent, Constants.DefaultUserAgent);
 
             foreach (var (name, value) in request.Headers)
@@ -256,7 +256,7 @@ public sealed partial class TestCommand : Command
             }
 
             // Execute request
-            var response = await requestExecutor.ExecuteAsync(requestMessage, cancellationToken);
+            using var response = await requestExecutor.ExecuteAsync(requestMessage, cancellationToken);
             var elapsed = ProfilerHelper.GetElapsedTime(startTimestamp);
             result.StatusCode = (int)response.StatusCode;
             result.Elapsed = elapsed;
