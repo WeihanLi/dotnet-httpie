@@ -137,6 +137,7 @@ public sealed partial class TestCommand : Command
                     {
                         foreach (var kv in env.Variables)
                             envVariables[kv.Key] = kv.Value;
+                        break;
                     }
                 }
             }
