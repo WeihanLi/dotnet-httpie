@@ -216,7 +216,7 @@ chore: bump WeihanLi.Common to 1.0.87
 
 - Use the **imperative mood** in the description ("add" not "added")
 - Keep the first line at 72 characters or fewer
-- Reference issues in the footer: `Closes #123`
+- Reference issues in the footer: `Fixes #123` or `Closes #123`
 
 ## Debugging and Troubleshooting
 
