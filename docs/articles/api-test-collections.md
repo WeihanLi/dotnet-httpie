@@ -107,7 +107,7 @@ Variables use the `{{variableName}}` syntax and are substituted in URLs, header 
 Variables are merged from lowest to highest priority. Higher-priority values override lower-priority ones:
 
 1. Collection `variables` — lowest priority (provide collection-level defaults)
-2. Environment file variables — override collection defaults (applied when `--env` is specified)
+2. Environment file variables — override collection defaults (applied when `--env` is specified; when `--env` is omitted, the environment named `default` is loaded if present)
 3. Group `variables` — override collection and environment variables
 4. Request `variables` — highest priority, override all outer scopes
 

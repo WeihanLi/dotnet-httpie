@@ -118,11 +118,11 @@ public sealed partial class TestCommand : Command
             envVariables[kv.Key] = kv.Value;
 
         // Then apply env file variables on top (higher priority, overrides collection defaults).
-        // Only load when an environment name is explicitly specified to avoid unpredictable merging
-        // of multiple environments when no name is given.
-        if (!string.IsNullOrEmpty(environmentName) &&
-            !string.IsNullOrEmpty(environmentFilePath) && File.Exists(environmentFilePath))
+        // Uses the explicitly specified --env name, or falls back to "default" when none is given.
+        // If neither a matching named environment nor a "default" environment exists, env file is skipped.
+        if (!string.IsNullOrEmpty(environmentFilePath) && File.Exists(environmentFilePath))
         {
+            var effectiveEnvName = string.IsNullOrEmpty(environmentName) ? "default" : environmentName;
             await using var stream = File.OpenRead(environmentFilePath);
             var envs = await JsonSerializer.DeserializeAsync(
                 stream,
@@ -133,7 +133,7 @@ public sealed partial class TestCommand : Command
             {
                 foreach (var env in envs)
                 {
-                    if (env.Name.Equals(environmentName, StringComparison.OrdinalIgnoreCase))
+                    if (env.Name.Equals(effectiveEnvName, StringComparison.OrdinalIgnoreCase))
                     {
                         foreach (var kv in env.Variables)
                             envVariables[kv.Key] = kv.Value;
