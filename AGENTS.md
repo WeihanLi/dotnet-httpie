@@ -162,8 +162,9 @@ After making changes, verify these scenarios:
 | `dotnet.yml` | Push to `main`/`preview`/`dev`, PRs to `dev` | Build on macOS, Linux, Windows |
 | `dotnet-format.yml` | Push to `main`/`dev` | Auto-formats code and commits changes |
 | `release.yml` | Push to `main` | Builds AOT binaries for all platforms and creates a GitHub Release |
-| `build-aot-tool.yml` | Manual / scheduled | Builds AOT-compiled tool packages |
-| `dotnet-outdated.yml` | Scheduled | Checks for outdated NuGet packages |
+| `build-aot-tool.yml` | Manual (`workflow_dispatch`) | Builds AOT-compiled tool packages |
+| `dotnet-outdated.yml` | Scheduled; push to `test` | Checks for outdated NuGet packages |
+| `copilot-setup-steps.yml` | See workflow file | Internal Copilot setup steps for this repo |
 
 ### Branch Strategy
 
