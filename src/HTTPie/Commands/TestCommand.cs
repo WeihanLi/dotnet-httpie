@@ -23,7 +23,7 @@ public sealed partial class TestCommand : Command
     private static readonly Argument<string> CollectionPathArgument = new("collectionPath")
     {
         Description = "Path to the test collection file (.httptest.json)",
-        Arity = ArgumentArity.ZeroOrOne
+        Arity = ArgumentArity.ExactlyOne
     };
 
     private static readonly Option<string> EnvironmentOption =
