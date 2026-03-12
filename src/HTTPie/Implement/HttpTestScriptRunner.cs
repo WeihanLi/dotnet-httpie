@@ -360,13 +360,16 @@ public static partial class HttpTestScriptRunner
     /// <summary>Parses a JSON string into a dynamic object hierarchy.</summary>
     internal static dynamic ParseJsonToDynamic(string json)
     {
-        var element = JsonDocument.Parse(json).RootElement;
-        return ConvertJsonElement(element);
+        var doc = JsonDocument.Parse(json);
+        var element = doc.RootElement;
+        // Pass the document to the root accessor so it stays alive (and pooled memory is not leaked)
+        // for as long as any JsonBodyAccessor in the tree is reachable.
+        return ConvertJsonElement(element, doc);
     }
 
-    internal static dynamic ConvertJsonElement(JsonElement element) => element.ValueKind switch
+    internal static dynamic ConvertJsonElement(JsonElement element, JsonDocument? document = null) => element.ValueKind switch
     {
-        JsonValueKind.Object => new JsonBodyAccessor(element),
+        JsonValueKind.Object => new JsonBodyAccessor(element, document),
         JsonValueKind.Array => ConvertJsonArray(element),
         JsonValueKind.String => element.GetString()!,
         // Int64 is tried first so that whole-number JSON values surface as long rather than double.
@@ -435,8 +438,16 @@ public static partial class HttpTestScriptRunner
 internal sealed class JsonBodyAccessor : DynamicObject
 {
     private readonly JsonElement _element;
+    // Held only by the root accessor to keep the JsonDocument alive (and its pooled memory valid)
+    // for the lifetime of the entire accessor tree. Child accessors leave this null and rely on
+    // the root remaining reachable via the script's reference to response.body.json.
+    private readonly JsonDocument? _document;
 
-    internal JsonBodyAccessor(JsonElement element) => _element = element;
+    internal JsonBodyAccessor(JsonElement element, JsonDocument? document = null)
+    {
+        _element = element;
+        _document = document;
+    }
 
     public override bool TryGetMember(GetMemberBinder binder, out object? result)
     {

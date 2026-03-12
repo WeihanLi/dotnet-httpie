@@ -104,12 +104,12 @@ Variables use the `{{variableName}}` syntax and are substituted in URLs, header 
 
 ### Variable Inheritance
 
-Variables are merged from outer to inner scope. Inner values override outer ones:
+Variables are merged from lowest to highest priority. Higher-priority values override lower-priority ones:
 
-1. Environment file variables
-2. Collection `variables`
-3. Group `variables` (override collection)
-4. Request `variables` (override group and collection)
+1. Collection `variables` — lowest priority (provide collection-level defaults)
+2. Environment file variables — override collection defaults (applied when `--env` is specified)
+3. Group `variables` — override collection and environment variables
+4. Request `variables` — highest priority, override all outer scopes
 
 ```json
 {

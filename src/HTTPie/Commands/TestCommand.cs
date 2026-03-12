@@ -113,8 +113,15 @@ public sealed partial class TestCommand : Command
         Dictionary<string, string> envVariables,
         CancellationToken cancellationToken)
     {
-        // First try explicit env file
-        if (!string.IsNullOrEmpty(environmentFilePath) && File.Exists(environmentFilePath))
+        // Apply collection-level variables first as defaults (lowest priority)
+        foreach (var kv in collection.Variables)
+            envVariables[kv.Key] = kv.Value;
+
+        // Then apply env file variables on top (higher priority, overrides collection defaults).
+        // Only load when an environment name is explicitly specified to avoid unpredictable merging
+        // of multiple environments when no name is given.
+        if (!string.IsNullOrEmpty(environmentName) &&
+            !string.IsNullOrEmpty(environmentFilePath) && File.Exists(environmentFilePath))
         {
             await using var stream = File.OpenRead(environmentFilePath);
             var envs = await JsonSerializer.DeserializeAsync(
@@ -126,9 +133,7 @@ public sealed partial class TestCommand : Command
             {
                 foreach (var env in envs)
                 {
-                    // Load all environments if no name specified, or only the matching one
-                    if (string.IsNullOrEmpty(environmentName) ||
-                        env.Name.Equals(environmentName, StringComparison.OrdinalIgnoreCase))
+                    if (env.Name.Equals(environmentName, StringComparison.OrdinalIgnoreCase))
                     {
                         foreach (var kv in env.Variables)
                             envVariables[kv.Key] = kv.Value;
@@ -136,10 +141,6 @@ public sealed partial class TestCommand : Command
                 }
             }
         }
-
-        // Then apply collection-level variables (they can override env file)
-        foreach (var kv in collection.Variables)
-            envVariables[kv.Key] = kv.Value;
     }
 
     // -----------------------------------------------------------------------
