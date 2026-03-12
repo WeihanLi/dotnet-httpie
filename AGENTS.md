@@ -178,6 +178,45 @@ After making changes, verify these scenarios:
 - The pre-commit hook (`.husky/`) automatically runs `dotnet build`
 - Code formatting is enforced via `dotnet format` — run it before committing
 
+### Commit Message Convention
+
+Follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification:
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+Common types:
+
+| Type | When to use |
+|------|-------------|
+| `feat` | A new feature |
+| `fix` | A bug fix |
+| `docs` | Documentation changes only |
+| `style` | Formatting changes (no logic change) |
+| `refactor` | Code restructuring (no feature or fix) |
+| `test` | Adding or updating tests |
+| `chore` | Build process, dependency updates, tooling |
+| `perf` | Performance improvements |
+| `ci` | CI/CD workflow changes |
+
+Examples:
+
+```
+feat(exec): support .rest file extension in exec command
+fix(middleware): handle null response body in logging middleware
+docs: update installation instructions in README
+chore: bump WeihanLi.Common to 1.0.87
+```
+
+- Use the **imperative mood** in the description ("add" not "added")
+- Keep the first line at 72 characters or fewer
+- Reference issues in the footer: `Closes #123`
+
 ## Debugging and Troubleshooting
 
 ### Common Issues
