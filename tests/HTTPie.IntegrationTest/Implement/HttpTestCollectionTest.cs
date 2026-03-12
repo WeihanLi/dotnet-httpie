@@ -1,7 +1,6 @@
-// Copyright (c) Weihan Li.All rights reserved.
+﻿// Copyright (c) Weihan Li.All rights reserved.
 // Licensed under the MIT license.
 
-using HTTPie.Models;
 using HTTPie.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
