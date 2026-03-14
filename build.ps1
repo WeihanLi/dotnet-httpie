@@ -1,5 +1,2 @@
-dotnet tool install -g dotnet-execute --prerelease
-
-Write-Host 'dotnet-exec ./build/build.cs "--args=$ARGS"' -ForegroundColor GREEN
- 
-dotnet-exec ./build/build.cs --args $ARGS
+#!/usr/bin/env pwsh
+dnx -y dotnet-execute ./build/build.cs --args $ARGS
