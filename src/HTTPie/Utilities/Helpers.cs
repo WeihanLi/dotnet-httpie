@@ -1,4 +1,4 @@
-﻿// Copyright (c) Weihan Li.All rights reserved.
+﻿// Copyright (c) Weihan Li. All rights reserved.
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
@@ -21,6 +21,8 @@ namespace HTTPie.Utilities;
 [JsonSerializable(typeof(HttpRequestModel))]
 [JsonSerializable(typeof(HttpResponseModel))]
 [JsonSerializable(typeof(JsonSchema), GenerationMode = JsonSourceGenerationMode.Serialization)]
+[JsonSerializable(typeof(HttpTestCollection))]
+[JsonSerializable(typeof(List<HttpTestEnvironment>))]
 [JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase, PropertyNameCaseInsensitive = true)]
 public sealed partial class AppSerializationContext : JsonSerializerContext;
 
@@ -88,6 +90,11 @@ public static class Helpers
         executeCommand.SetAction((parseResult, cancellationToken) =>
             executeCommand.InvokeAsync(parseResult, cancellationToken, serviceProvider));
         command.Add(executeCommand);
+
+        var testCommand = new TestCommand();
+        testCommand.SetAction((parseResult, cancellationToken) =>
+            testCommand.InvokeAsync(parseResult, cancellationToken, serviceProvider));
+        command.Add(testCommand);
 
         // var methodArgument = new Argument<HttpMethod>("method")
         // {
@@ -175,6 +182,7 @@ public static class Helpers
             .AddHttpHandlerMiddleware<FollowRedirectMiddleware>()
             .AddHttpHandlerMiddleware<HttpSslMiddleware>()
             .AddHttpHandlerMiddleware<ProxyMiddleware>()
+            .AddHttpHandlerMiddleware<DecompressionMiddleware>()
             ;
         // RequestMiddleware
         serviceCollection
