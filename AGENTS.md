@@ -5,6 +5,7 @@
 **dotnet-httpie** is a command-line HTTP client for the .NET ecosystem — a modern, user-friendly alternative to `curl`. It is distributed as a .NET global tool (`dotnet-http` command) and as a Docker image.
 
 Key capabilities:
+
 - Human-friendly syntax for HTTP requests (GET, POST, PUT, DELETE, etc.)
 - Execute `.http` / `.rest` files for repeatable API testing
 - Run cURL commands directly
@@ -141,10 +142,12 @@ After making changes, verify these scenarios:
 - **Nullable reference types**: enabled everywhere
 - **Implicit usings**: enabled; common WeihanLi.Common namespaces are globally imported
 - **File headers**: every `.cs` file must begin with:
+
   ```csharp
   // Copyright (c) Weihan Li. All rights reserved.
   // Licensed under the MIT license.
   ```
+
 - **Namespaces**: file-scoped namespace declarations (`namespace Foo;`)
 - **Primary constructors**: preferred where applicable
 - **`var`**: preferred for all local variable declarations
@@ -158,7 +161,7 @@ After making changes, verify these scenarios:
 ### Workflows
 
 | Workflow | Trigger | Description |
-|----------|---------|-------------|
+| ---------- | --------- | ------------- |
 | `dotnet.yml` | Push to `main`/`preview`/`dev`, PRs to `dev` | Build on macOS, Linux, Windows |
 | `dotnet-format.yml` | Push to `main`/`dev` | Auto-formats code and commits changes |
 | `release.yml` | Push to `main` | Builds AOT binaries for all platforms and creates a GitHub Release |
@@ -183,7 +186,7 @@ After making changes, verify these scenarios:
 
 Follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification:
 
-```
+```text
 <type>[optional scope]: <description>
 
 [optional body]
@@ -194,7 +197,7 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/
 Common types:
 
 | Type | When to use |
-|------|-------------|
+| ------ | ------------- |
 | `feat` | A new feature |
 | `fix` | A bug fix |
 | `docs` | Documentation changes only |
@@ -207,7 +210,7 @@ Common types:
 
 Examples:
 
-```
+```text
 feat(exec): support .rest file extension in exec command
 fix(middleware): handle null response body in logging middleware
 docs: update installation instructions in README
@@ -223,7 +226,7 @@ chore: bump WeihanLi.Common to 1.0.87
 ### Common Issues
 
 | Symptom | Cause | Fix |
-|---------|-------|-----|
+| --------- | ------- | ----- |
 | `error MSB4236: The SDK 'Microsoft.NET.Sdk' was not found` or unrecognized `.slnx` element | .NET 8 or older SDK | Install .NET 10 SDK |
 | `Framework 'Microsoft.NETCore.App', version '10.0.x' was not found` | .NET 10 runtime missing | Install .NET 10 SDK/runtime, set `DOTNET_ROOT` |
 | `dotnet-execute build script fails` | Compatibility issue with dotnet-execute and .NET 10 | Use `dotnet build` directly instead of `./build.sh` |
