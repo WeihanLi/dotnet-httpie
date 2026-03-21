@@ -61,6 +61,10 @@ public sealed class DefaultRequestMiddleware(ILogger logger) : IRequestMiddlewar
         {
             logger.LogDebug("httpVersion specified: {HttpVersion}", httpVersionValue);
             requestModel.HttpVersion = httpVersion;
+            if (httpVersion is { Major: >= 2 })
+            {
+                AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+            }
         }
 
         requestModel.Headers.TryAdd("User-Agent", Constants.DefaultUserAgent);
