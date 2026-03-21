@@ -61,7 +61,8 @@ public sealed class DefaultRequestMiddleware(ILogger logger) : IRequestMiddlewar
         {
             logger.LogDebug("httpVersion specified: {HttpVersion}", httpVersionValue);
             requestModel.HttpVersion = httpVersion;
-            if (httpVersion is { Major: 2 })
+            var isHttp = !url.StartsWith("https://") && schema != "https";
+            if (isHttp && httpVersion is { Major: 2 })
             {
                 AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
             }
