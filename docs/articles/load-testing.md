@@ -20,7 +20,8 @@ When any of these options are used, dotnet-httpie collects response statistics a
 | `--vu`, `--vus`, `--virtual-users` | Number of concurrent virtual users | `1` |
 | `--duration` | How long to run the test (e.g. `10s`, `1m`, `00:01:00`) | — |
 | `--timeout` | Per-request timeout in seconds | — |
-| `--export-json-path` | Path to export raw response data as JSON | — |
+| `--exporter-type` | Exporter type for results (e.g. `json`) | — |
+| `--export-json-path` | Path to export raw response data as JSON (requires `--exporter-type=json`) | — |
 
 ## Basic Usage
 
@@ -116,7 +117,7 @@ Export the raw response data to a JSON file for further analysis:
 ```bash
 dotnet-http GET https://httpbin.org/get \
   -n 100 --vu 5 \
-  --export-json-path results.json
+  --exporter-type=json --export-json-path results.json
 ```
 
 The exported JSON file contains the full request context, total elapsed time, and the list of individual response models.
@@ -160,7 +161,7 @@ Push the endpoint with 50 virtual users for 5 minutes:
 dotnet-http GET https://api.example.com/search \
   q==dotnet \
   --vu 50 --duration 5m \
-  --export-json-path stress-results.json
+  --exporter-type=json --export-json-path stress-results.json
 ```
 
 ### POST Load Test
@@ -177,14 +178,8 @@ dotnet-http POST https://api.example.com/orders \
 ## Tips
 
 - Use `--timeout` to prevent slow requests from blocking virtual users indefinitely.
-- Combine `--export-json-path` with external tools (e.g., jq, Python, Excel) for detailed analysis.
+- Combine `--exporter-type=json` and `--export-json-path` with external tools (e.g., jq, Python, Excel) for detailed analysis.
 - Start with low concurrency (`--vu 1`) to establish a baseline before scaling up.
-- Use `--offline` to preview the request without sending it:
-
-  ```bash
-  dotnet-http POST https://api.example.com/data \
-    name=Test --vu 10 -n 100 --offline
-  ```
 
 ## Next Steps
 
