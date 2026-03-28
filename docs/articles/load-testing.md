@@ -41,10 +41,10 @@ Simulate 5 concurrent users each sending the request once:
 dotnet-http GET https://httpbin.org/get --vu 5
 ```
 
-Combine virtual users with iterations — 5 users each sending 10 requests (50 total):
+Combine virtual users with a duration — 5 concurrent users running for 30 seconds:
 
 ```bash
-dotnet-http GET https://httpbin.org/get -n 10 --vu 5
+dotnet-http GET https://httpbin.org/get --vu 5 --duration 30s
 ```
 
 ### Duration-Based Testing
