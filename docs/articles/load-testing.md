@@ -4,13 +4,13 @@ dotnet-httpie has built-in load testing capabilities that allow you to send mult
 
 ## Overview
 
-Load testing is triggered automatically when you use any of the following options:
+Load testing mode is triggered automatically when you configure any of the following options beyond their single-run defaults (i.e., iterations > 1, virtual users > 1, or a positive duration):
 
 - `-n` / `--iteration` — repeat the request N times
 - `--vu` / `--vus` / `--virtual-users` — run concurrent virtual users
 - `--duration` — run the request repeatedly for a fixed time window
 
-When any of these options are used, dotnet-httpie collects response statistics and prints a performance summary after all requests complete.
+When load testing mode is active, dotnet-httpie collects response statistics and prints a performance summary after all requests complete.
 
 ## Options
 
