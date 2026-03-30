@@ -458,5 +458,4 @@ dotnet-http GET api.example.com/users/$user_id
 
 - Learn about [authentication methods](authentication.md)
 - Explore [file execution](file-execution.md) for complex data scenarios
-- Check out [variable substitution](variables.md) for dynamic values
 - See [examples](examples/common-use-cases.md) for real-world usage patterns

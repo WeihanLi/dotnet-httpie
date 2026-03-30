@@ -590,6 +590,5 @@ Before asking for help:
 
 ## Next Steps
 
-- Review [performance tips](performance-tips.md) for optimization
 - Check [common use cases](examples/common-use-cases.md) for working examples
-- Explore [advanced features](middleware-system.md) for complex scenarios
+- Review [CI/CD integration](ci-cd-integration.md) for automated testing

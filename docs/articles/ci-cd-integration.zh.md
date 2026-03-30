@@ -753,7 +753,7 @@ dotnet-http GET localhost:3000/health  # 本地连通性
 
 ## 下一步
 
-- 配置 [dotnet-httpie 的监控和告警](../examples/common-use-cases.zh.md)
-- 探索[Docker 使用](../docker-usage.zh.md)实现容器化 CI/CD
-- 了解[调试技术](../debugging.zh.md)进行故障排查
-- 查看[身份认证方法](../authentication.zh.md)保护 CI/CD 安全
+- 配置 [dotnet-httpie 的监控和告警](examples/common-use-cases.zh.md)
+- 探索[Docker 使用](docker-usage.zh.md)实现容器化 CI/CD
+- 了解[调试技术](debugging.zh.md)进行故障排查
+- 查看[身份认证方法](authentication.zh.md)保护 CI/CD 安全

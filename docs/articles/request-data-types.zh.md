@@ -458,5 +458,4 @@ dotnet-http GET api.example.com/users/$user_id
 
 - 了解[身份认证方法](authentication.zh.md)
 - 探索[文件执行](file-execution.zh.md)处理复杂数据场景
-- 查看[变量替换](variables.md)实现动态值
 - 参阅[示例](examples/common-use-cases.zh.md)了解真实使用场景

@@ -475,7 +475,5 @@ Authorization: Bearer {{authenticate.response.body.token}}
 
 ## 下一步
 
-- 详细了解[变量替换](variables.md)
-- 探索[请求引用](request-referencing.md)模式
 - 配置 [CI/CD 集成](ci-cd-integration.zh.md)与 HTTP 文件结合
 - 查看[常见使用场景](examples/common-use-cases.zh.md)获取更多示例

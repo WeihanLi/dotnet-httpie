@@ -475,7 +475,5 @@ Authorization: Bearer {{authenticate.response.body.token}}
 
 ## Next Steps
 
-- Learn about [variable substitution](variables.md) in detail
-- Explore [request referencing](request-referencing.md) patterns
 - Set up [CI/CD integration](ci-cd-integration.md) with HTTP files
 - Check [common use cases](examples/common-use-cases.md) for more examples

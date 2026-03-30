@@ -608,7 +608,4 @@ fi
 
 ## Next Steps
 
-- Explore [API testing scenarios](api-testing.md) for more advanced patterns
-- Learn about [integration examples](integrations.md) with other tools
-- Check out [performance tips](../performance-tips.md) for optimization
 - Review [debugging guide](../debugging.md) for troubleshooting

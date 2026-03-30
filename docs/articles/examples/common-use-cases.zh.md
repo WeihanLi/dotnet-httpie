@@ -608,7 +608,4 @@ fi
 
 ## 下一步
 
-- 探索[API 测试场景](api-testing.md)了解更高级的模式
-- 了解与其他工具的[集成示例](integrations.md)
-- 查看[性能优化建议](../performance-tips.md)
 - 参阅[调试指南](../debugging.zh.md)进行故障排查

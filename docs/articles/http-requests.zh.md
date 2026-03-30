@@ -335,4 +335,3 @@ dotnet-http DELETE api.example.com/articles/123
 
 - 了解[身份认证方法](authentication.zh.md)
 - 探索[文件执行](file-execution.zh.md)处理可重复请求
-- 查看[变量替换](variables.md)实现动态请求

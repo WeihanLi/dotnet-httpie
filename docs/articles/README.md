@@ -15,48 +15,30 @@ Welcome to the comprehensive documentation for dotnet-httpie, a modern command-l
 - [Making HTTP Requests](http-requests.md)
 - [Request Data Types](request-data-types.md)
 - [Authentication](authentication.md)
-- [File Operations](file-operations.md)
 
 ### Advanced Features
 - [Executing .http/.rest Files](file-execution.md)
 - [HTTP API Test Collections](api-test-collections.md)
-- [Curl Command Execution](curl-execution.md)
-- [Variable Substitution](variables.md)
-- [Request Referencing](request-referencing.md)
-- [JSON Schema Validation](json-schema-validation.md)
-- [Request Caching](request-caching.md)
 - [Load Testing](load-testing.md)
-
-### Configuration
-- [Proxy Configuration](proxy-configuration.md)
-- [SSL/TLS Configuration](ssl-configuration.md)
-- [Environment Variables](environment-variables.md)
 
 ### Docker & Deployment
 - [Docker Usage](docker-usage.md)
 - [CI/CD Integration](ci-cd-integration.md)
 
 ### Advanced Topics
-- [Middleware System](middleware-system.md)
 - [Debugging & Troubleshooting](debugging.md)
-- [Performance Tips](performance-tips.md)
 
 ### Examples & Recipes
 - [Common Use Cases](examples/common-use-cases.md)
-- [API Testing Scenarios](examples/api-testing.md)
-- [Integration Examples](examples/integrations.md)
 
 ### Reference
 - [Command Line Options](reference/command-line-options.md)
-- [Configuration Reference](reference/configuration.md)
-- [Error Codes](reference/error-codes.md)
 
 ## Quick Links
 
 - [GitHub Repository](https://github.com/WeihanLi/dotnet-httpie)
 - [NuGet Package](https://www.nuget.org/packages/dotnet-httpie/)
 - [Release Notes](../ReleaseNotes.md)
-- [Contributing Guidelines](../../CONTRIBUTING.md)
 
 ## Need Help?
 

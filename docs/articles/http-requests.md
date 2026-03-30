@@ -335,4 +335,3 @@ dotnet-http DELETE api.example.com/articles/123
 
 - Learn about [authentication methods](authentication.md)
 - Explore [file execution](file-execution.md) for repeatable requests
-- Check out [variable substitution](variables.md) for dynamic requests

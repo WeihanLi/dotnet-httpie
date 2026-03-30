@@ -590,6 +590,5 @@ dotnet run --project src/HTTPie -- GET api.example.com/data --debug
 
 ## 下一步
 
-- 查看[性能优化建议](performance-tips.md)
 - 查看[常见使用场景](examples/common-use-cases.zh.md)中的可用示例
-- 探索高级功能的[中间件系统](middleware-system.md)
+- 参阅 [CI/CD 集成](ci-cd-integration.zh.md)了解自动化测试

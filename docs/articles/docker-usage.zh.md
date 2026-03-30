@@ -425,6 +425,4 @@ docker run --rm weihanli/dotnet-httpie:0.12.0 GET httpbin.org/get
 ## 下一步
 
 - 配置 [CI/CD 集成](ci-cd-integration.zh.md)与 Docker 结合
-- 了解[环境配置](environment-variables.md)
-- 探索使用 Docker 的[高级示例](examples/integrations.md)
 - 查看[故障排查指南](debugging.zh.md)了解常见问题

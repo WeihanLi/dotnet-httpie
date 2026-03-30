@@ -503,5 +503,4 @@ fi
 
 - 了解[请求数据类型](request-data-types.zh.md)以发送认证请求
 - 探索[文件执行](file-execution.zh.md)管理 HTTP 文件中的认证
-- 查看[环境变量](environment-variables.md)进行安全的凭据管理
 - 参阅[示例](examples/common-use-cases.zh.md)了解真实认证模式
