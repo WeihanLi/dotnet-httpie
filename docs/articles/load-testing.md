@@ -1,5 +1,7 @@
 # Load Testing
 
+> 📖 [查看中文文档](load-testing.zh.md)
+
 dotnet-httpie has built-in load testing capabilities that allow you to send multiple requests, configure virtual users, and measure performance metrics — all from the same familiar CLI syntax.
 
 ## Overview

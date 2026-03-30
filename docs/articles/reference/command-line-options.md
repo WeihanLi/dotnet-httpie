@@ -1,5 +1,7 @@
 # Command Line Options Reference
 
+> 📖 [查看中文文档](command-line-options.zh.md)
+
 This comprehensive reference covers all command line options and flags available in dotnet-httpie.
 
 ## Command Syntax
