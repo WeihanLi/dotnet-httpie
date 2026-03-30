@@ -283,34 +283,6 @@ Content-Type: application/json
 }
 ```
 
-## Testing and Validation
-
-### Response Assertions
-
-```http
-GET {{baseUrl}}/users/123
-
-# Test response
-# @test status === 200
-# @test response.body.name === "John Doe"
-# @test response.headers["content-type"] includes "application/json"
-```
-
-### Schema Validation
-
-```http
-POST {{baseUrl}}/users
-Content-Type: application/json
-
-{
-  "name": "John Doe",
-  "email": "john@example.com"
-}
-
-# Validate response against JSON schema
-# @schema user-schema.json
-```
-
 ## Debugging File Execution
 
 ### Debug Mode

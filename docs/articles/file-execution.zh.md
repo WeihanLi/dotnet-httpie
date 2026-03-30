@@ -283,34 +283,6 @@ Content-Type: application/json
 }
 ```
 
-## 测试与验证
-
-### 响应断言
-
-```http
-GET {{baseUrl}}/users/123
-
-# 测试响应
-# @test status === 200
-# @test response.body.name === "John Doe"
-# @test response.headers["content-type"] includes "application/json"
-```
-
-### Schema 验证
-
-```http
-POST {{baseUrl}}/users
-Content-Type: application/json
-
-{
-  "name": "John Doe",
-  "email": "john@example.com"
-}
-
-# 根据 JSON schema 验证响应
-# @schema user-schema.json
-```
-
 ## 调试文件执行
 
 ### 调试模式
@@ -398,7 +370,7 @@ steps:
     custom: 'tool'
     arguments: 'install --global dotnet-httpie'
 
-- script: dotnet-http exec api-tests/health-check.http --env $(Environment)
+- script: dotnet-http exec api-tests/health-check.http
   displayName: 'Run Health Check'
 ```
 
