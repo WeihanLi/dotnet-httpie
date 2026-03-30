@@ -1,238 +1,238 @@
-# Basic Usage
+# 基本用法
 
-> 📖 [查看中文文档](basic-usage.zh.md)
+> 📖 [View English Documentation](basic-usage.md)
 
-This guide covers the fundamental concepts and basic usage patterns of dotnet-httpie.
+本指南介绍 dotnet-httpie 的基本概念和常用使用模式。
 
-## Command Structure
+## 命令结构
 
-The basic syntax for dotnet-httpie commands:
+dotnet-httpie 命令的基本语法：
 
 ```
 dotnet-http [flags] [METHOD] URL [ITEM [ITEM]]
 ```
 
-### Components
+### 各组成部分
 
-- **flags**: Optional command flags (e.g., `--offline`, `--debug`, `--body`)
-- **METHOD**: HTTP method (GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS)
-- **URL**: Target URL (can be full URL or shortened format)
-- **ITEM**: Request items (query parameters, headers, data)
+- **flags**：可选命令标志（例如 `--offline`、`--debug`、`--body`）
+- **METHOD**：HTTP 方法（GET、POST、PUT、DELETE、PATCH、HEAD、OPTIONS）
+- **URL**：目标 URL（可以是完整 URL 或简短格式）
+- **ITEM**：请求项（查询参数、请求头、数据）
 
-## HTTP Methods
+## HTTP 方法
 
-### GET (Default)
+### GET（默认）
 
 ```bash
-# Simple GET request
+# 简单 GET 请求
 dotnet-http httpbin.org/get
 
-# GET with query parameters
+# 带查询参数的 GET 请求
 dotnet-http httpbin.org/get name==John age==30
 
-# Explicit GET method
+# 显式指定 GET 方法
 dotnet-http GET httpbin.org/get search==query
 ```
 
 ### POST
 
 ```bash
-# POST with JSON data
+# 带 JSON 数据的 POST 请求
 dotnet-http POST httpbin.org/post name=John email=john@example.com
 
-# POST with form data
+# 带表单数据的 POST 请求
 dotnet-http POST httpbin.org/post --form name=John email=john@example.com
 ```
 
 ### PUT
 
 ```bash
-# PUT request (typically for updates)
+# PUT 请求（通常用于更新）
 dotnet-http PUT httpbin.org/put id:=123 name=John
 ```
 
 ### DELETE
 
 ```bash
-# DELETE request
+# DELETE 请求
 dotnet-http DELETE httpbin.org/delete
 
-# DELETE with parameters
+# 带参数的 DELETE 请求
 dotnet-http DELETE api.example.com/users/123
 ```
 
-### Other Methods
+### 其他方法
 
 ```bash
-# PATCH for partial updates
+# PATCH 用于部分更新
 dotnet-http PATCH httpbin.org/patch status=active
 
-# HEAD for headers only
+# HEAD 仅获取响应头
 dotnet-http HEAD httpbin.org/get
 
-# OPTIONS for allowed methods
+# OPTIONS 查询允许的方法
 dotnet-http OPTIONS httpbin.org
 ```
 
-## URL Formats
+## URL 格式
 
-### Full URLs
+### 完整 URL
 
 ```bash
-# HTTPS URLs
+# HTTPS URL
 dotnet-http https://api.example.com/users
 
-# HTTP URLs
+# HTTP URL
 dotnet-http http://localhost:3000/api/data
 
-# URLs with ports
+# 带端口的 URL
 dotnet-http https://api.example.com:8443/secure
 ```
 
-### Shortened URLs
+### 简短 URL
 
 ```bash
-# Localhost shortcuts
+# localhost 快捷方式
 dotnet-http :3000/api/users          # → http://localhost:3000/api/users
 dotnet-http localhost:5000/health    # → http://localhost:5000/health
 
-# HTTPS by default for domains
+# 域名默认使用 HTTPS
 dotnet-http api.example.com/data     # → https://api.example.com/data
 ```
 
-### URL with Paths
+### 带路径的 URL
 
 ```bash
-# Simple paths
+# 简单路径
 dotnet-http api.example.com/v1/users
 
-# Complex paths with parameters
+# 带参数的复杂路径
 dotnet-http api.example.com/users/123/posts/456
 
-# Paths with special characters
+# 含特殊字符的路径
 dotnet-http "api.example.com/search?q=hello world"
 ```
 
-## Request Items
+## 请求项
 
-### Query Parameters (`==`)
+### 查询参数（`==`）
 
-Query parameters are added to the URL:
+查询参数被追加到 URL 后：
 
 ```bash
-# Single parameter
+# 单个参数
 dotnet-http httpbin.org/get name==John
 
-# Multiple parameters
+# 多个参数
 dotnet-http httpbin.org/get name==John age==30 city=="New York"
 
-# Arrays/multiple values
+# 数组/多个值
 dotnet-http httpbin.org/get tag==javascript tag==web tag==api
 ```
 
-### Headers (`:`)
+### 请求头（`:`）
 
-Headers control request behavior:
+请求头用于控制请求行为：
 
 ```bash
-# Authentication header
+# 认证头
 dotnet-http httpbin.org/headers Authorization:"Bearer token123"
 
 # Content type
 dotnet-http POST httpbin.org/post Content-Type:"application/xml"
 
-# Multiple headers
+# 多个请求头
 dotnet-http httpbin.org/headers \
   Authorization:"Bearer token" \
   User-Agent:"MyApp/1.0" \
   Accept:"application/json"
 ```
 
-### JSON Data (`=`)
+### JSON 数据（`=`）
 
-Creates JSON request body:
+创建 JSON 请求体：
 
 ```bash
-# Simple fields
+# 简单字段
 dotnet-http POST httpbin.org/post name=John age=30
 
-# Creates: {"name": "John", "age": "30"}
+# 生成：{"name": "John", "age": "30"}
 ```
 
-### Raw JSON Data (`:=`)
+### 原始 JSON 数据（`:=`）
 
-For typed JSON values:
+用于带类型的 JSON 值：
 
 ```bash
-# Numbers
+# 数字
 dotnet-http POST httpbin.org/post age:=30 price:=19.99
 
-# Booleans
+# 布尔值
 dotnet-http POST httpbin.org/post active:=true published:=false
 
-# Arrays
+# 数组
 dotnet-http POST httpbin.org/post tags:='["web", "api", "tool"]'
 
-# Objects
+# 对象
 dotnet-http POST httpbin.org/post profile:='{"name": "John", "level": 5}'
 
-# Creates: {"age": 30, "price": 19.99, "active": true, "published": false, "tags": ["web", "api", "tool"], "profile": {"name": "John", "level": 5}}
+# 生成：{"age": 30, "price": 19.99, "active": true, "published": false, "tags": ["web", "api", "tool"], "profile": {"name": "John", "level": 5}}
 ```
 
-## Common Patterns
+## 常用模式
 
-### API Testing
+### API 测试
 
 ```bash
-# Health check
+# 健康检查
 dotnet-http GET api.example.com/health
 
-# Get list of resources
+# 获取资源列表
 dotnet-http GET api.example.com/users
 
-# Get specific resource
+# 获取指定资源
 dotnet-http GET api.example.com/users/123
 
-# Create new resource
+# 创建新资源
 dotnet-http POST api.example.com/users name=John email=john@example.com
 
-# Update resource
+# 更新资源
 dotnet-http PUT api.example.com/users/123 name="John Smith"
 
-# Delete resource
+# 删除资源
 dotnet-http DELETE api.example.com/users/123
 ```
 
-### Authentication Patterns
+### 认证模式
 
 ```bash
-# Bearer token
+# Bearer 令牌
 dotnet-http GET api.example.com/protected \
   Authorization:"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
-# API key in header
+# 请求头中的 API 密钥
 dotnet-http GET api.example.com/data \
   X-API-Key:"your-api-key"
 
-# API key in query
+# 查询参数中的 API 密钥
 dotnet-http GET api.example.com/data \
   api_key==your-api-key
 
-# Basic authentication
+# 基本认证
 dotnet-http GET api.example.com/secure \
   Authorization:"Basic $(echo -n 'user:pass' | base64)"
 ```
 
-### Data Submission Patterns
+### 数据提交模式
 
 ```bash
-# Simple form data
+# 简单表单数据
 dotnet-http POST api.example.com/contact \
   name=John \
   email=john@example.com \
   message="Hello from dotnet-httpie"
 
-# Complex nested data
+# 复杂嵌套数据
 dotnet-http POST api.example.com/orders \
   customer[name]=John \
   customer[email]=john@example.com \
@@ -242,71 +242,71 @@ dotnet-http POST api.example.com/orders \
   items[1][quantity]:=1 \
   total:=99.99
 
-# File upload
+# 文件上传
 dotnet-http POST api.example.com/upload \
   --multipart \
   description="My document" \
   file@/path/to/document.pdf
 ```
 
-## Response Handling
+## 响应处理
 
-### Default Response
+### 默认响应
 
-Shows headers and body:
+同时显示响应头和响应体：
 
 ```bash
 dotnet-http GET httpbin.org/get
 ```
 
-### Body Only
+### 仅显示响应体
 
 ```bash
-# Only response body
+# 仅响应体
 dotnet-http GET httpbin.org/get --body
 
-# Useful for piping to other tools
+# 便于管道传输给其他工具
 dotnet-http GET api.example.com/users --body | jq '.users[0]'
 ```
 
-### Headers Only
+### 仅显示响应头
 
 ```bash
-# Only response headers
+# 仅响应头
 dotnet-http HEAD httpbin.org/get
 ```
 
-### Save Response
+### 保存响应
 
 ```bash
-# Save to file
+# 保存到文件
 dotnet-http GET api.example.com/report --body > report.json
 
-# Download files
+# 下载文件
 dotnet-http GET api.example.com/files/document.pdf --download
 ```
 
-## Useful Flags
+## 常用标志
 
-### Debug Mode
+### 调试模式
 
-Get detailed information about the request:
+获取请求的详细信息：
 
 ```bash
 dotnet-http GET api.example.com/data --debug
 ```
 
-### Offline Mode
+### 离线模式
 
-Preview the request without sending it:
+在不发送请求的情况下预览请求内容：
 
 ```bash
 dotnet-http POST api.example.com/users name=John --offline
 ```
 
-### Check Status
+### 检查状态
 
-Exit with non-zero code for HTTP errors:
+HTTP 错误时返回非零退出码：
 
 ```bash
 if dotnet-http GET api.example.com/health --check-status; then
@@ -316,38 +316,38 @@ else
 fi
 ```
 
-## Working with JSON
+## 处理 JSON
 
-### Simple JSON
+### 简单 JSON
 
 ```bash
-# String values (default)
+# 字符串值（默认）
 dotnet-http POST httpbin.org/post name=John title="Software Engineer"
 
-# Number values
+# 数字值
 dotnet-http POST httpbin.org/post age:=30 salary:=75000
 
-# Boolean values
+# 布尔值
 dotnet-http POST httpbin.org/post active:=true verified:=false
 
-# Null values
+# null 值
 dotnet-http POST httpbin.org/post middle_name:=null
 ```
 
-### Complex JSON
+### 复杂 JSON
 
 ```bash
-# Arrays
+# 数组
 dotnet-http POST httpbin.org/post \
   skills:='["C#", "JavaScript", "Python"]' \
   scores:='[95, 87, 92]'
 
-# Nested objects
+# 嵌套对象
 dotnet-http POST httpbin.org/post \
   address:='{"street": "123 Main St", "city": "Seattle", "zip": "98101"}' \
   contact:='{"email": "john@example.com", "phone": "+1-555-0123"}'
 
-# Mixed complex data
+# 混合复杂数据
 dotnet-http POST httpbin.org/post \
   name=John \
   age:=30 \
@@ -357,51 +357,51 @@ dotnet-http POST httpbin.org/post \
   metadata:=null
 ```
 
-## Error Handling
+## 错误处理
 
-### HTTP Status Codes
+### HTTP 状态码
 
 ```bash
-# dotnet-httpie shows HTTP errors clearly
-dotnet-http GET httpbin.org/status/404  # Shows 404 Not Found
-dotnet-http GET httpbin.org/status/500  # Shows 500 Internal Server Error
+# dotnet-httpie 会清晰地显示 HTTP 错误
+dotnet-http GET httpbin.org/status/404  # 显示 404 Not Found
+dotnet-http GET httpbin.org/status/500  # 显示 500 Internal Server Error
 ```
 
-### Debugging Errors
+### 调试错误
 
 ```bash
-# Use debug mode to see detailed error information
+# 使用调试模式查看详细错误信息
 dotnet-http GET api.example.com/broken --debug
 
-# Check request format first
+# 先检查请求格式
 dotnet-http POST api.example.com/users invalid-data --offline
 ```
 
-## Tips and Best Practices
+## 使用技巧与最佳实践
 
-### 1. Use Environment Variables
+### 1. 使用环境变量
 
 ```bash
-# Store API tokens in environment variables
+# 将 API 令牌存储在环境变量中
 export API_TOKEN="your-secret-token"
 dotnet-http GET api.example.com/protected Authorization:"Bearer $API_TOKEN"
 
-# Store base URLs
+# 存储基础 URL
 export API_BASE="https://api.example.com"
 dotnet-http GET "$API_BASE/users"
 ```
 
-### 2. Quote Special Characters
+### 2. 对特殊字符加引号
 
 ```bash
-# Quote values with spaces or special characters
+# 对包含空格或特殊字符的值加引号
 dotnet-http POST httpbin.org/post message="Hello, world!" tags:='["tag with spaces", "special!chars"]'
 ```
 
-### 3. Use Files for Large Data
+### 3. 大型数据使用文件
 
 ```bash
-# Instead of long command lines, use files
+# 使用文件代替冗长的命令行
 cat > user.json << EOF
 {
   "name": "John Doe",
@@ -418,85 +418,85 @@ EOF
 dotnet-http POST api.example.com/users @user.json
 ```
 
-### 4. Combine with Other Tools
+### 4. 与其他工具组合使用
 
 ```bash
-# Extract specific data with jq
+# 使用 jq 提取特定数据
 USER_ID=$(dotnet-http POST api.example.com/users name=John --body | jq -r '.id')
 dotnet-http GET "api.example.com/users/$USER_ID"
 
-# Format JSON output
+# 格式化 JSON 输出
 dotnet-http GET api.example.com/users | jq .
 
-# Save and process responses
+# 保存并处理响应
 dotnet-http GET api.example.com/users --body > users.json
 jq '.users[] | select(.active == true)' users.json
 ```
 
-### 5. Test Incrementally
+### 5. 逐步测试
 
 ```bash
-# Start with simple requests
+# 从简单请求开始
 dotnet-http GET api.example.com/health
 
-# Add authentication
+# 添加认证
 dotnet-http GET api.example.com/protected Authorization:"Bearer $TOKEN"
 
-# Add data gradually
+# 逐步添加数据
 dotnet-http POST api.example.com/users name=John
 dotnet-http POST api.example.com/users name=John email=john@example.com
 dotnet-http POST api.example.com/users name=John email=john@example.com age:=30
 ```
 
-## Common Use Cases
+## 常见使用场景
 
-### Development Workflow
+### 开发工作流
 
 ```bash
-# 1. Check if API is running
+# 1. 检查 API 是否运行
 dotnet-http GET localhost:3000/health
 
-# 2. Test authentication
+# 2. 测试认证
 dotnet-http POST localhost:3000/auth/login username=admin password=password
 
-# 3. Test CRUD operations
+# 3. 测试 CRUD 操作
 dotnet-http GET localhost:3000/api/users
 dotnet-http POST localhost:3000/api/users name=Test email=test@example.com
 dotnet-http PUT localhost:3000/api/users/1 name="Updated Name"
 dotnet-http DELETE localhost:3000/api/users/1
 ```
 
-### API Exploration
+### API 探索
 
 ```bash
-# Discover API endpoints
+# 发现 API 端点
 dotnet-http OPTIONS api.example.com
 
-# Check API documentation endpoint
+# 检查 API 文档端点
 dotnet-http GET api.example.com/docs
 
-# Test different response formats
+# 测试不同响应格式
 dotnet-http GET api.example.com/users Accept:"application/json"
 dotnet-http GET api.example.com/users Accept:"application/xml"
 ```
 
-### Integration Testing
+### 集成测试
 
 ```bash
-# Test service dependencies
+# 测试服务依赖
 dotnet-http GET auth-service.internal/health
 dotnet-http GET user-service.internal/health
 dotnet-http GET order-service.internal/health
 
-# Test cross-service communication
+# 测试跨服务通信
 TOKEN=$(dotnet-http POST auth-service.internal/token client_id=test --body | jq -r '.access_token')
 dotnet-http GET user-service.internal/profile Authorization:"Bearer $TOKEN"
 ```
 
-## Next Steps
+## 下一步
 
-- Learn about [advanced request data types](request-data-types.md)
-- Explore [authentication methods](authentication.md)
-- Try [file execution](file-execution.md) for complex workflows
-- Check out [common use cases](examples/common-use-cases.md) for real-world examples
-- Use [debugging techniques](debugging.md) when things go wrong
+- 了解[高级请求数据类型](request-data-types.zh.md)
+- 探索[身份认证方法](authentication.zh.md)
+- 尝试[文件执行](file-execution.zh.md)处理复杂工作流
+- 查看[常见使用场景](examples/common-use-cases.zh.md)中的实际案例
+- 遇到问题时使用[调试技术](debugging.zh.md)

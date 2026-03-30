@@ -1,5 +1,7 @@
 # HTTP API Test Collections
 
+> 📖 [查看中文文档](api-test-collections.zh.md)
+
 dotnet-httpie supports running structured HTTP API test collections via the `test` subcommand. Collections are defined as JSON files and support hierarchical organization with variable inheritance, pre/post scripts, and rich assertion helpers.
 
 ## Overview

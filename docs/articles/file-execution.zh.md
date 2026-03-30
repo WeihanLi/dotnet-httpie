@@ -1,58 +1,58 @@
-# File Execution
+# 文件执行
 
-> 📖 [查看中文文档](file-execution.zh.md)
+> 📖 [View English Documentation](file-execution.md)
 
-dotnet-httpie can execute HTTP requests from `.http` and `.rest` files, making it perfect for API testing, documentation, and automation.
+dotnet-httpie 可以执行 `.http` 和 `.rest` 文件中定义的 HTTP 请求，非常适合 API 测试、文档编写和自动化场景。
 
-## Overview
+## 概述
 
-The `exec` command allows you to run HTTP requests defined in files, supporting:
-- Standard `.http` and `.rest` file formats
-- Variable substitution
-- Environment-specific configurations
-- Request chaining and referencing
+`exec` 命令允许您运行文件中定义的 HTTP 请求，支持以下特性：
+- 标准 `.http` 和 `.rest` 文件格式
+- 变量替换
+- 环境特定配置
+- 请求链与请求引用
 
-## Basic Usage
+## 基本用法
 
-### Execute Single File
+### 执行单个文件
 
 ```bash
 dotnet-http exec requests.http
 ```
 
-### Execute with Environment
+### 指定环境执行
 
 ```bash
 dotnet-http exec requests.http --env production
 ```
 
-### Execute Specific Request Type
+### 指定请求类型执行
 
 ```bash
 dotnet-http exec requests.http --type http
 dotnet-http exec curl-commands.curl --type curl
 ```
 
-## HTTP File Format
+## HTTP 文件格式
 
-### Basic Request
+### 基本请求
 
 ```http
-# Get user information
+# 获取用户信息
 GET https://api.example.com/users/123
 Authorization: Bearer your-token
 ```
 
-### Multiple Requests
+### 多个请求
 
 ```http
-# Get all users
+# 获取所有用户
 GET https://api.example.com/users
 Authorization: Bearer your-token
 
 ###
 
-# Create new user
+# 创建新用户
 POST https://api.example.com/users
 Content-Type: application/json
 Authorization: Bearer your-token
@@ -64,7 +64,7 @@ Authorization: Bearer your-token
 
 ###
 
-# Update user
+# 更新用户
 PUT https://api.example.com/users/123
 Content-Type: application/json
 Authorization: Bearer your-token
@@ -75,19 +75,19 @@ Authorization: Bearer your-token
 }
 ```
 
-### Request with Variables
+### 带变量的请求
 
 ```http
 @baseUrl = https://api.example.com
 @token = your-bearer-token
 
-# Get user
+# 获取用户
 GET {{baseUrl}}/users/123
 Authorization: Bearer {{token}}
 
 ###
 
-# Create user with dynamic data
+# 使用动态数据创建用户
 POST {{baseUrl}}/users
 Content-Type: application/json
 Authorization: Bearer {{token}}
@@ -99,7 +99,7 @@ Authorization: Bearer {{token}}
 }
 ```
 
-### Named Requests
+### 命名请求
 
 ```http
 @baseUrl = https://api.example.com
@@ -121,11 +121,11 @@ Content-Type: application/json
 }
 ```
 
-## Environment Files
+## 环境文件
 
-### HTTP Client Environment File
+### HTTP 客户端环境文件
 
-Create `http-client.env.json`:
+创建 `http-client.env.json`：
 
 ```json
 {
@@ -144,26 +144,26 @@ Create `http-client.env.json`:
 }
 ```
 
-### Using Environment Variables
+### 使用环境变量
 
 ```http
-# This will use variables from the specified environment
+# 将使用指定环境中的变量
 GET {{baseUrl}}/users
 X-API-Key: {{apiKey}}
 ```
 
-Execute with specific environment:
+指定环境执行：
 
 ```bash
 dotnet-http exec api-requests.http --env production
 ```
 
-## Variable Types
+## 变量类型
 
-### Built-in Variables
+### 内置变量
 
 ```http
-# Random values
+# 随机值
 POST {{baseUrl}}/users
 Content-Type: application/json
 
@@ -176,15 +176,15 @@ Content-Type: application/json
 }
 ```
 
-### Environment Variables
+### 环境变量
 
 ```http
-# Access system environment variables
+# 访问系统环境变量
 GET {{baseUrl}}/secure
 Authorization: Bearer {{$env API_TOKEN}}
 ```
 
-### Custom Variables
+### 自定义变量
 
 ```http
 @userId = 123
@@ -193,9 +193,9 @@ Authorization: Bearer {{$env API_TOKEN}}
 GET {{baseUrl}}/{{apiVersion}}/users/{{userId}}
 ```
 
-## Request Referencing
+## 请求引用
 
-Reference responses from previous requests:
+引用前一个请求的响应：
 
 ```http
 # @name login
@@ -209,32 +209,32 @@ Content-Type: application/json
 
 ###
 
-# Use token from login response
+# 使用登录响应中的令牌
 GET {{baseUrl}}/protected/data
 Authorization: Bearer {{login.response.body.token}}
 
 ###
 
-# Reference request headers
+# 引用请求头
 GET {{baseUrl}}/audit
 X-Original-Request-Id: {{login.request.headers.X-Request-ID}}
 ```
 
-## Curl File Execution
+## Curl 文件执行
 
-dotnet-httpie can also execute curl commands from files:
+dotnet-httpie 也可以执行文件中的 curl 命令：
 
-### Curl File Format
+### Curl 文件格式
 
 ```bash
-# file: api-calls.curl
+# 文件：api-calls.curl
 
-# Get user data
+# 获取用户数据
 curl -X GET "https://api.example.com/users/123" \
   -H "Authorization: Bearer token" \
   -H "Accept: application/json"
 
-# Create new user
+# 创建新用户
 curl -X POST "https://api.example.com/users" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer token" \
@@ -244,15 +244,15 @@ curl -X POST "https://api.example.com/users" \
   }'
 ```
 
-### Execute Curl File
+### 执行 Curl 文件
 
 ```bash
 dotnet-http exec api-calls.curl --type curl
 ```
 
-## Advanced Features
+## 高级功能
 
-### Request Chaining
+### 请求链
 
 ```http
 # @name createUser
@@ -283,20 +283,20 @@ Content-Type: application/json
 }
 ```
 
-## Testing and Validation
+## 测试与验证
 
-### Response Assertions
+### 响应断言
 
 ```http
 GET {{baseUrl}}/users/123
 
-# Test response
+# 测试响应
 # @test status === 200
 # @test response.body.name === "John Doe"
 # @test response.headers["content-type"] includes "application/json"
 ```
 
-### Schema Validation
+### Schema 验证
 
 ```http
 POST {{baseUrl}}/users
@@ -307,35 +307,35 @@ Content-Type: application/json
   "email": "john@example.com"
 }
 
-# Validate response against JSON schema
+# 根据 JSON schema 验证响应
 # @schema user-schema.json
 ```
 
-## Debugging File Execution
+## 调试文件执行
 
-### Debug Mode
+### 调试模式
 
 ```bash
 dotnet-http exec requests.http --debug
 ```
 
-### Offline Mode (Preview)
+### 离线模式（预览）
 
 ```bash
 dotnet-http exec requests.http --offline
 ```
 
-This shows what requests would be sent without actually executing them.
+此模式在不实际执行请求的情况下显示将要发送的内容。
 
-### Verbose Output
+### 详细输出
 
 ```bash
 dotnet-http exec requests.http --verbose
 ```
 
-## Organization Strategies
+## 文件组织策略
 
-### Project Structure
+### 项目结构
 
 ```
 project/
@@ -358,15 +358,15 @@ project/
     └── health-check.http
 ```
 
-### File Naming Conventions
+### 文件命名规范
 
-- Use descriptive names: `create-user.http`, `get-order-details.http`
-- Group by feature: `auth/`, `users/`, `orders/`
-- Use environment prefixes: `dev-setup.http`, `prod-health.http`
+- 使用描述性名称：`create-user.http`、`get-order-details.http`
+- 按功能分组：`auth/`、`users/`、`orders/`
+- 使用环境前缀：`dev-setup.http`、`prod-health.http`
 
-## CI/CD Integration
+## CI/CD 集成
 
-### GitHub Actions Example
+### GitHub Actions 示例
 
 ```yaml
 name: API Tests
@@ -387,7 +387,7 @@ jobs:
         run: dotnet-http exec tests/api-tests.http --env testing
 ```
 
-### Azure DevOps Example
+### Azure DevOps 示例
 
 ```yaml
 steps:
@@ -402,20 +402,20 @@ steps:
   displayName: 'Run Health Check'
 ```
 
-## Best Practices
+## 最佳实践
 
-1. **Use environment files** for different deployment environments
-2. **Name your requests** for better organization and referencing
-3. **Group related requests** in the same file
-4. **Use variables** instead of hardcoding values
-5. **Add comments** to explain complex requests
-6. **Validate responses** where critical
-7. **Test offline first** to verify request structure
-8. **Version control** your HTTP files alongside your code
+1. **使用环境文件**区分不同部署环境
+2. **为请求命名**以便更好地组织和引用
+3. **将相关请求放在同一文件**中
+4. **使用变量**替代硬编码值
+5. **添加注释**说明复杂请求
+6. **在关键位置验证响应**
+7. **先使用离线模式测试**，确认请求结构正确
+8. **将 HTTP 文件与代码一起纳入版本控制**
 
-## Examples
+## 示例
 
-### Complete API Test Suite
+### 完整 API 测试套件
 
 ```http
 @baseUrl = https://api.example.com
@@ -473,9 +473,9 @@ DELETE {{baseUrl}}/users/{{createUser.response.body.id}}
 Authorization: Bearer {{authenticate.response.body.token}}
 ```
 
-## Next Steps
+## 下一步
 
-- Learn about [variable substitution](variables.md) in detail
-- Explore [request referencing](request-referencing.md) patterns
-- Set up [CI/CD integration](ci-cd-integration.md) with HTTP files
-- Check [common use cases](examples/common-use-cases.md) for more examples
+- 详细了解[变量替换](variables.md)
+- 探索[请求引用](request-referencing.md)模式
+- 配置 [CI/CD 集成](ci-cd-integration.zh.md)与 HTTP 文件结合
+- 查看[常见使用场景](examples/common-use-cases.zh.md)获取更多示例

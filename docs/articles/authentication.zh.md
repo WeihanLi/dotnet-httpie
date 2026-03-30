@@ -1,150 +1,150 @@
-# Authentication
+# 身份认证
 
-> 📖 [查看中文文档](authentication.zh.md)
+> 📖 [View English Documentation](authentication.md)
 
-This guide covers various authentication methods supported by dotnet-httpie for securing your API requests.
+本指南介绍 dotnet-httpie 支持的各种身份认证方法，用于保护您的 API 请求。
 
-## Overview
+## 概述
 
-dotnet-httpie supports all common authentication methods used in modern APIs:
+dotnet-httpie 支持现代 API 中常用的所有认证方式：
 
-- Bearer Token (JWT)
-- API Key Authentication
-- Basic Authentication  
-- Custom Header Authentication
-- OAuth 2.0 flows
-- Cookie-based Authentication
+- Bearer 令牌（JWT）
+- API 密钥认证
+- 基本认证（Basic Auth）
+- 自定义请求头认证
+- OAuth 2.0 流程
+- 基于 Cookie 的认证
 
-## Bearer Token Authentication
+## Bearer 令牌认证
 
-Most commonly used for JWT tokens in modern APIs.
+最常用于现代 API 中的 JWT 令牌认证。
 
-### Header-based Bearer Token
+### 基于请求头的 Bearer 令牌
 
 ```bash
-# Standard Bearer token
+# 标准 Bearer 令牌
 dotnet-http GET api.example.com/protected \
   Authorization:"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
-# Environment variable token
+# 从环境变量读取令牌
 dotnet-http GET api.example.com/protected \
   Authorization:"Bearer $JWT_TOKEN"
 ```
 
-### Getting JWT Tokens
+### 获取 JWT 令牌
 
 ```bash
-# Login to get JWT token
+# 登录获取 JWT 令牌
 LOGIN_RESPONSE=$(dotnet-http POST api.example.com/auth/login \
   username="admin" \
   password="password" \
   --body)
 
-# Extract token using jq
+# 使用 jq 提取令牌
 TOKEN=$(echo $LOGIN_RESPONSE | jq -r '.access_token')
 
-# Use token for protected requests
+# 在受保护请求中使用令牌
 dotnet-http GET api.example.com/users \
   Authorization:"Bearer $TOKEN"
 ```
 
-### Refresh Token Flow
+### 刷新令牌流程
 
 ```bash
-# Use refresh token to get new access token
+# 使用刷新令牌获取新访问令牌
 REFRESH_RESPONSE=$(dotnet-http POST api.example.com/auth/refresh \
   refresh_token="$REFRESH_TOKEN" \
   --body)
 
 NEW_TOKEN=$(echo $REFRESH_RESPONSE | jq -r '.access_token')
 
-# Use new token
+# 使用新令牌
 dotnet-http GET api.example.com/protected \
   Authorization:"Bearer $NEW_TOKEN"
 ```
 
-## API Key Authentication
+## API 密钥认证
 
-Common in REST APIs for service-to-service communication.
+服务间通信中常见的 REST API 认证方式。
 
-### Header-based API Keys
+### 基于请求头的 API 密钥
 
 ```bash
-# Standard API key header
+# 标准 API 密钥请求头
 dotnet-http GET api.example.com/data \
   X-API-Key:"your-api-key-here"
 
-# Custom header names
+# 自定义请求头名称
 dotnet-http GET api.example.com/data \
   X-RapidAPI-Key:"your-rapidapi-key" \
   X-RapidAPI-Host:"api.example.com"
 
-# Multiple API keys
+# 多个 API 密钥
 dotnet-http GET api.example.com/data \
   X-API-Key:"primary-key" \
   X-Secondary-Key:"secondary-key"
 ```
 
-### Query Parameter API Keys
+### 查询参数中的 API 密钥
 
 ```bash
-# API key as query parameter
+# API 密钥作为查询参数
 dotnet-http GET api.example.com/data \
   api_key==your-api-key
 
-# Multiple parameters
+# 多个参数
 dotnet-http GET api.example.com/data \
   key==your-api-key \
   format==json \
   version==v2
 ```
 
-### Environment-based API Keys
+### 基于环境变量的 API 密钥
 
 ```bash
-# Store API key in environment variable
+# 将 API 密钥存储在环境变量中
 export API_KEY="your-secret-api-key"
 
-# Use in requests
+# 在请求中使用
 dotnet-http GET api.example.com/data \
   X-API-Key:"$API_KEY"
 ```
 
-## Basic Authentication
+## 基本认证
 
-Traditional username/password authentication.
+传统的用户名/密码认证方式。
 
-### Manual Basic Auth
+### 手动基本认证
 
 ```bash
-# Encode credentials manually
+# 手动编码凭据
 CREDENTIALS=$(echo -n 'username:password' | base64)
 dotnet-http GET api.example.com/secure \
   Authorization:"Basic $CREDENTIALS"
 
-# Direct encoding
+# 直接编码
 dotnet-http GET api.example.com/secure \
   Authorization:"Basic $(echo -n 'admin:secret123' | base64)"
 ```
 
-### HTTPie-style Basic Auth
+### HTTPie 风格基本认证
 
 ```bash
-# Using --auth flag (username:password format)
+# 使用 --auth 标志（username:password 格式）
 dotnet-http GET api.example.com/secure \
   --auth username:password
 
-# With explicit auth type
+# 显式指定认证类型
 dotnet-http GET api.example.com/secure \
   --auth-type Basic --auth username:password
 ```
 
-## OAuth 2.0 Flows
+## OAuth 2.0 流程
 
-### Client Credentials Flow
+### 客户端凭据流程
 
 ```bash
-# Get access token
+# 获取访问令牌
 TOKEN_RESPONSE=$(dotnet-http POST oauth.provider.com/token \
   grant_type="client_credentials" \
   client_id="your-client-id" \
@@ -154,18 +154,18 @@ TOKEN_RESPONSE=$(dotnet-http POST oauth.provider.com/token \
 
 ACCESS_TOKEN=$(echo $TOKEN_RESPONSE | jq -r '.access_token')
 
-# Use access token
+# 使用访问令牌
 dotnet-http GET api.example.com/protected \
   Authorization:"Bearer $ACCESS_TOKEN"
 ```
 
-### Authorization Code Flow (Manual)
+### 授权码流程（手动）
 
 ```bash
-# Step 1: Get authorization code (manual browser step)
-echo "Visit: https://oauth.provider.com/authorize?client_id=your-client-id&response_type=code&redirect_uri=http://localhost:8080/callback&scope=read"
+# 步骤 1：获取授权码（需手动在浏览器中操作）
+echo "访问：https://oauth.provider.com/authorize?client_id=your-client-id&response_type=code&redirect_uri=http://localhost:8080/callback&scope=read"
 
-# Step 2: Exchange code for token
+# 步骤 2：用授权码换取令牌
 TOKEN_RESPONSE=$(dotnet-http POST oauth.provider.com/token \
   grant_type="authorization_code" \
   client_id="your-client-id" \
@@ -177,10 +177,10 @@ TOKEN_RESPONSE=$(dotnet-http POST oauth.provider.com/token \
 ACCESS_TOKEN=$(echo $TOKEN_RESPONSE | jq -r '.access_token')
 ```
 
-### Resource Owner Password Credentials
+### 资源所有者密码凭据
 
 ```bash
-# Direct username/password exchange (less secure)
+# 直接用户名/密码换取令牌（安全性较低）
 TOKEN_RESPONSE=$(dotnet-http POST oauth.provider.com/token \
   grant_type="password" \
   username="user@example.com" \
@@ -192,12 +192,12 @@ TOKEN_RESPONSE=$(dotnet-http POST oauth.provider.com/token \
 ACCESS_TOKEN=$(echo $TOKEN_RESPONSE | jq -r '.access_token')
 ```
 
-## Custom Authentication Schemes
+## 自定义认证方案
 
-### Signature-based Authentication
+### 基于签名的认证
 
 ```bash
-# AWS-style signature
+# AWS 风格签名
 SIGNATURE=$(echo -n "GET\n/api/data\n$(date -u)" | openssl dgst -sha256 -hmac "$SECRET_KEY" -binary | base64)
 
 dotnet-http GET api.example.com/data \
@@ -205,10 +205,10 @@ dotnet-http GET api.example.com/data \
   X-Amz-Date:"$(date -u +%Y%m%dT%H%M%SZ)"
 ```
 
-### HMAC Authentication
+### HMAC 认证
 
 ```bash
-# Generate HMAC signature
+# 生成 HMAC 签名
 TIMESTAMP=$(date +%s)
 PAYLOAD="GET/api/data$TIMESTAMP"
 SIGNATURE=$(echo -n "$PAYLOAD" | openssl dgst -sha256 -hmac "$SECRET_KEY" -binary | base64)
@@ -219,10 +219,10 @@ dotnet-http GET api.example.com/data \
   X-Signature:"$SIGNATURE"
 ```
 
-### Digest Authentication
+### 摘要认证
 
 ```bash
-# Simple digest implementation (for demonstration)
+# 简单摘要实现（仅供演示）
 NONCE=$(openssl rand -hex 16)
 HASH=$(echo -n "username:realm:password" | md5sum | cut -d' ' -f1)
 RESPONSE=$(echo -n "$HASH:$NONCE:GET:/api/data" | md5sum | cut -d' ' -f1)
@@ -231,43 +231,43 @@ dotnet-http GET api.example.com/data \
   Authorization:"Digest username=\"username\", realm=\"realm\", nonce=\"$NONCE\", uri=\"/api/data\", response=\"$RESPONSE\""
 ```
 
-## Cookie-based Authentication
+## 基于 Cookie 的认证
 
-### Session Cookies
+### 会话 Cookie
 
 ```bash
-# Login and save cookies
+# 登录并保存 Cookie
 dotnet-http POST api.example.com/login \
   username="admin" \
   password="password" \
   --session=api-session
 
-# Use saved session for subsequent requests
+# 在后续请求中使用已保存的会话
 dotnet-http GET api.example.com/protected \
   --session=api-session
 ```
 
-### Manual Cookie Handling
+### 手动处理 Cookie
 
 ```bash
-# Set cookies manually
+# 手动设置 Cookie
 dotnet-http GET api.example.com/protected \
   Cookie:"sessionid=abc123; csrftoken=xyz789"
 
-# Multiple cookies
+# 多个 Cookie
 dotnet-http GET api.example.com/protected \
   Cookie:"auth_token=token123; user_pref=dark_mode; lang=en"
 ```
 
-## Multi-factor Authentication
+## 多因素认证
 
-### TOTP (Time-based One-time Password)
+### TOTP（基于时间的一次性密码）
 
 ```bash
-# Generate TOTP code (using external tool)
+# 使用外部工具生成 TOTP 码
 TOTP_CODE=$(oathtool --totp --base32 "$TOTP_SECRET")
 
-# Include in request
+# 在请求中包含 TOTP 码
 dotnet-http POST api.example.com/sensitive-action \
   Authorization:"Bearer $TOKEN" \
   X-TOTP-Code:"$TOTP_CODE" \
@@ -275,24 +275,24 @@ dotnet-http POST api.example.com/sensitive-action \
   amount:=1000
 ```
 
-### SMS/Email Verification
+### 短信/邮件验证
 
 ```bash
-# Request verification code
+# 请求验证码
 dotnet-http POST api.example.com/request-verification \
   Authorization:"Bearer $TOKEN" \
   phone="+1-555-0123"
 
-# Submit verification code
+# 提交验证码
 dotnet-http POST api.example.com/verify \
   Authorization:"Bearer $TOKEN" \
   verification_code="123456" \
   action="sensitive-operation"
 ```
 
-## Authentication in HTTP Files
+## HTTP 文件中的认证
 
-### Environment Variables
+### 环境变量
 
 ```http
 # auth-example.http
@@ -302,18 +302,18 @@ dotnet-http POST api.example.com/verify \
 
 ###
 
-# Bearer token from environment
+# 从环境变量读取 Bearer 令牌
 GET {{baseUrl}}/protected
 Authorization: Bearer {{token}}
 
 ###
 
-# API key from environment
+# 从环境变量读取 API 密钥
 GET {{baseUrl}}/data
 X-API-Key: {{apiKey}}
 ```
 
-### Login Flow in HTTP Files
+### HTTP 文件中的登录流程
 
 ```http
 # complete-auth-flow.http
@@ -349,67 +349,67 @@ Content-Type: application/json
 }
 ```
 
-## Security Best Practices
+## 安全最佳实践
 
-### Environment Variables
+### 环境变量
 
 ```bash
-# Never hardcode secrets in commands or files
-# Use environment variables instead
+# 切勿在命令或文件中硬编码密钥
+# 请使用环境变量代替
 
-# Bad
+# 不推荐
 dotnet-http GET api.example.com/data X-API-Key:"secret-key-123"
 
-# Good
+# 推荐
 export API_KEY="secret-key-123"
 dotnet-http GET api.example.com/data X-API-Key:"$API_KEY"
 ```
 
-### Secure Storage
+### 安全存储
 
 ```bash
-# Use secure credential storage
-# Example with macOS Keychain
+# 使用安全凭据存储
+# 以 macOS Keychain 为例
 security add-internet-password -s "api.example.com" -a "myapp" -w "secret-api-key"
 API_KEY=$(security find-internet-password -s "api.example.com" -a "myapp" -w)
 
 dotnet-http GET api.example.com/data X-API-Key:"$API_KEY"
 ```
 
-### Token Rotation
+### 令牌轮换
 
 ```bash
 #!/bin/bash
 # token-rotation.sh
 
-# Check if token is expired
+# 检查令牌是否过期
 if ! dotnet-http GET api.example.com/verify Authorization:"Bearer $ACCESS_TOKEN" >/dev/null 2>&1; then
-  echo "Token expired, refreshing..."
+  echo "令牌已过期，正在刷新..."
   
-  # Refresh token
+  # 刷新令牌
   NEW_TOKEN_RESPONSE=$(dotnet-http POST api.example.com/auth/refresh \
     refresh_token="$REFRESH_TOKEN" --body)
   
   ACCESS_TOKEN=$(echo $NEW_TOKEN_RESPONSE | jq -r '.access_token')
   export ACCESS_TOKEN
   
-  echo "Token refreshed successfully"
+  echo "令牌刷新成功"
 fi
 
-# Use current token
+# 使用当前令牌
 dotnet-http GET api.example.com/protected Authorization:"Bearer $ACCESS_TOKEN"
 ```
 
-## Platform-Specific Examples
+## 各平台示例
 
 ### GitHub API
 
 ```bash
-# Personal access token
+# 个人访问令牌
 dotnet-http GET api.github.com/user \
   Authorization:"token $GITHUB_TOKEN"
 
-# Create repository
+# 创建仓库
 dotnet-http POST api.github.com/user/repos \
   Authorization:"token $GITHUB_TOKEN" \
   name="new-repo" \
@@ -419,13 +419,13 @@ dotnet-http POST api.github.com/user/repos \
 ### AWS API
 
 ```bash
-# AWS Signature Version 4 (simplified)
+# AWS 签名版本 4（简化）
 AWS_ACCESS_KEY="your-access-key"
 AWS_SECRET_KEY="your-secret-key"
 AWS_REGION="us-east-1"
 SERVICE="s3"
 
-# Note: Full AWS sig v4 implementation would be more complex
+# 注意：完整的 AWS sig v4 实现会更复杂
 dotnet-http GET s3.amazonaws.com/bucket-name \
   Authorization:"AWS4-HMAC-SHA256 ..." \
   X-Amz-Date:"$(date -u +%Y%m%dT%H%M%SZ)"
@@ -434,75 +434,74 @@ dotnet-http GET s3.amazonaws.com/bucket-name \
 ### Google APIs
 
 ```bash
-# OAuth 2.0 with Google
-# First, get OAuth token through browser flow
-# Then use the access token
+# 通过浏览器流程获取 OAuth 令牌
+# 获取访问令牌后使用
 
 dotnet-http GET www.googleapis.com/oauth2/v1/userinfo \
   Authorization:"Bearer $GOOGLE_ACCESS_TOKEN"
 
-# Service account authentication (with JWT)
+# 服务账号认证（使用 JWT）
 dotnet-http GET www.googleapis.com/storage/v1/b \
   Authorization:"Bearer $SERVICE_ACCOUNT_JWT"
 ```
 
-## Testing Authentication
+## 认证测试
 
-### Verify Token Validity
+### 验证令牌有效性
 
 ```bash
-# Test if token is valid
+# 测试令牌是否有效
 if dotnet-http GET api.example.com/verify Authorization:"Bearer $TOKEN" --check-status; then
-  echo "Token is valid"
+  echo "令牌有效"
 else
-  echo "Token is invalid or expired"
+  echo "令牌无效或已过期"
 fi
 ```
 
-### Authentication Debugging
+### 认证调试
 
 ```bash
-# Debug authentication issues
+# 调试认证问题
 dotnet-http GET api.example.com/protected \
   Authorization:"Bearer $TOKEN" \
   --debug \
-  --offline  # Preview the request first
+  --offline  # 先预览请求
 ```
 
-### Automated Authentication Testing
+### 自动化认证测试
 
 ```bash
 #!/bin/bash
 # auth-test.sh
 
-# Test various authentication methods
-echo "Testing authentication methods..."
+# 测试各种认证方式
+echo "测试认证方式..."
 
-# Test API key
+# 测试 API 密钥
 if dotnet-http GET api.example.com/test X-API-Key:"$API_KEY" --check-status; then
-  echo "✓ API Key authentication works"
+  echo "✓ API 密钥认证成功"
 else
-  echo "✗ API Key authentication failed"
+  echo "✗ API 密钥认证失败"
 fi
 
-# Test JWT token
+# 测试 JWT 令牌
 if dotnet-http GET api.example.com/test Authorization:"Bearer $JWT_TOKEN" --check-status; then
-  echo "✓ JWT authentication works"
+  echo "✓ JWT 认证成功"
 else
-  echo "✗ JWT authentication failed"
+  echo "✗ JWT 认证失败"
 fi
 
-# Test basic auth
+# 测试基本认证
 if dotnet-http GET api.example.com/test Authorization:"Basic $BASIC_AUTH" --check-status; then
-  echo "✓ Basic authentication works"
+  echo "✓ 基本认证成功"
 else
-  echo "✗ Basic authentication failed"
+  echo "✗ 基本认证失败"
 fi
 ```
 
-## Next Steps
+## 下一步
 
-- Learn about [request data types](request-data-types.md) for sending authenticated requests
-- Explore [file execution](file-execution.md) for managing authentication in HTTP files
-- Check out [environment variables](environment-variables.md) for secure credential management
-- Review [examples](examples/common-use-cases.md) for real-world authentication patterns
+- 了解[请求数据类型](request-data-types.zh.md)以发送认证请求
+- 探索[文件执行](file-execution.zh.md)管理 HTTP 文件中的认证
+- 查看[环境变量](environment-variables.md)进行安全的凭据管理
+- 参阅[示例](examples/common-use-cases.zh.md)了解真实认证模式

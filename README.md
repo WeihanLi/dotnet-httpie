@@ -60,6 +60,7 @@ dotnet-http GET httpbin.org/headers Authorization:"Bearer token"
 
 | Topic | Description |
 |-------|-------------|
+| 🇨🇳 [中文文档](docs/articles/README.zh.md) | Chinese documentation / 简体中文完整文档 |
 | 📋 [Installation Guide](docs/articles/installation.md) | Detailed installation instructions for all platforms |
 | ⚡ [Quick Start](docs/articles/quick-start.md) | Get up and running in minutes |
 | 🌐 [HTTP Requests](docs/articles/http-requests.md) | Complete guide to making HTTP requests |

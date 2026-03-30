@@ -1,111 +1,111 @@
-# HTTP Requests
+# HTTP 请求
 
-> 📖 [查看中文文档](http-requests.zh.md)
+> 📖 [View English Documentation](http-requests.md)
 
-This guide covers how to make various types of HTTP requests using dotnet-httpie.
+本指南介绍如何使用 dotnet-httpie 发送各种类型的 HTTP 请求。
 
-## HTTP Methods
+## HTTP 方法
 
-dotnet-httpie supports all standard HTTP methods. If no method is specified, GET is used by default.
+dotnet-httpie 支持所有标准 HTTP 方法。若未指定方法，默认使用 GET。
 
-### GET Requests
+### GET 请求
 
 ```bash
-# Simple GET
+# 简单 GET
 dotnet-http httpbin.org/get
 
-# GET with query parameters
+# 带查询参数的 GET
 dotnet-http httpbin.org/get name==John age==30
 
-# GET with headers
+# 带请求头的 GET
 dotnet-http httpbin.org/get Authorization:"Bearer token"
 ```
 
-### POST Requests
+### POST 请求
 
 ```bash
-# JSON POST request
+# JSON POST 请求
 dotnet-http POST httpbin.org/post name=John email=john@example.com
 
-# Form data POST request  
+# 表单数据 POST 请求  
 dotnet-http POST httpbin.org/post --form name=John email=john@example.com
 
-# Raw data POST request
+# 原始数据 POST 请求
 dotnet-http POST httpbin.org/post --raw "Custom raw data"
 ```
 
-### PUT Requests
+### PUT 请求
 
 ```bash
-# Update resource
+# 更新资源
 dotnet-http PUT api.example.com/users/123 name="John Smith" email="john.smith@example.com"
 
-# Replace entire resource
+# 替换整个资源
 dotnet-http PUT api.example.com/users/123 @user.json
 ```
 
-### PATCH Requests
+### PATCH 请求
 
 ```bash
-# Partial update
+# 部分更新
 dotnet-http PATCH api.example.com/users/123 email="newemail@example.com"
 ```
 
-### DELETE Requests
+### DELETE 请求
 
 ```bash
-# Delete resource
+# 删除资源
 dotnet-http DELETE api.example.com/users/123
 
-# Delete with confirmation header
+# 带确认头的删除
 dotnet-http DELETE api.example.com/users/123 X-Confirm:"yes"
 ```
 
-### HEAD Requests
+### HEAD 请求
 
 ```bash
-# Get headers only
+# 仅获取响应头
 dotnet-http HEAD httpbin.org/get
 ```
 
-### OPTIONS Requests
+### OPTIONS 请求
 
 ```bash
-# Check allowed methods
+# 查询允许的方法
 dotnet-http OPTIONS api.example.com/users
 ```
 
-## Request URLs
+## 请求 URL
 
-### Full URLs
+### 完整 URL
 
 ```bash
 dotnet-http https://api.example.com/users
 dotnet-http http://localhost:3000/api/data
 ```
 
-### Shortened Local URLs
+### 简短本地 URL
 
 ```bash
-# These are equivalent to http://localhost:PORT
+# 等同于 http://localhost:PORT
 dotnet-http :3000/api/users
 dotnet-http localhost:3000/api/users
 ```
 
-### URL with Parameters
+### 带参数的 URL
 
 ```bash
-# Query parameters are added automatically
+# 查询参数会自动附加到 URL
 dotnet-http api.example.com/search q==httpie type==tool
-# Results in: api.example.com/search?q=httpie&type=tool
+# 结果：api.example.com/search?q=httpie&type=tool
 ```
 
-## Request Headers
+## 请求头
 
-### Standard Headers
+### 标准请求头
 
 ```bash
-# Authorization
+# 授权头
 dotnet-http api.example.com/protected Authorization:"Bearer jwt-token"
 
 # Content-Type
@@ -118,17 +118,17 @@ dotnet-http api.example.com/get User-Agent:"MyApp/1.0"
 dotnet-http api.example.com/data Accept:"application/json"
 ```
 
-### Custom Headers
+### 自定义请求头
 
 ```bash
-# API keys
+# API 密钥
 dotnet-http api.example.com/data X-API-Key:"your-api-key"
 
-# Custom headers
+# 自定义头
 dotnet-http api.example.com/data X-Custom-Header:"custom-value"
 ```
 
-### Multiple Headers
+### 多个请求头
 
 ```bash
 dotnet-http api.example.com/data \
@@ -138,44 +138,44 @@ dotnet-http api.example.com/data \
   Accept:"application/json"
 ```
 
-## Request Body
+## 请求体
 
-### JSON Body (Default)
+### JSON 请求体（默认）
 
 ```bash
-# Simple JSON
+# 简单 JSON
 dotnet-http POST api.example.com/users name=John age:=30 active:=true
 
-# Nested JSON
+# 嵌套 JSON
 dotnet-http POST api.example.com/users name=John address[city]=Seattle address[country]=USA
 
-# Array values
+# 数组值
 dotnet-http POST api.example.com/users name=John tags:='["developer", "dotnet"]'
 
-# Raw JSON objects
+# 原始 JSON 对象
 dotnet-http POST api.example.com/users profile:='{"name": "John", "age": 30}'
 ```
 
-### Form Data
+### 表单数据
 
 ```bash
-# URL-encoded form data
+# URL 编码的表单数据
 dotnet-http POST httpbin.org/post --form name=John email=john@example.com
 ```
 
-### Raw Data
+### 原始数据
 
 ```bash
-# Send raw string
+# 发送原始字符串
 dotnet-http POST api.example.com/webhook --raw "Raw webhook payload"
 
-# Send from stdin
+# 从标准输入读取
 echo "data" | dotnet-http POST api.example.com/data
 ```
 
-## Complex JSON Structures
+## 复杂 JSON 结构
 
-### Nested Objects
+### 嵌套对象
 
 ```bash
 dotnet-http POST api.example.com/users \
@@ -185,154 +185,154 @@ dotnet-http POST api.example.com/users \
   address[zipcode]:=98101
 ```
 
-### Arrays
+### 数组
 
 ```bash
-# Array of strings
+# 字符串数组
 dotnet-http POST api.example.com/users name=John skills:='["C#", "JavaScript", "Python"]'
 
-# Array of numbers
+# 数字数组
 dotnet-http POST api.example.com/data values:='[1, 2, 3, 4, 5]'
 
-# Array of objects
+# 对象数组
 dotnet-http POST api.example.com/batch items:='[{"id": 1, "name": "Item 1"}, {"id": 2, "name": "Item 2"}]'
 ```
 
-### Boolean and Null Values
+### 布尔值与 null 值
 
 ```bash
-# Boolean values
+# 布尔值
 dotnet-http POST api.example.com/users name=John active:=true verified:=false
 
-# Null values
+# null 值
 dotnet-http POST api.example.com/users name=John middle_name:=null
 
-# Numbers
+# 数字
 dotnet-http POST api.example.com/users name=John age:=30 salary:=50000.50
 ```
 
-## Response Handling
+## 响应处理
 
-### View Full Response
+### 查看完整响应
 
 ```bash
-# Default: shows headers and body
+# 默认：同时显示响应头和响应体
 dotnet-http httpbin.org/get
 ```
 
-### Body Only
+### 仅显示响应体
 
 ```bash
-# Show only response body
+# 仅显示响应体
 dotnet-http httpbin.org/get --body
 ```
 
-### Headers Only
+### 仅显示响应头
 
 ```bash
-# Show only response headers
+# 仅显示响应头
 dotnet-http HEAD httpbin.org/get
 ```
 
-### Save Response
+### 保存响应
 
 ```bash
-# Save to file
+# 保存到文件
 dotnet-http httpbin.org/get > response.json
 
-# Download files
+# 下载文件
 dotnet-http httpbin.org/image/png --download
 ```
 
-## Error Handling
+## 错误处理
 
-### HTTP Error Codes
+### HTTP 错误码
 
 ```bash
-# dotnet-httpie shows HTTP errors clearly
+# dotnet-httpie 会清晰地显示 HTTP 错误
 dotnet-http httpbin.org/status/404
 dotnet-http httpbin.org/status/500
 ```
 
-### Timeout Configuration
+### 超时配置
 
 ```bash
-# Set request timeout (if supported by middleware)
+# 设置请求超时（如中间件支持）
 dotnet-http api.example.com/slow-endpoint --timeout 30
 ```
 
-## Advanced Features
+## 高级功能
 
-### Follow Redirects
+### 跟随重定向
 
 ```bash
-# Automatically follow redirects
+# 自动跟随重定向
 dotnet-http httpbin.org/redirect/3 --follow
 ```
 
-### Ignore SSL Errors
+### 忽略 SSL 错误
 
 ```bash
-# For development/testing only
+# 仅限开发/测试环境使用
 dotnet-http https://self-signed.badssl.com/ --verify=no
 ```
 
-### Proxy Support
+### 代理支持
 
 ```bash
-# Use proxy
+# 使用代理
 dotnet-http httpbin.org/get --proxy http://proxy.example.com:8080
 ```
 
-## Examples with Real APIs
+## 真实 API 使用示例
 
 ### GitHub API
 
 ```bash
-# Get user info
+# 获取用户信息
 dotnet-http api.github.com/users/octocat
 
-# Get repositories (with authentication)
+# 获取仓库列表（需要认证）
 dotnet-http api.github.com/user/repos Authorization:"token your-token"
 
-# Create issue
+# 创建 Issue
 dotnet-http POST api.github.com/repos/owner/repo/issues \
   Authorization:"token your-token" \
   title="Bug report" \
   body="Description of the bug"
 ```
 
-### REST API CRUD Operations
+### REST API CRUD 操作
 
 ```bash
-# Create
+# 创建
 dotnet-http POST api.example.com/articles \
   title="My Article" \
   content="Article content" \
   published:=false
 
-# Read
+# 读取
 dotnet-http GET api.example.com/articles/123
 
-# Update
+# 更新
 dotnet-http PUT api.example.com/articles/123 \
   title="Updated Article" \
   published:=true
 
-# Delete
+# 删除
 dotnet-http DELETE api.example.com/articles/123
 ```
 
-## Best Practices
+## 最佳实践
 
-1. **Use meaningful names** for your request files and variables
-2. **Store sensitive data** like API keys in environment variables
-3. **Use --offline mode** to preview requests before sending
-4. **Combine with jq** for JSON processing: `dotnet-http api.example.com/data | jq .`
-5. **Use files for complex data** instead of inline JSON for better maintainability
+1. **使用有意义的名称**命名请求文件和变量
+2. 将 API 密钥等**敏感数据存储在环境变量中**
+3. 发送前使用 **--offline 模式**预览请求
+4. **与 jq 组合**处理 JSON：`dotnet-http api.example.com/data | jq .`
+5. 对于复杂数据，**使用文件**而非内联 JSON，以提高可维护性
 
-## Next Steps
+## 下一步
 
-- Learn about [authentication methods](authentication.md)
-- Explore [file execution](file-execution.md) for repeatable requests
-- Check out [variable substitution](variables.md) for dynamic requests
+- 了解[身份认证方法](authentication.zh.md)
+- 探索[文件执行](file-execution.zh.md)处理可重复请求
+- 查看[变量替换](variables.md)实现动态请求

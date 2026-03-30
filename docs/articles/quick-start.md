@@ -1,5 +1,7 @@
 # Quick Start Guide
 
+> 📖 [查看中文文档](quick-start.zh.md)
+
 Get up and running with dotnet-httpie in minutes! This guide shows you the essential commands to start making HTTP requests.
 
 ## Your First Request

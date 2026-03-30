@@ -1,62 +1,62 @@
-# Request Data Types
+# 请求数据类型
 
-> 📖 [查看中文文档](request-data-types.zh.md)
+> 📖 [View English Documentation](request-data-types.md)
 
-This guide explains the different ways to structure and send data with your HTTP requests using dotnet-httpie.
+本指南介绍使用 dotnet-httpie 构造和发送数据的不同方式。
 
-## Overview
+## 概述
 
-dotnet-httpie supports multiple request data formats and provides intuitive syntax for different data types:
+dotnet-httpie 支持多种请求数据格式，并为不同数据类型提供了直观的语法：
 
-- **Query Parameters**: `name==value`
-- **Headers**: `name:value`
-- **JSON Fields**: `name=value`
-- **Raw JSON Values**: `name:=value`
+- **查询参数**：`name==value`
+- **请求头**：`name:value`
+- **JSON 字段**：`name=value`
+- **原始 JSON 值**：`name:=value`
 
-## Query Parameters
+## 查询参数
 
-Query parameters are appended to the URL and use the `==` syntax.
+查询参数追加到 URL 后，使用 `==` 语法。
 
-### Basic Query Parameters
+### 基本查询参数
 
 ```bash
-# Single parameter
+# 单个参数
 dotnet-http httpbin.org/get search==httpie
 
-# Multiple parameters
+# 多个参数
 dotnet-http httpbin.org/get search==httpie lang==en page==1
 
-# URL encoding is automatic
+# URL 编码自动处理
 dotnet-http httpbin.org/get query=="hello world" special=="chars!@#"
 ```
 
-### Arrays in Query Parameters
+### 查询参数中的数组
 
 ```bash
-# Multiple values for same parameter
+# 同一参数的多个值
 dotnet-http httpbin.org/get tags==javascript tags==web tags==api
 
-# Results in: ?tags=javascript&tags=web&tags=api
+# 结果：?tags=javascript&tags=web&tags=api
 ```
 
-### Empty Values
+### 空值
 
 ```bash
-# Empty parameter
+# 空参数
 dotnet-http httpbin.org/get empty==
 
-# Null parameter (omitted)
+# null 参数（被省略）
 dotnet-http httpbin.org/get param==null
 ```
 
-## HTTP Headers
+## HTTP 请求头
 
-Headers use the `:` syntax and control how requests are processed.
+请求头使用 `:` 语法，用于控制请求的处理方式。
 
-### Common Headers
+### 常用请求头
 
 ```bash
-# Authorization
+# 授权
 dotnet-http httpbin.org/headers Authorization:"Bearer jwt-token"
 
 # Content-Type
@@ -68,102 +68,102 @@ dotnet-http httpbin.org/headers User-Agent:"MyApp/1.0"
 # Accept
 dotnet-http httpbin.org/headers Accept:"application/json, text/plain"
 
-# API Keys
+# API 密钥
 dotnet-http api.example.com/data X-API-Key:"your-api-key"
 ```
 
-### Custom Headers
+### 自定义请求头
 
 ```bash
-# Multiple custom headers
+# 多个自定义请求头
 dotnet-http api.example.com/webhook \
   X-Webhook-Source:"github" \
   X-Signature:"sha256=signature" \
   X-Event-Type:"push"
 ```
 
-### Header Values with Spaces
+### 含空格的请求头值
 
 ```bash
-# Quote values containing spaces
+# 对包含空格的值加引号
 dotnet-http httpbin.org/headers User-Agent:"My Application v1.0"
 ```
 
-## JSON Request Body
+## JSON 请求体
 
-### Simple JSON Fields
+### 简单 JSON 字段
 
-Using `=` creates JSON fields automatically:
+使用 `=` 可自动创建 JSON 字段：
 
 ```bash
 dotnet-http POST httpbin.org/post name=John email=john@example.com
 
-# Generates:
+# 生成：
 # {
 #   "name": "John",
 #   "email": "john@example.com"
 # }
 ```
 
-### Data Types
+### 数据类型
 
-#### Strings (Default)
+#### 字符串（默认）
 
 ```bash
 dotnet-http POST httpbin.org/post title="Hello World" description="A test post"
 ```
 
-#### Numbers
+#### 数字
 
 ```bash
-# Integers
+# 整数
 dotnet-http POST httpbin.org/post age:=30 count:=100
 
-# Floats
+# 浮点数
 dotnet-http POST httpbin.org/post price:=19.99 rating:=4.5
 ```
 
-#### Booleans
+#### 布尔值
 
 ```bash
 dotnet-http POST httpbin.org/post active:=true verified:=false published:=true
 ```
 
-#### Null Values
+#### null 值
 
 ```bash
 dotnet-http POST httpbin.org/post middle_name:=null optional_field:=null
 ```
 
-#### Arrays
+#### 数组
 
 ```bash
-# Array of strings
+# 字符串数组
 dotnet-http POST httpbin.org/post tags:='["javascript", "web", "api"]'
 
-# Array of numbers
+# 数字数组
 dotnet-http POST httpbin.org/post scores:='[95, 87, 92, 78]'
 
-# Array of objects
+# 对象数组
 dotnet-http POST httpbin.org/post items:='[{"id": 1, "name": "Item 1"}, {"id": 2, "name": "Item 2"}]'
 ```
 
-#### Objects
+#### 对象
 
 ```bash
-# Nested objects
+# 嵌套对象
 dotnet-http POST httpbin.org/post profile:='{"name": "John", "age": 30, "skills": ["C#", "JavaScript"]}'
 
-# Complex nested structure
+# 复杂嵌套结构
 dotnet-http POST httpbin.org/post config:='{"database": {"host": "localhost", "port": 5432}, "features": {"auth": true, "cache": false}}'
 ```
 
-## Nested JSON Structures
+## 嵌套 JSON 结构
 
-### Bracket Notation
+### 方括号表示法
 
 ```bash
-# Nested objects using bracket notation
+# 使用方括号表示法表示嵌套对象
 dotnet-http POST httpbin.org/post \
   user[name]=John \
   user[email]=john@example.com \
@@ -171,7 +171,7 @@ dotnet-http POST httpbin.org/post \
   user[address][city]=Seattle \
   user[address][zipcode]:=98101
 
-# Generates:
+# 生成：
 # {
 #   "user": {
 #     "name": "John",
@@ -185,17 +185,17 @@ dotnet-http POST httpbin.org/post \
 # }
 ```
 
-### Array Elements
+### 数组元素
 
 ```bash
-# Array with indexed elements
+# 带索引的数组元素
 dotnet-http POST httpbin.org/post \
   items[0][name]=First \
   items[0][value]:=100 \
   items[1][name]=Second \
   items[1][value]:=200
 
-# Generates:
+# 生成：
 # {
 #   "items": [
 #     {"name": "First", "value": 100},
@@ -204,60 +204,60 @@ dotnet-http POST httpbin.org/post \
 # }
 ```
 
-## Form Data
+## 表单数据
 
-### URL-Encoded Forms
+### URL 编码表单
 
 ```bash
-# Use --form flag for application/x-www-form-urlencoded
+# 使用 --form 标志发送 application/x-www-form-urlencoded 数据
 dotnet-http POST httpbin.org/post --form name=John email=john@example.com
 
-# Mixed with other options
+# 与其他选项混合使用
 dotnet-http POST httpbin.org/post --form \
   name=John \
   age=30 \
   Authorization:"Bearer token"
 ```
 
-### Multipart Forms
+### 多部分表单
 
 ```bash
-# Use --multipart for multipart/form-data
+# 使用 --multipart 发送 multipart/form-data
 dotnet-http POST httpbin.org/post --multipart \
   name=John \
   file@/path/to/document.pdf
 
-# Multiple files
+# 多个文件
 dotnet-http POST httpbin.org/post --multipart \
   name=John \
   avatar@/path/to/avatar.jpg \
   resume@/path/to/resume.pdf
 ```
 
-## File Uploads
+## 文件上传
 
-### Send File as Body
+### 将文件作为请求体发送
 
 ```bash
-# Send entire file as request body
+# 将整个文件作为请求体发送
 dotnet-http POST api.example.com/upload @/path/to/data.json
 
-# With content type
+# 带 Content-Type
 dotnet-http POST api.example.com/upload \
   Content-Type:"application/json" \
   @/path/to/data.json
 ```
 
-### File in Multipart Form
+### 多部分表单中的文件
 
 ```bash
-# File as form field
+# 文件作为表单字段
 dotnet-http POST api.example.com/upload --multipart \
   description="My document" \
   file@/path/to/document.pdf
 ```
 
-### Multiple Files
+### 多个文件
 
 ```bash
 dotnet-http POST api.example.com/batch-upload --multipart \
@@ -267,46 +267,46 @@ dotnet-http POST api.example.com/batch-upload --multipart \
   metadata@/path/to/metadata.json
 ```
 
-## Raw Data
+## 原始数据
 
-### Raw String Data
+### 原始字符串数据
 
 ```bash
-# Send raw text
+# 发送原始文本
 dotnet-http POST api.example.com/webhook \
   Content-Type:"text/plain" \
   --raw "This is raw text data"
 
-# Raw JSON (alternative to field syntax)
+# 原始 JSON（字段语法的替代方式）
 dotnet-http POST api.example.com/data \
   Content-Type:"application/json" \
   --raw '{"name": "John", "age": 30}'
 
-# Raw XML
+# 原始 XML
 dotnet-http POST api.example.com/xml \
   Content-Type:"application/xml" \
   --raw '<user><name>John</name><age>30</age></user>'
 ```
 
-### Data from Stdin
+### 从标准输入读取数据
 
 ```bash
-# Pipe data from command
+# 从命令管道数据
 echo '{"message": "Hello"}' | dotnet-http POST api.example.com/data
 
-# From file via stdin
+# 从文件通过标准输入传入
 cat data.json | dotnet-http POST api.example.com/upload
 
-# From other tools
+# 从其他工具传入
 curl -s api.example.com/export | dotnet-http POST api.example.com/import
 ```
 
-## Data Type Examples
+## 数据类型示例
 
-### E-commerce API
+### 电商 API
 
 ```bash
-# Create product
+# 创建商品
 dotnet-http POST api.shop.com/products \
   Authorization:"Bearer token" \
   name="Laptop Computer" \
@@ -318,10 +318,10 @@ dotnet-http POST api.shop.com/products \
   tags==electronics tags==computers
 ```
 
-### User Registration
+### 用户注册
 
 ```bash
-# Complex user object
+# 复杂用户对象
 dotnet-http POST api.example.com/users \
   personal[first_name]=John \
   personal[last_name]=Doe \
@@ -338,10 +338,10 @@ dotnet-http POST api.example.com/users \
   active:=true
 ```
 
-### API Configuration
+### API 配置
 
 ```bash
-# Configuration update
+# 配置更新
 dotnet-http PUT api.example.com/config \
   Authorization:"Bearer admin-token" \
   database[host]=localhost \
@@ -354,44 +354,44 @@ dotnet-http PUT api.example.com/config \
   limits[max_file_size]:=10485760
 ```
 
-## Content-Type Handling
+## Content-Type 处理
 
-### Automatic Content-Type
+### 自动设置 Content-Type
 
 ```bash
-# JSON (default for field syntax)
+# JSON（字段语法默认值）
 dotnet-http POST api.example.com/data name=John
 # Content-Type: application/json
 
-# Form data
+# 表单数据
 dotnet-http POST api.example.com/data --form name=John
 # Content-Type: application/x-www-form-urlencoded
 
-# Multipart
+# 多部分
 dotnet-http POST api.example.com/data --multipart name=John file@data.txt
 # Content-Type: multipart/form-data
 ```
 
-### Manual Content-Type
+### 手动指定 Content-Type
 
 ```bash
-# Override content type
+# 覆盖 Content-Type
 dotnet-http POST api.example.com/data \
   Content-Type:"application/vnd.api+json" \
   name=John age:=30
 
-# XML content
+# XML 内容
 dotnet-http POST api.example.com/data \
   Content-Type:"application/xml" \
   @data.xml
 ```
 
-## Advanced Data Handling
+## 高级数据处理
 
-### Conditional Fields
+### 条件字段
 
 ```bash
-# Only include fields if they have values
+# 仅在有值时包含字段
 dotnet-http POST api.example.com/users \
   name=John \
   email=john@example.com \
@@ -399,64 +399,64 @@ dotnet-http POST api.example.com/users \
   $([ "$COMPANY" ] && echo "company=$COMPANY")
 ```
 
-### Dynamic Values
+### 动态值
 
 ```bash
-# Use command substitution
+# 使用命令替换
 dotnet-http POST api.example.com/events \
   timestamp:=$(date +%s) \
   uuid="$(uuidgen)" \
   hostname="$(hostname)"
 ```
 
-### Environment Variables
+### 环境变量
 
 ```bash
-# Reference environment variables
+# 引用环境变量
 dotnet-http POST api.example.com/deploy \
   Authorization:"Bearer $API_TOKEN" \
   version="$BUILD_VERSION" \
   environment="$DEPLOY_ENV"
 ```
 
-## Validation and Testing
+## 验证与测试
 
-### Schema Validation
+### Schema 验证
 
 ```bash
-# Validate response against schema
+# 根据 schema 验证响应
 dotnet-http POST api.example.com/users \
   name=John \
   email=john@example.com \
   --schema user-schema.json
 ```
 
-### Response Testing
+### 响应测试
 
 ```bash
-# Test specific fields in response
+# 测试响应中的特定字段
 dotnet-http POST api.example.com/users name=John | jq '.id != null'
 
-# Combine with shell scripting
+# 与 Shell 脚本结合使用
 response=$(dotnet-http POST api.example.com/users name=John --body)
 user_id=$(echo $response | jq -r '.id')
 dotnet-http GET api.example.com/users/$user_id
 ```
 
-## Best Practices
+## 最佳实践
 
-1. **Use appropriate data types** - Numbers as `:=123`, booleans as `:=true`
-2. **Quote complex values** - Especially JSON objects and arrays
-3. **Be consistent with naming** - Use snake_case or camelCase consistently
-4. **Validate data structure** - Use `--offline` to preview requests
-5. **Use files for large data** - Avoid very long command lines
-6. **Consider security** - Don't put sensitive data in command history
-7. **Use environment variables** - For tokens and configuration
-8. **Test incrementally** - Start simple and add complexity
+1. **使用合适的数据类型**——数字用 `:=123`，布尔值用 `:=true`
+2. **对复杂值加引号**——尤其是 JSON 对象和数组
+3. **命名保持一致**——统一使用 snake_case 或 camelCase
+4. **验证数据结构**——使用 `--offline` 预览请求
+5. **大型数据使用文件**——避免命令行过长
+6. **注意安全**——不要将敏感数据写入命令历史
+7. **使用环境变量**——存储令牌和配置信息
+8. **逐步测试**——从简单开始，逐渐增加复杂度
 
-## Next Steps
+## 下一步
 
-- Learn about [authentication methods](authentication.md)
-- Explore [file execution](file-execution.md) for complex data scenarios
-- Check out [variable substitution](variables.md) for dynamic values
-- See [examples](examples/common-use-cases.md) for real-world usage patterns
+- 了解[身份认证方法](authentication.zh.md)
+- 探索[文件执行](file-execution.zh.md)处理复杂数据场景
+- 查看[变量替换](variables.md)实现动态值
+- 参阅[示例](examples/common-use-cases.zh.md)了解真实使用场景

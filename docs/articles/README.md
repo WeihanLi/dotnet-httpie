@@ -1,4 +1,6 @@
-# dotnet-httpie Documentation
+# dotnet-httpie Documentation （[中文](README.zh.md)）
+
+> 📖 [查看中文文档](README.zh.md)
 
 Welcome to the comprehensive documentation for dotnet-httpie, a modern command-line HTTP client for .NET developers.
 

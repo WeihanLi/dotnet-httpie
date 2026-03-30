@@ -1,21 +1,21 @@
-# CI/CD Integration
+# CI/CD 集成
 
-> 📖 [查看中文文档](ci-cd-integration.zh.md)
+> 📖 [View English Documentation](ci-cd-integration.md)
 
-This guide shows how to integrate dotnet-httpie into various CI/CD pipelines for automated API testing, health checks, and deployment verification.
+本指南介绍如何将 dotnet-httpie 集成到各种 CI/CD 流水线中，用于自动化 API 测试、健康检查和部署验证。
 
-## Overview
+## 概述
 
-dotnet-httpie is perfect for CI/CD scenarios because it:
-- Provides deterministic exit codes
-- Supports scriptable automation
-- Works in containerized environments
-- Handles authentication securely
-- Offers offline mode for validation
+dotnet-httpie 非常适合 CI/CD 场景，因为它：
+- 提供确定性的退出码
+- 支持脚本化自动化
+- 在容器化环境中工作良好
+- 安全处理身份认证
+- 提供离线模式进行验证
 
 ## GitHub Actions
 
-### Basic API Testing
+### 基本 API 测试
 
 ```yaml
 name: API Tests
@@ -44,7 +44,7 @@ jobs:
           API_TOKEN: ${{ secrets.API_TOKEN }}
 ```
 
-### Multi-Environment Testing
+### 多环境测试
 
 ```yaml
 name: Multi-Environment Tests
@@ -74,7 +74,7 @@ jobs:
           API_BASE_URL: ${{ vars[format('API_BASE_URL_{0}', matrix.environment)] }}
 ```
 
-### Docker-based Testing
+### 基于 Docker 的测试
 
 ```yaml
 name: Docker API Tests
@@ -116,7 +116,7 @@ jobs:
             weihanli/dotnet-httpie:latest exec tests/integration.http --env ci
 ```
 
-### Deployment Verification
+### 部署验证
 
 ```yaml
 name: Deploy and Verify
@@ -130,20 +130,20 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      # Deploy steps here...
+      # 此处为部署步骤...
       
       - name: Install dotnet-httpie
         run: dotnet tool install --global dotnet-httpie
       
       - name: Verify Deployment
         run: |
-          # Wait for deployment to be ready
+          # 等待部署就绪
           sleep 30
           
-          # Health check
+          # 健康检查
           dotnet-http GET ${{ vars.PRODUCTION_API_URL }}/health
           
-          # Smoke tests
+          # 冒烟测试
           dotnet-http exec tests/post-deployment.http --env production
         env:
           PRODUCTION_API_TOKEN: ${{ secrets.PRODUCTION_API_TOKEN }}
@@ -151,13 +151,13 @@ jobs:
       - name: Rollback on Failure
         if: failure()
         run: |
-          echo "Deployment verification failed, initiating rollback..."
-          # Rollback logic here
+          echo "部署验证失败，正在启动回滚..."
+          # 此处为回滚逻辑
 ```
 
 ## Azure DevOps
 
-### Basic Pipeline
+### 基本流水线
 
 ```yaml
 trigger:
@@ -188,7 +188,7 @@ steps:
     API_TOKEN: $(ApiToken)
 ```
 
-### Multi-Stage Pipeline
+### 多阶段流水线
 
 ```yaml
 trigger:
@@ -196,10 +196,10 @@ trigger:
 
 stages:
 - stage: Test
-  displayName: 'Test Stage'
+  displayName: '测试阶段'
   jobs:
   - job: ApiTests
-    displayName: 'API Tests'
+    displayName: 'API 测试'
     pool:
       vmImage: 'ubuntu-latest'
     steps:
@@ -217,7 +217,7 @@ stages:
         API_TOKEN: $(TestApiToken)
 
 - stage: Deploy
-  displayName: 'Deploy Stage'
+  displayName: '部署阶段'
   dependsOn: Test
   condition: succeeded()
   jobs:
@@ -228,16 +228,16 @@ stages:
       runOnce:
         deploy:
           steps:
-          # Deployment steps...
+          # 部署步骤...
           
           - script: dotnet tool install --global dotnet-httpie
             displayName: 'Install dotnet-httpie'
           
           - script: |
-              # Wait for deployment
+              # 等待部署完成
               sleep 60
               
-              # Verify deployment
+              # 验证部署
               dotnet-http GET $(ProductionApiUrl)/health
               dotnet-http exec tests/production-smoke.http --env production
             displayName: 'Verify Deployment'
@@ -247,7 +247,7 @@ stages:
 
 ## GitLab CI
 
-### Basic Configuration
+### 基本配置
 
 ```yaml
 stages:
@@ -277,15 +277,15 @@ api-tests:
 deploy-production:
   stage: deploy
   script:
-    - echo "Deploying to production..."
-    # Deployment logic here
+    - echo "正在部署到生产环境..."
+    # 此处为部署逻辑
   only:
     - main
 
 verify-production:
   stage: verify
   script:
-    - sleep 30  # Wait for deployment
+    - sleep 30  # 等待部署完成
     - dotnet-http GET $PRODUCTION_API_URL/health
     - dotnet-http exec tests/production-verification.http --env production
   variables:
@@ -298,7 +298,7 @@ verify-production:
     - main
 ```
 
-### Docker-based GitLab CI
+### 基于 Docker 的 GitLab CI
 
 ```yaml
 image: mcr.microsoft.com/dotnet/sdk:8.0
@@ -328,7 +328,7 @@ api-tests:
 
 ## Jenkins
 
-### Declarative Pipeline
+### 声明式流水线
 
 ```groovy
 pipeline {
@@ -343,7 +343,7 @@ pipeline {
         stage('Setup') {
             steps {
                 sh '''
-                    # Install .NET SDK if not available
+                    # 如果没有安装 .NET SDK，则安装它
                     if ! command -v dotnet &> /dev/null; then
                         wget https://dot.net/v1/dotnet-install.sh
                         chmod +x dotnet-install.sh
@@ -351,7 +351,7 @@ pipeline {
                         export PATH="$PATH:$HOME/.dotnet"
                     fi
                     
-                    # Install dotnet-httpie
+                    # 安装 dotnet-httpie
                     dotnet tool install --global dotnet-httpie
                 '''
             }
@@ -379,8 +379,8 @@ pipeline {
                 branch 'main'
             }
             steps {
-                sh 'echo "Deploying to production..."'
-                // Deployment steps
+                sh 'echo "正在部署到生产环境..."'
+                // 部署步骤
             }
         }
         
@@ -401,8 +401,8 @@ pipeline {
     post {
         failure {
             emailext (
-                subject: "Pipeline Failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
-                body: "API tests failed. Check the build logs for details.",
+                subject: "流水线失败：${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+                body: "API 测试失败，请查看构建日志了解详情。",
                 to: "${env.CHANGE_AUTHOR_EMAIL}"
             )
         }
@@ -444,7 +444,7 @@ jobs:
       - checkout
       - run:
           name: Deploy to production
-          command: echo "Deploying..."
+          command: echo "正在部署..."
       
   verify-deployment:
     docker:
@@ -479,9 +479,9 @@ workflows:
             - deploy
 ```
 
-## Docker Compose for Testing
+## Docker Compose 测试
 
-### Local Integration Testing
+### 本地集成测试
 
 ```yaml
 # docker-compose.test.yml
@@ -529,7 +529,7 @@ services:
 
 ## Kubernetes Jobs
 
-### API Testing Job
+### API 测试 Job
 
 ```yaml
 apiVersion: batch/v1
@@ -567,7 +567,7 @@ spec:
   backoffLimit: 3
 ```
 
-### CronJob for Health Monitoring
+### 健康监控 CronJob
 
 ```yaml
 apiVersion: batch/v1
@@ -575,7 +575,7 @@ kind: CronJob
 metadata:
   name: api-health-monitor
 spec:
-  schedule: "*/5 * * * *"  # Every 5 minutes
+  schedule: "*/5 * * * *"  # 每 5 分钟执行一次
   jobTemplate:
     spec:
       template:
@@ -588,7 +588,7 @@ spec:
               - -c
               - |
                 if ! dotnet-http GET $API_BASE_URL/health --check-status; then
-                  echo "Health check failed"
+                  echo "健康检查失败"
                   exit 1
                 fi
             env:
@@ -597,9 +597,9 @@ spec:
           restartPolicy: OnFailure
 ```
 
-## Test Patterns
+## 测试模式
 
-### Health Check Scripts
+### 健康检查脚本
 
 ```bash
 #!/bin/bash
@@ -611,23 +611,23 @@ API_BASE_URL="${API_BASE_URL:-http://localhost:3000}"
 MAX_RETRIES="${MAX_RETRIES:-30}"
 RETRY_DELAY="${RETRY_DELAY:-2}"
 
-echo "Waiting for API to be ready at $API_BASE_URL..."
+echo "正在等待 $API_BASE_URL 上的 API 就绪..."
 
 for i in $(seq 1 $MAX_RETRIES); do
   if dotnet-http GET "$API_BASE_URL/health" --check-status >/dev/null 2>&1; then
-    echo "API is ready after $i attempts"
+    echo "API 在第 $i 次尝试后就绪"
     exit 0
   fi
   
-  echo "Attempt $i/$MAX_RETRIES failed, retrying in ${RETRY_DELAY}s..."
+  echo "第 $i/$MAX_RETRIES 次尝试失败，${RETRY_DELAY}s 后重试..."
   sleep $RETRY_DELAY
 done
 
-echo "API failed to become ready after $MAX_RETRIES attempts"
+echo "API 在 $MAX_RETRIES 次尝试后仍未就绪"
 exit 1
 ```
 
-### Smoke Test Suite
+### 冒烟测试套件
 
 ```bash
 #!/bin/bash
@@ -638,9 +638,9 @@ set -e
 API_BASE_URL="${API_BASE_URL:-http://localhost:3000}"
 ENVIRONMENT="${ENVIRONMENT:-development}"
 
-echo "Running smoke tests for $ENVIRONMENT environment..."
+echo "正在 $ENVIRONMENT 环境中运行冒烟测试..."
 
-# Critical endpoints
+# 关键端点
 ENDPOINTS=(
   "/health"
   "/api/v1/status"
@@ -648,179 +648,112 @@ ENDPOINTS=(
 )
 
 for endpoint in "${ENDPOINTS[@]}"; do
-  echo "Testing $endpoint..."
+  echo "测试 $endpoint..."
   if dotnet-http GET "$API_BASE_URL$endpoint" --check-status; then
-    echo "✓ $endpoint OK"
+    echo "✓ $endpoint 正常"
   else
-    echo "✗ $endpoint FAILED"
+    echo "✗ $endpoint 失败"
     exit 1
   fi
 done
 
-echo "All smoke tests passed!"
+echo "所有冒烟测试通过！"
 ```
 
-### Load Testing
+## 最佳实践
+
+### 1. 环境管理
 
 ```bash
-#!/bin/bash
-# load-test.sh
-
-ENDPOINT="${1:-http://localhost:3000/api/test}"
-CONCURRENT="${2:-10}"
-REQUESTS="${3:-100}"
-
-echo "Load testing $ENDPOINT with $CONCURRENT concurrent users, $REQUESTS total requests"
-
-# Create temporary results file
-RESULTS_FILE=$(mktemp)
-
-# Function to run requests
-run_requests() {
-  local requests_per_worker=$1
-  for i in $(seq 1 $requests_per_worker); do
-    start_time=$(date +%s%N)
-    if dotnet-http GET "$ENDPOINT" >/dev/null 2>&1; then
-      end_time=$(date +%s%N)
-      duration=$(((end_time - start_time) / 1000000))
-      echo "SUCCESS,$duration" >> "$RESULTS_FILE"
-    else
-      echo "FAILURE,0" >> "$RESULTS_FILE"
-    fi
-  done
-}
-
-# Start concurrent workers
-REQUESTS_PER_WORKER=$((REQUESTS / CONCURRENT))
-for i in $(seq 1 $CONCURRENT); do
-  run_requests $REQUESTS_PER_WORKER &
-done
-
-# Wait for all workers to complete
-wait
-
-# Analyze results
-total=$(wc -l < "$RESULTS_FILE")
-successful=$(grep "SUCCESS" "$RESULTS_FILE" | wc -l)
-failed=$((total - successful))
-
-if [ $successful -gt 0 ]; then
-  avg_response_time=$(grep "SUCCESS" "$RESULTS_FILE" | cut -d, -f2 | awk '{sum+=$1} END {print sum/NR}')
-else
-  avg_response_time=0
-fi
-
-echo "Load test results:"
-echo "  Total requests: $total"
-echo "  Successful: $successful"
-echo "  Failed: $failed"
-echo "  Success rate: $(( successful * 100 / total ))%"
-echo "  Average response time: ${avg_response_time}ms"
-
-# Cleanup
-rm "$RESULTS_FILE"
-
-# Exit with error if failure rate is too high
-if [ $((failed * 100 / total)) -gt 5 ]; then
-  echo "Failure rate too high!"
-  exit 1
-fi
-```
-
-## Best Practices
-
-### 1. Environment Management
-
-```bash
-# Use environment-specific configurations
+# 使用特定环境配置
 dotnet-http exec tests/api-tests.http --env $CI_ENVIRONMENT_NAME
 
-# Store secrets securely in CI/CD variables
+# 在 CI/CD 变量中安全存储密钥
 export API_TOKEN="$CI_API_TOKEN"
 dotnet-http GET api.example.com/protected Authorization:"Bearer $API_TOKEN"
 ```
 
-### 2. Error Handling
+### 2. 错误处理
 
 ```bash
-# Proper error handling in scripts
+# 脚本中的正确错误处理
 if ! dotnet-http GET api.example.com/health --check-status; then
-  echo "Health check failed, aborting deployment"
+  echo "健康检查失败，正在中止部署"
   exit 1
 fi
 
-# Retry logic for flaky endpoints
+# 不稳定端点的重试逻辑
 for i in {1..3}; do
   if dotnet-http GET api.example.com/flaky-endpoint; then
     break
   elif [ $i -eq 3 ]; then
-    echo "Endpoint failed after 3 attempts"
+    echo "端点在 3 次尝试后仍然失败"
     exit 1
   else
-    echo "Attempt $i failed, retrying..."
+    echo "第 $i 次尝试失败，正在重试..."
     sleep 5
   fi
 done
 ```
 
-### 3. Parallel Testing
+### 3. 并行测试
 
 ```bash
-# Run tests in parallel for faster execution
+# 并行运行测试以加快执行速度
 {
   dotnet-http exec tests/user-api.http --env $ENV &
   dotnet-http exec tests/order-api.http --env $ENV &
   dotnet-http exec tests/payment-api.http --env $ENV &
   wait
-} && echo "All API tests completed successfully"
+} && echo "所有 API 测试成功完成"
 ```
 
-### 4. Reporting
+### 4. 生成报告
 
 ```bash
-# Generate test reports
+# 生成测试报告
 {
-  echo "# API Test Report"
-  echo "Generated: $(date)"
+  echo "# API 测试报告"
+  echo "生成时间：$(date)"
   echo ""
   
   if dotnet-http GET api.example.com/health; then
-    echo "✅ Health Check: PASSED"
+    echo "✅ 健康检查：通过"
   else
-    echo "❌ Health Check: FAILED"
+    echo "❌ 健康检查：失败"
   fi
   
-  # More test results...
+  # 更多测试结果...
 } > test-report.md
 ```
 
-## Troubleshooting CI/CD Issues
+## CI/CD 问题排查
 
-### Common Problems
+### 常见问题
 
-1. **Tool not found**: Ensure dotnet-httpie is installed and in PATH
-2. **Network issues**: Check firewall rules and DNS resolution
-3. **Authentication failures**: Verify secrets and environment variables
-4. **Timeout issues**: Increase timeouts for slow networks
-5. **SSL certificate problems**: Use `--verify=no` for development (not production)
+1. **找不到工具**：确保 dotnet-httpie 已安装并在 PATH 中
+2. **网络问题**：检查防火墙规则和 DNS 解析
+3. **认证失败**：验证密钥和环境变量
+4. **超时问题**：为慢速网络增加超时时间
+5. **SSL 证书问题**：在开发环境中使用 `--verify=no`（不适用于生产环境）
 
-### Debug CI/CD Issues
+### 调试 CI/CD 问题
 
 ```bash
-# Enable debug mode in CI
+# 在 CI 中启用调试模式
 dotnet-http GET api.example.com/data --debug
 
-# Check environment variables
+# 检查环境变量
 env | grep -i api
 
-# Test network connectivity
-dotnet-http GET httpbin.org/get  # External connectivity
-dotnet-http GET localhost:3000/health  # Local connectivity
+# 测试网络连接
+dotnet-http GET httpbin.org/get  # 外部连通性
+dotnet-http GET localhost:3000/health  # 本地连通性
 ```
 
-## Next Steps
+## 下一步
 
-- Set up [monitoring and alerting](../examples/common-use-cases.md) with dotnet-httpie
-- Explore [Docker usage](../docker-usage.md) for containerized CI/CD
-- Learn about [debugging techniques](../debugging.md) for troubleshooting
-- Review [authentication methods](../authentication.md) for secure CI/CD
+- 配置 [dotnet-httpie 的监控和告警](../examples/common-use-cases.zh.md)
+- 探索[Docker 使用](../docker-usage.zh.md)实现容器化 CI/CD
+- 了解[调试技术](../debugging.zh.md)进行故障排查
+- 查看[身份认证方法](../authentication.zh.md)保护 CI/CD 安全
