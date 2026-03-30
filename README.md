@@ -1,5 +1,7 @@
 # dotnet-HTTPie
 
+> 📖 [查看中文文档](README.zh.md)
+
 [![dotnet-HTTPie](https://img.shields.io/nuget/v/dotnet-httpie)](https://www.nuget.org/packages/dotnet-httpie/)
 [![dotnet-HTTPie Latest](https://img.shields.io/nuget/vpre/dotnet-httpie)](https://www.nuget.org/packages/dotnet-httpie/absoluteLatest)
 [![GitHub Action Build Status](https://github.com/WeihanLi/dotnet-httpie/actions/workflows/dotnet.yml/badge.svg)](https://github.com/WeihanLi/dotnet-httpie/actions/workflows/dotnet.yml)
