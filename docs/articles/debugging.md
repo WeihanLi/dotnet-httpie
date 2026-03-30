@@ -573,8 +573,6 @@ When reporting issues, include:
 ### Community Resources
 
 - [GitHub Issues](https://github.com/WeihanLi/dotnet-httpie/issues)
-- [GitHub Discussions](https://github.com/WeihanLi/dotnet-httpie/discussions)
-- [Stack Overflow](https://stackoverflow.com/questions/tagged/dotnet-httpie)
 
 ### Self-Help Checklist
 

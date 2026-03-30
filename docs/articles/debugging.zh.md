@@ -573,8 +573,6 @@ dotnet run --project src/HTTPie -- GET api.example.com/data --debug
 ### 社区资源
 
 - [GitHub Issues](https://github.com/WeihanLi/dotnet-httpie/issues)
-- [GitHub Discussions](https://github.com/WeihanLi/dotnet-httpie/discussions)
-- [Stack Overflow](https://stackoverflow.com/questions/tagged/dotnet-httpie)
 
 ### 自助排查清单
 
