@@ -45,7 +45,7 @@ dotnet-http httpbin.org/get tags==javascript tags==web tags==api
 # 空参数
 dotnet-http httpbin.org/get empty==
 
-# null 参数（被省略）
+# null 参数（值为字面字符串 "null"，包含在 URL 中）
 dotnet-http httpbin.org/get param==null
 ```
 

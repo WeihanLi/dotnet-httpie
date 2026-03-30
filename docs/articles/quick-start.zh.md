@@ -28,12 +28,12 @@ dotnet-http [flags] [METHOD] URL [ITEM [ITEM]]
 
 ## 请求项类型
 
-dotnet-httpie 支持三种类型的请求项：
+dotnet-httpie 支持四种类型的请求项：
 
 | 类型 | 语法 | 示例 | 描述 |
 |------|--------|---------|-------------|
 | 查询参数 | `name==value` | `search==dotnet` | URL 查询参数 |
-| 请求头 | `name:value` | `Authorization:Bearer token` | HTTP 请求头 |
+| 请求头 | `name:value` | `Authorization:"Bearer token"` | HTTP 请求头 |
 | JSON 数据 | `name=value` | `title=hello` | JSON 请求体字段 |
 | 原始 JSON | `name:=value` | `age:=25` | 原始 JSON 值（数字、布尔值、对象） |
 

@@ -16,8 +16,10 @@ dotnet-http [global-flags] [METHOD] URL [request-items...] [request-flags]
 
 | 标志 | 描述 | 示例 |
 |------|-------------|---------|
-| `--help`, `-h` | 显示帮助信息 | `dotnet-http --help` |
+| `--help` | 显示帮助信息（当 `-h` 是唯一参数时，同样会显示此帮助） | `dotnet-http --help` |
 | `--version` | 显示版本信息 | `dotnet-http --version` |
+
+> 注意：在实际 CLI 中，`-h` 主要是 `--headers`（仅输出响应头部）的短标志；只有当 `-h` 作为唯一参数使用时（例如 `dotnet-http -h`）才会被解析为帮助。`--headers`/`-h` 选项详见下文"请求标志"章节。
 
 ### 调试与日志
 
