@@ -18,7 +18,8 @@ COPY ./.editorconfig ./
 
 WORKDIR /app/src/HTTPie/
 
-RUN curl -fsSL https://github.com/WeihanLi/dotnet-install/releases/download/v0.2.0-preview-2/dotnet-install-0.2.0-preview-2-linux-musl-x64 -o ./artifacts/install && chmod +x ./artifacts/install && ./artifacts/install version
+RUN apk add curl && curl -fsSL https://github.com/WeihanLi/dotnet-install/releases/download/v0.2.0-preview-2/dotnet-install-0.2.0-preview-2-linux-musl-x64 -o ./artifacts/install && chmod +x ./artifacts/install
+RUN ./artifacts/install version
 
 RUN if [ "${TARGETARCH}" = "${BUILDARCH}" ]; then \
       dotnet publish -f net10.0 --use-current-runtime -p:AssemblyName=http -p:TargetFrameworks=net10.0 -o /app/artifacts; \
