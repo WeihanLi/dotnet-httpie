@@ -9,9 +9,6 @@ ARG BUILDARCH
 
 WORKDIR /app
 
-RUN apk add curl && curl -fsSL -o ./dotnet-install https://github.com/WeihanLi/dotnet-install/releases/download/v0.2.0-preview-2/dotnet-install-0.2.0-preview-2-linux-musl-x64 && chmod +x ./dotnet-install
-RUN ./dotnet-install version
-
 COPY ./src/ ./src/
 COPY ./build/ ./build/
 COPY ./Directory.Build.props ./
