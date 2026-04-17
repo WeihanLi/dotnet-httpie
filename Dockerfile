@@ -2,15 +2,15 @@ FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet-buildtools/prereqs:azure
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0-alpine-aot AS build-env
 
-WORKDIR /app
-
-RUN apk add curl && curl -fsSL -o ./dotnet-install https://github.com/WeihanLi/dotnet-install/releases/download/v0.2.0-preview-2/dotnet-install-0.2.0-preview-2-linux-musl-x64 && chmod +x ./dotnet-install
-RUN ./dotnet-install version
-
 COPY --from=cross-build-env /crossrootfs /crossrootfs
 
 ARG TARGETARCH
 ARG BUILDARCH
+
+WORKDIR /app
+
+RUN apk add curl && curl -fsSL -o ./dotnet-install https://github.com/WeihanLi/dotnet-install/releases/download/v0.2.0-preview-2/dotnet-install-0.2.0-preview-2-linux-musl-x64 && chmod +x ./dotnet-install
+RUN ./dotnet-install version
 
 COPY ./src/ ./src/
 COPY ./build/ ./build/
@@ -26,7 +26,6 @@ RUN if [ "${TARGETARCH}" = "${BUILDARCH}" ]; then \
     else \
       apk add binutils-aarch64 --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community; \
       dotnet publish -f net10.0 -r linux-musl-arm64 -p:AssemblyName=http -p:TargetFrameworks=net10.0 -p:SysRoot=/crossrootfs/arm64 -p:ObjCopyName=aarch64-alpine-linux-musl-objcopy -o /app/artifacts; \
-      curl -fsSL https://github.com/WeihanLi/dotnet-install/releases/download/v0.2.0-preview-2/dotnet-install-0.2.0-preview-2-linux-musl-arm64 -o ./artifacts/install && chmod +x ./artifacts/install && ./artifacts/install version; \
     fi
 
 FROM alpine
