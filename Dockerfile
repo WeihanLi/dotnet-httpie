@@ -4,8 +4,8 @@ FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0-alpine-aot AS b
 
 WORKDIR /app
 
-RUN apk add curl && curl -fsSL -o ./artifacts/install https://github.com/WeihanLi/dotnet-install/releases/download/v0.2.0-preview-2/dotnet-install-0.2.0-preview-2-linux-musl-x64 && chmod +x ./artifacts/install
-RUN ./artifacts/install version
+RUN apk add curl && curl -fsSL -o ./dotnet-install https://github.com/WeihanLi/dotnet-install/releases/download/v0.2.0-preview-2/dotnet-install-0.2.0-preview-2-linux-musl-x64 && chmod +x ./dotnet-install
+RUN ./dotnet-install version
 
 COPY --from=cross-build-env /crossrootfs /crossrootfs
 
