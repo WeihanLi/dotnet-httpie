@@ -1,0 +1,44 @@
+- name: Documentation Home
+  href: README.md
+- name: Getting Started
+  items:
+    - name: Installation
+      href: installation.md
+    - name: Quick Start
+      href: quick-start.md
+    - name: Basic Usage
+      href: basic-usage.md
+- name: Core Features
+  items:
+    - name: HTTP Requests
+      href: http-requests.md
+    - name: Request Data Types
+      href: request-data-types.md
+    - name: Authentication
+      href: authentication.md
+- name: Advanced Features
+  items:
+    - name: File Execution
+      href: file-execution.md
+    - name: API Test Collections
+      href: api-test-collections.md
+    - name: Load Testing
+      href: load-testing.md
+- name: Docker and Deployment
+  items:
+    - name: Docker Usage
+      href: docker-usage.md
+    - name: CI/CD Integration
+      href: ci-cd-integration.md
+- name: Advanced Topics
+  items:
+    - name: Debugging
+      href: debugging.md
+- name: Examples
+  items:
+    - name: Common Use Cases
+      href: examples/common-use-cases.md
+- name: Reference
+  items:
+    - name: Command Line Options
+      href: reference/command-line-options.md
