@@ -1,5 +1,7 @@
 # Docker Usage
 
+> 📖 [查看中文文档](docker-usage.zh.md)
+
 dotnet-httpie is available as a Docker image, making it easy to use in containerized environments, CI/CD pipelines, and systems without .NET installed.
 
 ## Docker Image
@@ -423,6 +425,4 @@ docker run --rm weihanli/dotnet-httpie:0.12.0 GET httpbin.org/get
 ## Next Steps
 
 - Set up [CI/CD integration](ci-cd-integration.md) with Docker
-- Learn about [environment configuration](environment-variables.md)
-- Explore [advanced examples](examples/integrations.md) with Docker
 - Review [troubleshooting guide](debugging.md) for common issues

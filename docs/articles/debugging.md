@@ -1,5 +1,7 @@
 # Debugging & Troubleshooting
 
+> 📖 [查看中文文档](debugging.zh.md)
+
 This guide helps you debug issues with dotnet-httpie and troubleshoot common problems.
 
 ## Debug Mode
@@ -571,8 +573,6 @@ When reporting issues, include:
 ### Community Resources
 
 - [GitHub Issues](https://github.com/WeihanLi/dotnet-httpie/issues)
-- [GitHub Discussions](https://github.com/WeihanLi/dotnet-httpie/discussions)
-- [Stack Overflow](https://stackoverflow.com/questions/tagged/dotnet-httpie)
 
 ### Self-Help Checklist
 
@@ -588,6 +588,5 @@ Before asking for help:
 
 ## Next Steps
 
-- Review [performance tips](performance-tips.md) for optimization
 - Check [common use cases](examples/common-use-cases.md) for working examples
-- Explore [advanced features](middleware-system.md) for complex scenarios
+- Review [CI/CD integration](ci-cd-integration.md) for automated testing

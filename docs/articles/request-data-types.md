@@ -1,5 +1,7 @@
 # Request Data Types
 
+> 📖 [查看中文文档](request-data-types.zh.md)
+
 This guide explains the different ways to structure and send data with your HTTP requests using dotnet-httpie.
 
 ## Overview
@@ -456,5 +458,4 @@ dotnet-http GET api.example.com/users/$user_id
 
 - Learn about [authentication methods](authentication.md)
 - Explore [file execution](file-execution.md) for complex data scenarios
-- Check out [variable substitution](variables.md) for dynamic values
 - See [examples](examples/common-use-cases.md) for real-world usage patterns

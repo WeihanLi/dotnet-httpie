@@ -1,5 +1,7 @@
 # Authentication
 
+> 📖 [查看中文文档](authentication.zh.md)
+
 This guide covers various authentication methods supported by dotnet-httpie for securing your API requests.
 
 ## Overview
@@ -502,5 +504,4 @@ fi
 
 - Learn about [request data types](request-data-types.md) for sending authenticated requests
 - Explore [file execution](file-execution.md) for managing authentication in HTTP files
-- Check out [environment variables](environment-variables.md) for secure credential management
 - Review [examples](examples/common-use-cases.md) for real-world authentication patterns

@@ -352,3 +352,4 @@ MigrationBackup/
 
 # customize files
 out/
+docs/_site/

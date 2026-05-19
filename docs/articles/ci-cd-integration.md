@@ -1,5 +1,7 @@
 # CI/CD Integration
 
+> 📖 [查看中文文档](ci-cd-integration.zh.md)
+
 This guide shows how to integrate dotnet-httpie into various CI/CD pipelines for automated API testing, health checks, and deployment verification.
 
 ## Overview
@@ -818,7 +820,7 @@ dotnet-http GET localhost:3000/health  # Local connectivity
 
 ## Next Steps
 
-- Set up [monitoring and alerting](../examples/common-use-cases.md) with dotnet-httpie
-- Explore [Docker usage](../docker-usage.md) for containerized CI/CD
-- Learn about [debugging techniques](../debugging.md) for troubleshooting
-- Review [authentication methods](../authentication.md) for secure CI/CD
+- Set up [monitoring and alerting](examples/common-use-cases.md) with dotnet-httpie
+- Explore [Docker usage](docker-usage.md) for containerized CI/CD
+- Learn about [debugging techniques](debugging.md) for troubleshooting
+- Review [authentication methods](authentication.md) for secure CI/CD

@@ -1,5 +1,7 @@
 # dotnet-HTTPie
 
+> 📖 [查看中文文档](README.zh.md)
+
 [![dotnet-HTTPie](https://img.shields.io/nuget/v/dotnet-httpie)](https://www.nuget.org/packages/dotnet-httpie/)
 [![dotnet-HTTPie Latest](https://img.shields.io/nuget/vpre/dotnet-httpie)](https://www.nuget.org/packages/dotnet-httpie/absoluteLatest)
 [![GitHub Action Build Status](https://github.com/WeihanLi/dotnet-httpie/actions/workflows/dotnet.yml/badge.svg)](https://github.com/WeihanLi/dotnet-httpie/actions/workflows/dotnet.yml)
@@ -60,6 +62,7 @@ dotnet-http GET httpbin.org/headers Authorization:"Bearer token"
 
 | Topic | Description |
 |-------|-------------|
+| 🇨🇳 [中文文档](docs/articles/README.zh.md) | Chinese documentation / 简体中文完整文档 |
 | 📋 [Installation Guide](docs/articles/installation.md) | Detailed installation instructions for all platforms |
 | ⚡ [Quick Start](docs/articles/quick-start.md) | Get up and running in minutes |
 | 🌐 [HTTP Requests](docs/articles/http-requests.md) | Complete guide to making HTTP requests |

@@ -1,5 +1,7 @@
 # HTTP Requests
 
+> 📖 [查看中文文档](http-requests.zh.md)
+
 This guide covers how to make various types of HTTP requests using dotnet-httpie.
 
 ## HTTP Methods
@@ -333,4 +335,3 @@ dotnet-http DELETE api.example.com/articles/123
 
 - Learn about [authentication methods](authentication.md)
 - Explore [file execution](file-execution.md) for repeatable requests
-- Check out [variable substitution](variables.md) for dynamic requests

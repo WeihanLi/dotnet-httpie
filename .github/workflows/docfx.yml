@@ -1,0 +1,59 @@
+name: docs
+
+on:
+  push:
+    branches:
+      # - "main"
+      - "dev"
+    paths:
+      - ".github/workflows/docfx.yml"
+      - "docs/**"
+  pull_request:
+    branches:
+      - "dev"
+    paths:
+      - ".github/workflows/docfx.yml"
+      - "docs/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup .NET SDK
+        uses: WeihanLi/dotnet-install@v0.2.0
+        with:
+          version: 10.0.x
+
+      - name: Install DocFX
+        run: dotnet tool update --global docfx
+
+      - name: Build documentation site
+        run: docfx docs/docfx.json
+
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: docs/_site
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    permissions:
+      pages: write
+      id-token: write
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

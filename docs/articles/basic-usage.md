@@ -1,5 +1,7 @@
 # Basic Usage
 
+> 📖 [查看中文文档](basic-usage.zh.md)
+
 This guide covers the fundamental concepts and basic usage patterns of dotnet-httpie.
 
 ## Command Structure

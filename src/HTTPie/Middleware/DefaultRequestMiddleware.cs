@@ -1,4 +1,4 @@
-﻿// Copyright (c) Weihan Li.All rights reserved.
+﻿// Copyright (c) Weihan Li. All rights reserved.
 // Licensed under the MIT license.
 
 using HTTPie.Abstractions;
@@ -61,6 +61,11 @@ public sealed class DefaultRequestMiddleware(ILogger logger) : IRequestMiddlewar
         {
             logger.LogDebug("httpVersion specified: {HttpVersion}", httpVersionValue);
             requestModel.HttpVersion = httpVersion;
+            var isHttp = !url.StartsWith("https://") && schema != "https";
+            if (isHttp && httpVersion is { Major: 2 })
+            {
+                AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+            }
         }
 
         requestModel.Headers.TryAdd("User-Agent", Constants.DefaultUserAgent);

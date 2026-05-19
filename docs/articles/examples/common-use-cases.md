@@ -1,5 +1,7 @@
 # Common Use Cases
 
+> 📖 [查看中文文档](common-use-cases.zh.md)
+
 This guide provides practical examples for the most common scenarios when using dotnet-httpie.
 
 ## API Development & Testing
@@ -606,7 +608,4 @@ fi
 
 ## Next Steps
 
-- Explore [API testing scenarios](api-testing.md) for more advanced patterns
-- Learn about [integration examples](integrations.md) with other tools
-- Check out [performance tips](../performance-tips.md) for optimization
 - Review [debugging guide](../debugging.md) for troubleshooting

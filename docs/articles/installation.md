@@ -1,5 +1,7 @@
 # Installation
 
+> 📖 [查看中文文档](installation.zh.md)
+
 This guide covers how to install dotnet-httpie on different platforms and environments.
 
 ## Prerequisites

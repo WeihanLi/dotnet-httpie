@@ -1,5 +1,7 @@
 # File Execution
 
+> 📖 [查看中文文档](file-execution.zh.md)
+
 dotnet-httpie can execute HTTP requests from `.http` and `.rest` files, making it perfect for API testing, documentation, and automation.
 
 ## Overview
@@ -281,34 +283,6 @@ Content-Type: application/json
 }
 ```
 
-## Testing and Validation
-
-### Response Assertions
-
-```http
-GET {{baseUrl}}/users/123
-
-# Test response
-# @test status === 200
-# @test response.body.name === "John Doe"
-# @test response.headers["content-type"] includes "application/json"
-```
-
-### Schema Validation
-
-```http
-POST {{baseUrl}}/users
-Content-Type: application/json
-
-{
-  "name": "John Doe",
-  "email": "john@example.com"
-}
-
-# Validate response against JSON schema
-# @schema user-schema.json
-```
-
 ## Debugging File Execution
 
 ### Debug Mode
@@ -473,7 +447,5 @@ Authorization: Bearer {{authenticate.response.body.token}}
 
 ## Next Steps
 
-- Learn about [variable substitution](variables.md) in detail
-- Explore [request referencing](request-referencing.md) patterns
 - Set up [CI/CD integration](ci-cd-integration.md) with HTTP files
 - Check [common use cases](examples/common-use-cases.md) for more examples
