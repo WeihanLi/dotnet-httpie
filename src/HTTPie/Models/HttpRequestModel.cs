@@ -26,6 +26,8 @@ public sealed class HttpRequestModel
 
     public List<string> RequestItems { get; set; } = [];
 
+    public List<(string FieldName, string FilePath)> FileUploads { get; set; } = [];
+
     [Newtonsoft.Json.JsonIgnore]
     [JsonIgnore]
     public DateTimeOffset Timestamp { get; set; }

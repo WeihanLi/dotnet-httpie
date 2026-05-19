@@ -33,6 +33,7 @@ public static class Constants
     public static class FlagNames
     {
         public const string IsFormContentType = "IsFormContentType";
+        public const string IsMultipartContentType = "IsMultipartContentType";
         public const string IsLoadTest = "IsLoadTest";
         public const string IsStreamingMode = "IsStreamingMode";
         public const string StreamingCompleted = "StreamingCompleted";

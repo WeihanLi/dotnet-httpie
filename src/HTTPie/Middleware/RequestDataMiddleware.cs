@@ -24,6 +24,11 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
         Description = $"The request body is json by default, and content type is '{HttpHelper.ApplicationJsonContentType}'"
     };
 
+    private static readonly Option<bool> MultipartOption = new("--multipart")
+    {
+        Description = "Send a multipart/form-data request; supports file uploads using the 'name@/path/to/file' syntax"
+    };
+
     private static readonly Option<string> RawDataOption = new("--raw")
     {
         Description = "The raw request body"
@@ -32,14 +37,62 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
     [GeneratedRegex(@"^[a-zA-Z_\[][\w_\-\[\]]*$")]
     private static partial Regex PropertyNameRegex();
 
-    public Option[] SupportedOptions() => [FormOption, JsonOption, RawDataOption];
+    public Option[] SupportedOptions() => [FormOption, JsonOption, MultipartOption, RawDataOption];
 
     public Task InvokeAsync(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
         var isFormData = requestModel.ParseResult.HasOption(FormOption);
         httpContext.UpdateFlag(Constants.FlagNames.IsFormContentType, isFormData);
 
-        if (requestModel.ParseResult.HasOption(RawDataOption))
+        var isMultipart = requestModel.ParseResult.HasOption(MultipartOption);
+        httpContext.UpdateFlag(Constants.FlagNames.IsMultipartContentType, isMultipart);
+
+        if (isMultipart)
+        {
+            // Parse file upload items: fieldName@/path/to/file
+            requestModel.FileUploads = requestModel.RequestItems
+                .Where(x =>
+                {
+                    var atIndex = x.IndexOf('@');
+                    return atIndex > 0 && PropertyNameRegex().IsMatch(x[..atIndex]);
+                })
+                .Select(x =>
+                {
+                    var atIndex = x.IndexOf('@');
+                    return (FieldName: x[..atIndex], FilePath: x[(atIndex + 1)..]);
+                })
+                .ToList();
+
+            // Parse text fields (key=value) for multipart text parts
+            var dataInput = requestModel.RequestItems
+                .Where(x =>
+                {
+                    var index = x.IndexOf('=');
+                    if (index <= 0) return false;
+                    if (x[index - 1] == ':')
+                        return PropertyNameRegex().IsMatch(x[..(index - 1)]);
+                    if (PropertyNameRegex().IsMatch(x[..index]))
+                        return index == x.Length - 1 || x[index + 1] != '=';
+                    return false;
+                })
+                .ToArray();
+
+            if (dataInput.Length > 0)
+            {
+                requestModel.Body = string.Join("&", dataInput);
+            }
+
+            var hasContent = requestModel.FileUploads.Count > 0 || requestModel.Body.IsNotNullOrEmpty();
+            if (hasContent)
+            {
+                var requestMethodExists = httpContext.GetProperty<bool>(Constants.RequestMethodExistsPropertyName);
+                if (!requestMethodExists)
+                {
+                    requestModel.Method = HttpMethod.Post;
+                }
+            }
+        }
+        else if (requestModel.ParseResult.HasOption(RawDataOption))
         {
             var rawData = requestModel.ParseResult.GetValue(RawDataOption);
             requestModel.Body = rawData;
@@ -125,7 +178,7 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
             }
         }
 
-        if (requestModel.Body.IsNotNullOrEmpty())
+        if (!isMultipart && requestModel.Body.IsNotNullOrEmpty())
         {
             requestModel.Headers[Constants.ContentTypeHeaderName] = isFormData
                 ? new StringValues(HttpHelper.FormDataContentType)
