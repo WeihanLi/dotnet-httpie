@@ -38,17 +38,16 @@ public sealed class RequestMapper : IRequestMapper
             // Add file parts
             foreach (var fileUpload in requestModel.FileUploads)
             {
-                var fileStream = new FileStream(fileUpload.FilePath, new FileStreamOptions
+                var fileContent = CreateMultipartFileContent(fileUpload);
+                try
                 {
-                    Access = FileAccess.Read,
-                    Mode = FileMode.Open,
-                    Share = FileShare.Read,
-                    Options = FileOptions.Asynchronous | FileOptions.SequentialScan
-                });
-                var fileContent = new StreamContent(fileStream);
-                var mimeType = MimeTypeMap.GetMimeType(Path.GetExtension(fileUpload.FilePath));
-                fileContent.Headers.ContentType = new MediaTypeHeaderValue(mimeType);
-                multipartContent.Add(fileContent, fileUpload.FieldName, Path.GetFileName(fileUpload.FilePath));
+                    multipartContent.Add(fileContent, fileUpload.FieldName, Path.GetFileName(fileUpload.FilePath));
+                }
+                catch
+                {
+                    fileContent.Dispose();
+                    throw;
+                }
             }
 
             request.Content = multipartContent;
@@ -71,5 +70,29 @@ public sealed class RequestMapper : IRequestMapper
                 request.TryAddHeader(header.Key, header.Value.ToString());
             }
         return request;
+    }
+
+    private static StreamContent CreateMultipartFileContent(FileUploadPart fileUpload)
+    {
+        var fileStream = new FileStream(fileUpload.FilePath, new FileStreamOptions
+        {
+            Access = FileAccess.Read,
+            Mode = FileMode.Open,
+            Share = FileShare.Read,
+            Options = FileOptions.Asynchronous | FileOptions.SequentialScan
+        });
+
+        try
+        {
+            var fileContent = new StreamContent(fileStream);
+            var mimeType = MimeTypeMap.GetMimeType(Path.GetExtension(fileUpload.FilePath));
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue(mimeType);
+            return fileContent;
+        }
+        catch
+        {
+            fileStream.Dispose();
+            throw;
+        }
     }
 }
