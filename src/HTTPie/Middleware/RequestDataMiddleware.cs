@@ -198,7 +198,7 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
         var valueIndex = item.IndexOf('=');
         if (valueIndex <= 0
             || !PropertyNameRegex().IsMatch(item[..valueIndex])
-            || valueIndex < item.Length - 1 && item[valueIndex + 1] == '=')
+            || (valueIndex < item.Length - 1 && item[valueIndex + 1] == '='))
         {
             return null;
         }

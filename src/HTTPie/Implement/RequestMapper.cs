@@ -74,13 +74,7 @@ public sealed class RequestMapper : IRequestMapper
 
     private static StreamContent CreateMultipartFileContent(FileUploadPart fileUpload)
     {
-        var fileStream = new FileStream(fileUpload.FilePath, new FileStreamOptions
-        {
-            Access = FileAccess.Read,
-            Mode = FileMode.Open,
-            Share = FileShare.Read,
-            Options = FileOptions.Asynchronous | FileOptions.SequentialScan
-        });
+        var fileStream = CreateMultipartFileStream(fileUpload.FilePath);
 
         try
         {
@@ -93,6 +87,25 @@ public sealed class RequestMapper : IRequestMapper
         {
             fileStream.Dispose();
             throw;
+        }
+    }
+
+    private static FileStream CreateMultipartFileStream(string filePath)
+    {
+        try
+        {
+            return new FileStream(filePath, new FileStreamOptions
+            {
+                Access = FileAccess.Read,
+                Mode = FileMode.Open,
+                Share = FileShare.Read,
+                Options = FileOptions.Asynchronous | FileOptions.SequentialScan
+            });
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            throw new InvalidOperationException(
+                $"Failed to open file for upload: {filePath}. Ensure the file exists and is accessible.", ex);
         }
     }
 }

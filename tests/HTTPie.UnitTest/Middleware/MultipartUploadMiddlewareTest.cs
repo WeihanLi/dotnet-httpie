@@ -57,7 +57,10 @@ public class MultipartUploadMiddlewareTest
         }
         finally
         {
-            File.Delete(tempFile);
+            if (File.Exists(tempFile))
+            {
+                File.Delete(tempFile);
+            }
         }
     }
 
@@ -90,7 +93,10 @@ public class MultipartUploadMiddlewareTest
         }
         finally
         {
-            File.Delete(tempFile);
+            if (File.Exists(tempFile))
+            {
+                File.Delete(tempFile);
+            }
         }
     }
 
@@ -118,7 +124,10 @@ public class MultipartUploadMiddlewareTest
         }
         finally
         {
-            File.Delete(tempFile);
+            if (File.Exists(tempFile))
+            {
+                File.Delete(tempFile);
+            }
         }
     }
 
