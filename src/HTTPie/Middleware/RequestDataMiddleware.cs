@@ -24,6 +24,11 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
         Description = $"The request body is json by default, and content type is '{HttpHelper.ApplicationJsonContentType}'"
     };
 
+    private static readonly Option<bool> MultipartOption = new("--multipart")
+    {
+        Description = "Send a multipart/form-data request; supports file uploads using the 'name@/path/to/file' syntax"
+    };
+
     private static readonly Option<string> RawDataOption = new("--raw")
     {
         Description = "The raw request body"
@@ -32,14 +37,44 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
     [GeneratedRegex(@"^[a-zA-Z_\[][\w_\-\[\]]*$")]
     private static partial Regex PropertyNameRegex();
 
-    public Option[] SupportedOptions() => [FormOption, JsonOption, RawDataOption];
+    public Option[] SupportedOptions() => [FormOption, JsonOption, MultipartOption, RawDataOption];
 
     public Task InvokeAsync(HttpRequestModel requestModel, Func<HttpRequestModel, Task> next)
     {
         var isFormData = requestModel.ParseResult.HasOption(FormOption);
         httpContext.UpdateFlag(Constants.FlagNames.IsFormContentType, isFormData);
 
-        if (requestModel.ParseResult.HasOption(RawDataOption))
+        var isMultipart = requestModel.ParseResult.HasOption(MultipartOption);
+        httpContext.UpdateFlag(Constants.FlagNames.IsMultipartContentType, isMultipart);
+
+        if (isMultipart)
+        {
+            requestModel.Body = null;
+
+            // Parse file upload items: fieldName@/path/to/file
+            requestModel.FileUploads = requestModel.RequestItems
+                .Select(ParseMultipartFileUpload)
+                .OfType<FileUploadPart>()
+                .ToList();
+
+            requestModel.MultipartTextParts = requestModel.RequestItems
+                .Select(ParseMultipartTextPart)
+                .OfType<MultipartTextPart>()
+                .ToList();
+
+            RemoveMultipartContentTypeHeader(requestModel.Headers);
+
+            var hasContent = requestModel.FileUploads.Count > 0 || requestModel.MultipartTextParts.Count > 0;
+            if (hasContent)
+            {
+                var requestMethodExists = httpContext.GetProperty<bool>(Constants.RequestMethodExistsPropertyName);
+                if (!requestMethodExists)
+                {
+                    requestModel.Method = HttpMethod.Post;
+                }
+            }
+        }
+        else if (requestModel.ParseResult.HasOption(RawDataOption))
         {
             var rawData = requestModel.ParseResult.GetValue(RawDataOption);
             requestModel.Body = rawData;
@@ -125,7 +160,7 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
             }
         }
 
-        if (requestModel.Body.IsNotNullOrEmpty())
+        if (!isMultipart && requestModel.Body.IsNotNullOrEmpty())
         {
             requestModel.Headers[Constants.ContentTypeHeaderName] = isFormData
                 ? new StringValues(HttpHelper.FormDataContentType)
@@ -139,6 +174,47 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
         }
 
         return next(requestModel);
+    }
+
+    private static FileUploadPart? ParseMultipartFileUpload(string item)
+    {
+        var atIndex = item.IndexOf('@');
+        if (atIndex <= 0 || !PropertyNameRegex().IsMatch(item[..atIndex]))
+        {
+            return null;
+        }
+
+        return new FileUploadPart(item[..atIndex], item[(atIndex + 1)..]);
+    }
+
+    private static MultipartTextPart? ParseMultipartTextPart(string item)
+    {
+        var rawValueIndex = item.IndexOf(":=", StringComparison.Ordinal);
+        if (rawValueIndex > 0 && PropertyNameRegex().IsMatch(item[..rawValueIndex]))
+        {
+            return new MultipartTextPart(item[..rawValueIndex], item[(rawValueIndex + 2)..]);
+        }
+
+        var valueIndex = item.IndexOf('=');
+        if (valueIndex <= 0
+            || !PropertyNameRegex().IsMatch(item[..valueIndex])
+            || (valueIndex < item.Length - 1 && item[valueIndex + 1] == '='))
+        {
+            return null;
+        }
+
+        return new MultipartTextPart(item[..valueIndex], item[(valueIndex + 1)..]);
+    }
+
+    private static void RemoveMultipartContentTypeHeader(IDictionary<string, StringValues> headers)
+    {
+        var headerNames = headers.Keys
+            .Where(x => string.Equals(x, Constants.ContentTypeHeaderName, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        foreach (var headerName in headerNames)
+        {
+            headers.Remove(headerName);
+        }
     }
 
     private static void ParseNestedJsonItem(string item, JsonNode rootNode)
