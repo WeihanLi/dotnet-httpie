@@ -35,7 +35,7 @@ public class MultipartUploadMiddlewareTest(IServiceProvider serviceProvider)
         var tempFile = Path.GetTempFileName();
         try
         {
-            await File.WriteAllTextAsync(tempFile, "file content");
+            await File.WriteAllTextAsync(tempFile, "file content", TestContext.Current.CancellationToken);
 
             var services = new ServiceCollection()
                 .AddLogging()
@@ -66,7 +66,7 @@ public class MultipartUploadMiddlewareTest(IServiceProvider serviceProvider)
         var tempFile = Path.GetTempFileName();
         try
         {
-            await File.WriteAllTextAsync(tempFile, "file content");
+            await File.WriteAllTextAsync(tempFile, "file content", TestContext.Current.CancellationToken);
 
             var services = new ServiceCollection()
                 .AddLogging()
@@ -98,7 +98,7 @@ public class MultipartUploadMiddlewareTest(IServiceProvider serviceProvider)
         var tempFile = Path.GetTempFileName();
         try
         {
-            await File.WriteAllTextAsync(tempFile, "file content");
+            await File.WriteAllTextAsync(tempFile, "file content", TestContext.Current.CancellationToken);
 
             var services = new ServiceCollection()
                 .AddLogging()

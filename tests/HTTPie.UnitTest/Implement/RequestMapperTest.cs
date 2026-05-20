@@ -14,7 +14,7 @@ public class RequestMapperTest
         try
         {
             var fileBytes = "hello world"u8.ToArray();
-            await File.WriteAllBytesAsync(tempFile, fileBytes);
+            await File.WriteAllBytesAsync(tempFile, fileBytes, TestContext.Current.CancellationToken);
 
             var requestModel = new HttpRequestModel
             {
@@ -25,7 +25,7 @@ public class RequestMapperTest
             };
             var httpContext = new HttpContext(requestModel);
             httpContext.UpdateFlag(Constants.FlagNames.IsMultipartContentType, true);
-            httpContext.RequestCancelled = CancellationToken.None;
+            httpContext.RequestCancelled = TestContext.Current.CancellationToken;
 
             var mapper = new RequestMapper();
             var requestMessage = await mapper.ToRequestMessage(httpContext);
@@ -41,14 +41,14 @@ public class RequestMapperTest
             var textPart = parts.FirstOrDefault(p =>
                 p.Headers.ContentDisposition?.Name?.Trim('"') == "description");
             Assert.NotNull(textPart);
-            var textValue = await textPart.ReadAsStringAsync();
+            var textValue = await textPart.ReadAsStringAsync(TestContext.Current.CancellationToken);
             Assert.Equal("My document", textValue);
 
             // Verify file part
             var filePart = parts.FirstOrDefault(p =>
                 p.Headers.ContentDisposition?.Name?.Trim('"') == "file");
             Assert.NotNull(filePart);
-            var fileContent = await filePart.ReadAsByteArrayAsync();
+            var fileContent = await filePart.ReadAsByteArrayAsync(TestContext.Current.CancellationToken);
             Assert.Equal(fileBytes, fileContent);
             Assert.Equal(Path.GetFileName(tempFile), filePart.Headers.ContentDisposition?.FileName?.Trim('"'));
         }
@@ -65,7 +65,7 @@ public class RequestMapperTest
         try
         {
             var fileBytes = "pdf content"u8.ToArray();
-            await File.WriteAllBytesAsync(tempFile, fileBytes);
+            await File.WriteAllBytesAsync(tempFile, fileBytes, TestContext.Current.CancellationToken);
 
             var requestModel = new HttpRequestModel
             {
@@ -75,7 +75,7 @@ public class RequestMapperTest
             };
             var httpContext = new HttpContext(requestModel);
             httpContext.UpdateFlag(Constants.FlagNames.IsMultipartContentType, true);
-            httpContext.RequestCancelled = CancellationToken.None;
+            httpContext.RequestCancelled = TestContext.Current.CancellationToken;
 
             var mapper = new RequestMapper();
             var requestMessage = await mapper.ToRequestMessage(httpContext);
@@ -104,7 +104,7 @@ public class RequestMapperTest
         };
         var httpContext = new HttpContext(requestModel);
         httpContext.UpdateFlag(Constants.FlagNames.IsMultipartContentType, false);
-        httpContext.RequestCancelled = CancellationToken.None;
+        httpContext.RequestCancelled = TestContext.Current.CancellationToken;
 
         var mapper = new RequestMapper();
         var requestMessage = await mapper.ToRequestMessage(httpContext);
