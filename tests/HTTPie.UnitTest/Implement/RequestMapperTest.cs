@@ -112,7 +112,7 @@ public class RequestMapperTest
         httpContext.RequestCancelled = TestContext.Current.CancellationToken;
 
         var mapper = new RequestMapper();
-        var requestMessage = await mapper.ToRequestMessage(httpContext);
+        using var requestMessage = await mapper.ToRequestMessage(httpContext);
 
         Assert.NotNull(requestMessage.Content);
         Assert.IsType<StringContent>(requestMessage.Content);
