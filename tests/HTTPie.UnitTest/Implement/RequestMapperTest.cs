@@ -1,8 +1,6 @@
 // Copyright (c) Weihan Li. All rights reserved.
 // Licensed under the MIT license.
 
-using System.Net.Http.Headers;
-
 namespace HTTPie.UnitTest.Implement;
 
 public class RequestMapperTest
