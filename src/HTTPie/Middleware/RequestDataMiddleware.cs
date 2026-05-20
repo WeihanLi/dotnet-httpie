@@ -49,40 +49,22 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
 
         if (isMultipart)
         {
+            requestModel.Body = null;
+
             // Parse file upload items: fieldName@/path/to/file
             requestModel.FileUploads = requestModel.RequestItems
-                .Where(x =>
-                {
-                    var atIndex = x.IndexOf('@');
-                    return atIndex > 0 && PropertyNameRegex().IsMatch(x[..atIndex]);
-                })
-                .Select(x =>
-                {
-                    var atIndex = x.IndexOf('@');
-                    return (FieldName: x[..atIndex], FilePath: x[(atIndex + 1)..]);
-                })
+                .Select(ParseMultipartFileUpload)
+                .OfType<FileUploadPart>()
                 .ToList();
 
-            // Parse text fields (key=value) for multipart text parts
-            var dataInput = requestModel.RequestItems
-                .Where(x =>
-                {
-                    var index = x.IndexOf('=');
-                    if (index <= 0) return false;
-                    if (x[index - 1] == ':')
-                        return PropertyNameRegex().IsMatch(x[..(index - 1)]);
-                    if (PropertyNameRegex().IsMatch(x[..index]))
-                        return index == x.Length - 1 || x[index + 1] != '=';
-                    return false;
-                })
-                .ToArray();
+            requestModel.MultipartTextParts = requestModel.RequestItems
+                .Select(ParseMultipartTextPart)
+                .OfType<MultipartTextPart>()
+                .ToList();
 
-            if (dataInput.Length > 0)
-            {
-                requestModel.Body = string.Join("&", dataInput);
-            }
+            RemoveMultipartContentTypeHeader(requestModel.Headers);
 
-            var hasContent = requestModel.FileUploads.Count > 0 || requestModel.Body.IsNotNullOrEmpty();
+            var hasContent = requestModel.FileUploads.Count > 0 || requestModel.MultipartTextParts.Count > 0;
             if (hasContent)
             {
                 var requestMethodExists = httpContext.GetProperty<bool>(Constants.RequestMethodExistsPropertyName);
@@ -192,6 +174,46 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
         }
 
         return next(requestModel);
+    }
+
+    private static FileUploadPart? ParseMultipartFileUpload(string item)
+    {
+        var atIndex = item.IndexOf('@');
+        if (atIndex <= 0 || !PropertyNameRegex().IsMatch(item[..atIndex]))
+        {
+            return null;
+        }
+
+        return new FileUploadPart(item[..atIndex], item[(atIndex + 1)..]);
+    }
+
+    private static MultipartTextPart? ParseMultipartTextPart(string item)
+    {
+        var rawValueIndex = item.IndexOf(":=", StringComparison.Ordinal);
+        if (rawValueIndex > 0 && PropertyNameRegex().IsMatch(item[..rawValueIndex]))
+        {
+            return new MultipartTextPart(item[..rawValueIndex], item[(rawValueIndex + 2)..]);
+        }
+
+        var valueIndex = item.IndexOf('=');
+        if (valueIndex <= 0
+            || !PropertyNameRegex().IsMatch(item[..valueIndex])
+            || valueIndex < item.Length - 1 && item[valueIndex + 1] == '=')
+        {
+            return null;
+        }
+
+        return new MultipartTextPart(item[..valueIndex], item[(valueIndex + 1)..]);
+    }
+
+    private static void RemoveMultipartContentTypeHeader(IDictionary<string, StringValues> headers)
+    {
+        foreach (var headerName in headers.Keys
+                     .Where(x => string.Equals(x, Constants.ContentTypeHeaderName, StringComparison.OrdinalIgnoreCase))
+                     .ToArray())
+        {
+            headers.Remove(headerName);
+        }
     }
 
     private static void ParseNestedJsonItem(string item, JsonNode rootNode)

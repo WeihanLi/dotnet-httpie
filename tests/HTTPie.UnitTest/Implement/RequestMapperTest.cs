@@ -18,15 +18,15 @@ public class RequestMapperTest
             {
                 Method = HttpMethod.Post,
                 Url = "https://httpbin.org/post",
-                Body = "description=My document",
-                FileUploads = [("file", tempFile)]
+                MultipartTextParts = [new MultipartTextPart("description", "My document")],
+                FileUploads = [new FileUploadPart("file", tempFile)]
             };
             var httpContext = new HttpContext(requestModel);
             httpContext.UpdateFlag(Constants.FlagNames.IsMultipartContentType, true);
             httpContext.RequestCancelled = TestContext.Current.CancellationToken;
 
             var mapper = new RequestMapper();
-            var requestMessage = await mapper.ToRequestMessage(httpContext);
+            using var requestMessage = await mapper.ToRequestMessage(httpContext);
 
             Assert.NotNull(requestMessage.Content);
             Assert.IsType<MultipartFormDataContent>(requestMessage.Content);
@@ -46,6 +46,7 @@ public class RequestMapperTest
             var filePart = parts.FirstOrDefault(p =>
                 p.Headers.ContentDisposition?.Name?.Trim('"') == "file");
             Assert.NotNull(filePart);
+            Assert.IsType<StreamContent>(filePart);
             var fileContent = await filePart.ReadAsByteArrayAsync(TestContext.Current.CancellationToken);
             Assert.Equal(fileBytes, fileContent);
             Assert.Equal(Path.GetFileName(tempFile), filePart.Headers.ContentDisposition?.FileName?.Trim('"'));
@@ -69,14 +70,14 @@ public class RequestMapperTest
             {
                 Method = HttpMethod.Post,
                 Url = "https://httpbin.org/post",
-                FileUploads = [("document", tempFile)]
+                FileUploads = [new FileUploadPart("document", tempFile)]
             };
             var httpContext = new HttpContext(requestModel);
             httpContext.UpdateFlag(Constants.FlagNames.IsMultipartContentType, true);
             httpContext.RequestCancelled = TestContext.Current.CancellationToken;
 
             var mapper = new RequestMapper();
-            var requestMessage = await mapper.ToRequestMessage(httpContext);
+            using var requestMessage = await mapper.ToRequestMessage(httpContext);
 
             Assert.NotNull(requestMessage.Content);
             Assert.IsType<MultipartFormDataContent>(requestMessage.Content);

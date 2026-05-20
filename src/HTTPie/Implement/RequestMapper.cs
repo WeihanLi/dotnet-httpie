@@ -30,29 +30,25 @@ public sealed class RequestMapper : IRequestMapper
         {
             var multipartContent = new MultipartFormDataContent();
 
-            // Add text fields stored as url-encoded pairs in Body
-            if (!string.IsNullOrEmpty(requestModel.Body))
+            foreach (var multipartTextPart in requestModel.MultipartTextParts)
             {
-                foreach (var pair in requestModel.Body.Split('&', StringSplitOptions.RemoveEmptyEntries))
-                {
-                    var eqIdx = pair.IndexOf('=');
-                    if (eqIdx > 0)
-                    {
-                        var fieldName = pair[..eqIdx];
-                        var fieldValue = pair[(eqIdx + 1)..];
-                        multipartContent.Add(new StringContent(fieldValue), fieldName);
-                    }
-                }
+                multipartContent.Add(new StringContent(multipartTextPart.Value), multipartTextPart.FieldName);
             }
 
             // Add file parts
-            foreach (var (fieldName, filePath) in requestModel.FileUploads)
+            foreach (var fileUpload in requestModel.FileUploads)
             {
-                var fileBytes = await File.ReadAllBytesAsync(filePath, httpContext.RequestCancelled);
-                var fileContent = new ByteArrayContent(fileBytes);
-                var mimeType = MimeTypeMap.GetMimeType(Path.GetExtension(filePath));
+                var fileStream = new FileStream(fileUpload.FilePath, new FileStreamOptions
+                {
+                    Access = FileAccess.Read,
+                    Mode = FileMode.Open,
+                    Share = FileShare.Read,
+                    Options = FileOptions.Asynchronous | FileOptions.SequentialScan
+                });
+                var fileContent = new StreamContent(fileStream);
+                var mimeType = MimeTypeMap.GetMimeType(Path.GetExtension(fileUpload.FilePath));
                 fileContent.Headers.ContentType = new MediaTypeHeaderValue(mimeType);
-                multipartContent.Add(fileContent, fieldName, Path.GetFileName(filePath));
+                multipartContent.Add(fileContent, fileUpload.FieldName, Path.GetFileName(fileUpload.FilePath));
             }
 
             request.Content = multipartContent;
@@ -68,6 +64,10 @@ public sealed class RequestMapper : IRequestMapper
         if (requestModel.Headers is { Count: > 0 })
             foreach (var header in requestModel.Headers)
             {
+                if (isMultipart && string.Equals(header.Key, Constants.ContentTypeHeaderName, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
                 request.TryAddHeader(header.Key, header.Value.ToString());
             }
         return request;
