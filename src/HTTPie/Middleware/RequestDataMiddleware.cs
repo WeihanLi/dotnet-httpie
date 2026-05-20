@@ -208,9 +208,10 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
 
     private static void RemoveMultipartContentTypeHeader(IDictionary<string, StringValues> headers)
     {
-        foreach (var headerName in headers.Keys
-                     .Where(x => string.Equals(x, Constants.ContentTypeHeaderName, StringComparison.OrdinalIgnoreCase))
-                     .ToArray())
+        var headerNames = headers.Keys
+            .Where(x => string.Equals(x, Constants.ContentTypeHeaderName, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        foreach (var headerName in headerNames)
         {
             headers.Remove(headerName);
         }

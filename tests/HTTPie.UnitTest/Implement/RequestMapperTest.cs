@@ -53,7 +53,10 @@ public class RequestMapperTest
         }
         finally
         {
-            File.Delete(tempFile);
+            if (File.Exists(tempFile))
+            {
+                File.Delete(tempFile);
+            }
         }
     }
 
@@ -88,7 +91,10 @@ public class RequestMapperTest
         }
         finally
         {
-            File.Delete(tempFile);
+            if (File.Exists(tempFile))
+            {
+                File.Delete(tempFile);
+            }
         }
     }
 
