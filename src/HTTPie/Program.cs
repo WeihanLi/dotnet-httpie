@@ -2,16 +2,21 @@
 // Licensed under the MIT license.
 
 using HTTPie.Utilities;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
-using WeihanLi.Common.Helpers.Hosting;
 
 var debugEnabled = args.Contains("--debug", StringComparer.OrdinalIgnoreCase);
-var appBuilder = AppHost.CreateBuilder();
-appBuilder.Logging.AddDefaultDelegateLogger();
-appBuilder.Logging.SetMinimumLevel(debugEnabled ? LogLevel.Debug : LogLevel.Warning);
-appBuilder.Services.RegisterApplicationServices();
-var app = appBuilder.Build();
+var services = new ServiceCollection();
+services.RegisterApplicationServices();
+services.AddLogging(logging =>
+{
+    logging.SetMinimumLevel(debugEnabled ? LogLevel.Debug : LogLevel.Warning);
+    logging.AddProvider(AppLoggerProvider.Default);
+});
+await using var serviceProvider = services.BuildServiceProvider();
+var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+
 // output helps when no argument or there's only "-h"/"/h"
 args = args switch
 {
@@ -27,10 +32,10 @@ if (args is ["--version"])
 
 if (debugEnabled)
 {
-    app.Logger.PrintInputParameters(args.StringJoin(";"));
+    logger.PrintInputParameters(args.StringJoin(";"));
 #if DEBUG
     if (!Debugger.IsAttached) Debugger.Launch();
 #endif
 }
 
-return await app.Services.Handle(args);
+return await serviceProvider.Handle(args);

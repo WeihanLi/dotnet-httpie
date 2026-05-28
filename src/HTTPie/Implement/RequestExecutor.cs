@@ -10,7 +10,6 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
 using System.Text;
-using WeihanLi.Common.Extensions;
 
 namespace HTTPie.Implement;
 

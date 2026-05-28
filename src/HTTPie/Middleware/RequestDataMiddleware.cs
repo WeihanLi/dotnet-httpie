@@ -8,7 +8,6 @@ using Microsoft.Extensions.Primitives;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using WeihanLi.Common.Extensions;
 
 namespace HTTPie.Middleware;
 
@@ -16,12 +15,12 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
 {
     private static readonly Option<bool> FormOption = new("-f", "--form")
     {
-        Description = $"The request is form data, and content type is '{HttpHelper.FormDataContentType}'"
+        Description = $"The request is form data, and content type is 'application/x-www-form-urlencoded'"
     };
 
     private static readonly Option<bool> JsonOption = new("-j", "--json")
     {
-        Description = $"The request body is json by default, and content type is '{HttpHelper.ApplicationJsonContentType}'"
+        Description = $"The request body is json by default, and content type is 'application/json'"
     };
 
     private static readonly Option<bool> MultipartOption = new("--multipart")
@@ -163,8 +162,8 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
         if (!isMultipart && requestModel.Body.IsNotNullOrEmpty())
         {
             requestModel.Headers[Constants.ContentTypeHeaderName] = isFormData
-                ? new StringValues(HttpHelper.FormDataContentType)
-                : new StringValues(HttpHelper.ApplicationJsonContentType);
+                ? new StringValues("application/x-www-form-urlencoded")
+                : new StringValues("application/json");
 
             var requestMethodExists = httpContext.GetProperty<bool>(Constants.RequestMethodExistsPropertyName);
             if (!requestMethodExists)

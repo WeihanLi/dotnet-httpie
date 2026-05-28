@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Weihan Li. All rights reserved.
 // Licensed under the MIT license.
 
+using HTTPie.Utilities;
 using Microsoft.Extensions.Primitives;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
@@ -30,11 +31,9 @@ public sealed class HttpRequestModel
 
     public List<FileUploadPart> FileUploads { get; set; } = [];
 
-    [Newtonsoft.Json.JsonIgnore]
     [JsonIgnore]
     public DateTimeOffset Timestamp { get; set; }
 
-    [Newtonsoft.Json.JsonIgnore]
     [JsonIgnore]
     public ParseResult ParseResult { get; set; } = null!;
 

@@ -10,7 +10,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using System.Text;
 using System.Text.Json.Nodes;
-using WeihanLi.Common.Extensions;
 
 namespace HTTPie.Implement;
 
