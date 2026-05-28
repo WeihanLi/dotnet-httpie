@@ -47,6 +47,6 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="System.CommandLine" />
-    <PackageReference Include="WeihanLi.Core" />
+    <PackageReference Include="WeihanLi.Common" />
   </ItemGroup>
 </Project>
