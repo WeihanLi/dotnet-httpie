@@ -201,6 +201,7 @@ public static partial class HttpTestScriptRunner
             .AddReferences(
                 typeof(object).Assembly,
                 typeof(DynamicObject).Assembly,
+                typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo).Assembly,
                 typeof(HttpClient).Assembly,
                 typeof(HttpTestScriptRunner).Assembly
             ));
