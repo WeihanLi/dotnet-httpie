@@ -198,7 +198,12 @@ public static partial class HttpTestScriptRunner
                 "System.Text",
                 "System.Text.Json",
                 "HTTPie.Implement")
-            .AddReferences(typeof(HttpTestScriptRunner).Assembly));
+            .AddReferences(
+                typeof(object).Assembly,
+                typeof(DynamicObject).Assembly,
+                typeof(HttpClient).Assembly,
+                typeof(HttpTestScriptRunner).Assembly
+            ));
 
     // -----------------------------------------------------------------------
     // Public API
