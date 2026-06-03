@@ -22,7 +22,7 @@ jobs:
     - name: build
       run: dotnet build
     - name: Run dotnet-outdated
-      run: dnx -y dotnet-outdated -u
+      run: dnx -y dotnet-outdated-tool -u
       env:
         DOTNET_NUGET_SIGNATURE_VERIFICATION: false
     - name: check for changes
