@@ -14,7 +14,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using WeihanLi.Common.Extensions;
 
 namespace HTTPie.Utilities;
 
@@ -258,14 +257,14 @@ public static class Helpers
 
         if (internalHandler is null)
         {
-            await serviceProvider.ResolveRequiredService<IRequestExecutor>()
+            await serviceProvider.GetRequiredService<IRequestExecutor>()
                 .ExecuteAsync(context);
 
             // Skip output formatting if streaming actually completed (output already written)
             var streamingCompleted = context.GetFlag(Constants.FlagNames.StreamingCompleted);
             if (!streamingCompleted)
             {
-                var output = await serviceProvider.ResolveRequiredService<IOutputFormatter>()
+                var output = await serviceProvider.GetRequiredService<IOutputFormatter>()
                     .GetOutput(context);
                 await Console.Out.WriteLineAsync(output.Trim());
             }
@@ -303,5 +302,12 @@ public static class Helpers
             UseCookies = false,
             UseDefaultCredentials = false
         };
+    }
+
+    public static string ToJson<T>(this T obj)
+    {
+        var jsonTypeInfo = AppSerializationContext.Default.GetTypeInfo(typeof(T));
+        ArgumentNullException.ThrowIfNull(jsonTypeInfo);
+        return JsonSerializer.Serialize(obj, jsonTypeInfo);
     }
 }

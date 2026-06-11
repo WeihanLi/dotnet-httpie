@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Weihan Li. All rights reserved.
 // Licensed under the MIT license.
 
-using Newtonsoft.Json;
 using WeihanLi.Common.Abstractions;
 
 namespace HTTPie.Models;
@@ -18,11 +17,9 @@ public sealed class HttpContext(HttpRequestModel request, HttpResponseModel? res
     public HttpResponseModel Response { get; set; } = response ?? new HttpResponseModel();
 
     [System.Text.Json.Serialization.JsonIgnore]
-    [JsonIgnore]
     public CancellationToken RequestCancelled { get; set; }
 
     [System.Text.Json.Serialization.JsonIgnore]
-    [JsonIgnore]
     public ParseResult ParseResult { get; set; } = null!;
 
     public IDictionary<string, object?> Properties { get; } = new Dictionary<string, object?>();

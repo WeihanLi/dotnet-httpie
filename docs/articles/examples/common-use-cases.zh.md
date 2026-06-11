@@ -1,19 +1,19 @@
-# Common Use Cases
+# 常见使用场景
 
-> 📖 [查看中文文档](common-use-cases.zh.md)
+> 📖 [View English Documentation](common-use-cases.md)
 
-This guide provides practical examples for the most common scenarios when using dotnet-httpie.
+本指南提供 dotnet-httpie 最常见使用场景的实际示例。
 
-## API Development & Testing
+## API 开发与测试
 
-### REST API CRUD Operations
+### REST API CRUD 操作
 
 ```bash
-# Users API example
+# 用户 API 示例
 BASE_URL="https://api.example.com"
 TOKEN="your-jwt-token"
 
-# Create user
+# 创建用户
 dotnet-http POST $BASE_URL/users \
   Authorization:"Bearer $TOKEN" \
   Content-Type:"application/json" \
@@ -21,26 +21,26 @@ dotnet-http POST $BASE_URL/users \
   email="john@example.com" \
   role="user"
 
-# Get all users
+# 获取所有用户
 dotnet-http GET $BASE_URL/users \
   Authorization:"Bearer $TOKEN"
 
-# Get specific user
+# 获取指定用户
 dotnet-http GET $BASE_URL/users/123 \
   Authorization:"Bearer $TOKEN"
 
-# Update user
+# 更新用户
 dotnet-http PUT $BASE_URL/users/123 \
   Authorization:"Bearer $TOKEN" \
   name="John Smith" \
   email="john.smith@example.com"
 
-# Partial update
+# 部分更新
 dotnet-http PATCH $BASE_URL/users/123 \
   Authorization:"Bearer $TOKEN" \
   email="newemail@example.com"
 
-# Delete user
+# 删除用户
 dotnet-http DELETE $BASE_URL/users/123 \
   Authorization:"Bearer $TOKEN"
 ```
@@ -48,23 +48,23 @@ dotnet-http DELETE $BASE_URL/users/123 \
 ### GraphQL API
 
 ```bash
-# GraphQL query
+# GraphQL 查询
 dotnet-http POST https://api.github.com/graphql \
   Authorization:"Bearer $GITHUB_TOKEN" \
   query='query { viewer { login name } }'
 
-# GraphQL mutation
+# GraphQL 变更
 dotnet-http POST https://api.github.com/graphql \
   Authorization:"Bearer $GITHUB_TOKEN" \
   query='mutation { createIssue(input: {repositoryId: "repo-id", title: "Bug report", body: "Description"}) { issue { id title } } }'
 ```
 
-## Authentication Patterns
+## 身份认证模式
 
-### JWT Authentication
+### JWT 认证
 
 ```bash
-# Login and get token
+# 登录获取令牌
 LOGIN_RESPONSE=$(dotnet-http POST api.example.com/auth/login \
   username="admin" \
   password="password" \
@@ -72,31 +72,31 @@ LOGIN_RESPONSE=$(dotnet-http POST api.example.com/auth/login \
 
 TOKEN=$(echo $LOGIN_RESPONSE | jq -r '.token')
 
-# Use token for protected requests
+# 在受保护请求中使用令牌
 dotnet-http GET api.example.com/protected \
   Authorization:"Bearer $TOKEN"
 ```
 
-### API Key Authentication
+### API 密钥认证
 
 ```bash
-# Header-based API key
+# 请求头中的 API 密钥
 dotnet-http GET api.example.com/data \
   X-API-Key:"your-api-key"
 
-# Query parameter API key
+# 查询参数中的 API 密钥
 dotnet-http GET api.example.com/data \
   api_key==your-api-key
 ```
 
-### Basic Authentication
+### 基本认证
 
 ```bash
-# Basic auth
+# 基本认证
 dotnet-http GET api.example.com/secure \
   Authorization:"Basic $(echo -n 'username:password' | base64)"
 
-# Or with HTTPie-style auth
+# 或使用 HTTPie 风格认证
 dotnet-http GET api.example.com/secure \
   --auth username:password
 ```
@@ -104,7 +104,7 @@ dotnet-http GET api.example.com/secure \
 ### OAuth 2.0
 
 ```bash
-# Get access token
+# 获取访问令牌
 TOKEN_RESPONSE=$(dotnet-http POST oauth.example.com/token \
   grant_type="client_credentials" \
   client_id="your-client-id" \
@@ -114,31 +114,31 @@ TOKEN_RESPONSE=$(dotnet-http POST oauth.example.com/token \
 
 ACCESS_TOKEN=$(echo $TOKEN_RESPONSE | jq -r '.access_token')
 
-# Use access token
+# 使用访问令牌
 dotnet-http GET api.example.com/protected \
   Authorization:"Bearer $ACCESS_TOKEN"
 ```
 
-## File Operations
+## 文件操作
 
-### File Uploads
+### 文件上传
 
 ```bash
-# Single file upload
+# 单文件上传
 dotnet-http POST api.example.com/upload \
   Authorization:"Bearer $TOKEN" \
   --multipart \
   file@/path/to/document.pdf \
   description="Important document"
 
-# Multiple file upload
+# 多文件上传
 dotnet-http POST api.example.com/batch-upload \
   --multipart \
   doc1@/path/to/file1.pdf \
   doc2@/path/to/file2.pdf \
   metadata@/path/to/metadata.json
 
-# Image upload with metadata
+# 带元数据的图片上传
 dotnet-http POST api.example.com/images \
   --multipart \
   image@/path/to/photo.jpg \
@@ -147,48 +147,48 @@ dotnet-http POST api.example.com/images \
   public:=true
 ```
 
-### File Downloads
+### 文件下载
 
 ```bash
-# Download file
+# 下载文件
 dotnet-http GET api.example.com/files/document.pdf \
   Authorization:"Bearer $TOKEN" \
   --download
 
-# Download with custom filename
+# 以自定义文件名下载
 dotnet-http GET api.example.com/exports/data.csv \
   --download \
   --output "$(date +%Y%m%d)-export.csv"
 
-# Download large files with progress
+# 下载大文件并显示进度
 dotnet-http GET api.example.com/large-file.zip \
   --download \
   --progress
 ```
 
-## Data Processing
+## 数据处理
 
-### JSON Processing with jq
+### 与 jq 结合处理 JSON
 
 ```bash
-# Extract specific fields
+# 提取特定字段
 USER_ID=$(dotnet-http POST api.example.com/users name="John" --body | jq -r '.id')
 
-# Filter arrays
+# 过滤数组
 dotnet-http GET api.example.com/users | jq '.users[] | select(.active == true)'
 
-# Transform data
+# 转换数据
 dotnet-http GET api.example.com/users | jq '.users | map({id, name, email})'
 
-# Count results
+# 统计结果数量
 COUNT=$(dotnet-http GET api.example.com/users | jq '.users | length')
-echo "Total users: $COUNT"
+echo "总用户数：$COUNT"
 ```
 
-### Pagination
+### 分页处理
 
 ```bash
-# Fetch all pages
+# 获取所有页面的数据
 page=1
 all_data="[]"
 
@@ -207,9 +207,9 @@ done
 echo $all_data | jq .
 ```
 
-## CI/CD Integration
+## CI/CD 集成
 
-### Health Checks
+### 健康检查
 
 ```bash
 #!/bin/bash
@@ -219,24 +219,24 @@ check_service() {
   local service_url=$1
   local service_name=$2
   
-  echo "Checking $service_name..."
+  echo "检查 $service_name..."
   
   if dotnet-http GET $service_url/health --check-status; then
-    echo "✓ $service_name is healthy"
+    echo "✓ $service_name 健康"
     return 0
   else
-    echo "✗ $service_name is unhealthy"
+    echo "✗ $service_name 不健康"
     return 1
   fi
 }
 
-# Check multiple services
-check_service "https://api.example.com" "API Service"
-check_service "https://auth.example.com" "Auth Service"
-check_service "https://cache.example.com" "Cache Service"
+# 检查多个服务
+check_service "https://api.example.com" "API 服务"
+check_service "https://auth.example.com" "认证服务"
+check_service "https://cache.example.com" "缓存服务"
 ```
 
-### Deployment Verification
+### 部署验证
 
 ```bash
 #!/bin/bash
@@ -245,24 +245,24 @@ check_service "https://cache.example.com" "Cache Service"
 ENVIRONMENT=${1:-staging}
 BASE_URL="https://$ENVIRONMENT.api.example.com"
 
-echo "Verifying deployment in $ENVIRONMENT..."
+echo "正在验证 $ENVIRONMENT 环境的部署..."
 
-# Check API version
+# 检查 API 版本
 VERSION=$(dotnet-http GET $BASE_URL/version --body | jq -r '.version')
-echo "API Version: $VERSION"
+echo "API 版本：$VERSION"
 
-# Run smoke tests
+# 运行冒烟测试
 dotnet-http exec tests/smoke-tests.http --env $ENVIRONMENT
 
-# Check critical endpoints
+# 检查关键端点
 dotnet-http GET $BASE_URL/health
 dotnet-http GET $BASE_URL/metrics
 dotnet-http GET $BASE_URL/ready
 
-echo "Deployment verification complete!"
+echo "部署验证完成！"
 ```
 
-### Load Testing
+### 负载测试
 
 ```bash
 #!/bin/bash
@@ -272,12 +272,12 @@ URL="https://api.example.com/endpoint"
 CONCURRENT=10
 REQUESTS=100
 
-echo "Running load test: $REQUESTS requests with $CONCURRENT concurrent users"
+echo "正在进行负载测试：$REQUESTS 个请求，$CONCURRENT 个并发用户"
 
-# Create temporary file for results
+# 创建临时结果文件
 RESULTS_FILE=$(mktemp)
 
-# Run concurrent requests
+# 运行并发请求
 for i in $(seq 1 $CONCURRENT); do
   (
     for j in $(seq 1 $((REQUESTS / CONCURRENT))); do
@@ -296,25 +296,25 @@ done
 
 wait
 
-# Analyze results
+# 分析结果
 total=$(wc -l < $RESULTS_FILE)
 success=$(grep "SUCCESS" $RESULTS_FILE | wc -l)
 failures=$((total - success))
 avg_time=$(grep "SUCCESS" $RESULTS_FILE | cut -d, -f2 | awk '{sum+=$1} END {print sum/NR}')
 
-echo "Results:"
-echo "  Total requests: $total"
-echo "  Successful: $success"
-echo "  Failed: $failures"
-echo "  Success rate: $(( success * 100 / total ))%"
-echo "  Average response time: ${avg_time}ms"
+echo "测试结果："
+echo "  总请求数：$total"
+echo "  成功：$success"
+echo "  失败：$failures"
+echo "  成功率：$(( success * 100 / total ))%"
+echo "  平均响应时间：${avg_time}ms"
 
 rm $RESULTS_FILE
 ```
 
-## API Testing Workflows
+## API 测试工作流
 
-### End-to-End Testing
+### 端到端测试
 
 ```http
 # tests/e2e-workflow.http
@@ -370,33 +370,33 @@ DELETE {{baseUrl}}/users/{{createUser.response.body.id}}
 Authorization: Bearer {{login.response.body.token}}
 ```
 
-### Contract Testing
+### 契约测试
 
 ```bash
 #!/bin/bash
 # contract-test.sh
 
-echo "Running API contract tests..."
+echo "正在运行 API 契约测试..."
 
-# Test required fields
+# 测试必填字段
 response=$(dotnet-http POST api.example.com/users name="Test" email="test@example.com" --body)
 
-# Validate response structure
-echo $response | jq -e '.id' > /dev/null || { echo "Missing id field"; exit 1; }
-echo $response | jq -e '.name' > /dev/null || { echo "Missing name field"; exit 1; }
-echo $response | jq -e '.email' > /dev/null || { echo "Missing email field"; exit 1; }
-echo $response | jq -e '.created_at' > /dev/null || { echo "Missing created_at field"; exit 1; }
+# 验证响应结构
+echo $response | jq -e '.id' > /dev/null || { echo "缺少 id 字段"; exit 1; }
+echo $response | jq -e '.name' > /dev/null || { echo "缺少 name 字段"; exit 1; }
+echo $response | jq -e '.email' > /dev/null || { echo "缺少 email 字段"; exit 1; }
+echo $response | jq -e '.created_at' > /dev/null || { echo "缺少 created_at 字段"; exit 1; }
 
-# Validate data types
-[ "$(echo $response | jq -r '.id | type')" = "string" ] || { echo "ID should be string"; exit 1; }
-[ "$(echo $response | jq -r '.name | type')" = "string" ] || { echo "Name should be string"; exit 1; }
+# 验证数据类型
+[ "$(echo $response | jq -r '.id | type')" = "string" ] || { echo "ID 应为字符串类型"; exit 1; }
+[ "$(echo $response | jq -r '.name | type')" = "string" ] || { echo "名称应为字符串类型"; exit 1; }
 
-echo "✓ All contract tests passed"
+echo "✓ 所有契约测试通过"
 ```
 
-## Microservices Testing
+## 微服务测试
 
-### Service Discovery
+### 服务发现
 
 ```bash
 #!/bin/bash
@@ -406,16 +406,16 @@ SERVICES=("user-service" "order-service" "payment-service" "notification-service
 BASE_URL="https://api.example.com"
 
 for service in "${SERVICES[@]}"; do
-  echo "Testing $service..."
+  echo "正在测试 $service..."
   
-  # Health check
+  # 健康检查
   dotnet-http GET $BASE_URL/$service/health
   
-  # Version check
+  # 版本检查
   VERSION=$(dotnet-http GET $BASE_URL/$service/version --body | jq -r '.version')
-  echo "$service version: $VERSION"
+  echo "$service 版本：$VERSION"
   
-  # Basic functionality test
+  # 基本功能测试
   case $service in
     "user-service")
       dotnet-http GET $BASE_URL/users/1
@@ -431,12 +431,12 @@ for service in "${SERVICES[@]}"; do
       ;;
   esac
   
-  echo "✓ $service test completed"
+  echo "✓ $service 测试完成"
   echo
 done
 ```
 
-### Cross-Service Integration
+### 跨服务集成
 
 ```http
 # tests/cross-service.http
@@ -496,47 +496,47 @@ Content-Type: application/json
 }
 ```
 
-## Development Workflows
+## 开发工作流
 
-### Local Development
+### 本地开发
 
 ```bash
 #!/bin/bash
 # dev-setup.sh
 
-echo "Setting up local development environment..."
+echo "正在设置本地开发环境..."
 
-# Start local services
+# 启动本地服务
 docker-compose up -d
 
-# Wait for services to be ready
+# 等待服务就绪
 sleep 10
 
-# Seed test data
+# 植入测试数据
 dotnet-http POST localhost:3000/api/seed
 
-# Run initial tests
+# 运行初始测试
 dotnet-http exec tests/local-smoke-tests.http --env development
 
-echo "Development environment ready!"
+echo "开发环境已就绪！"
 ```
 
-### API Documentation Testing
+### API 文档测试
 
 ```bash
 #!/bin/bash
 # test-api-docs.sh
 
-# Extract API endpoints from OpenAPI spec
+# 从 OpenAPI 规范中提取 API 端点
 ENDPOINTS=$(curl -s https://api.example.com/openapi.json | jq -r '.paths | keys[]')
 
-echo "Testing API endpoints from documentation..."
+echo "正在测试文档中的 API 端点..."
 
 for endpoint in $ENDPOINTS; do
-  # Convert OpenAPI path to actual URL
+  # 将 OpenAPI 路径转换为实际 URL
   url="https://api.example.com${endpoint//\{[^}]*\}/123}"
   
-  echo "Testing: $url"
+  echo "测试：$url"
   
   if dotnet-http GET "$url" > /dev/null 2>&1; then
     echo "✓ $endpoint"
@@ -546,9 +546,9 @@ for endpoint in $ENDPOINTS; do
 done
 ```
 
-## Monitoring & Alerting
+## 监控与告警
 
-### Uptime Monitoring
+### 可用性监控
 
 ```bash
 #!/bin/bash
@@ -562,21 +562,21 @@ SERVICES=(
 
 for service in "${SERVICES[@]}"; do
   if ! dotnet-http GET "$service" --check-status; then
-    # Send alert
+    # 发送告警
     dotnet-http POST "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK" \
-      text="🚨 Service down: $service"
+      text="🚨 服务不可用：$service"
   fi
 done
 ```
 
-### Performance Monitoring
+### 性能监控
 
 ```bash
 #!/bin/bash
 # perf-monitor.sh
 
 ENDPOINT="https://api.example.com/users"
-THRESHOLD=1000  # milliseconds
+THRESHOLD=1000  # 毫秒
 
 start_time=$(date +%s%N)
 dotnet-http GET "$ENDPOINT" > /dev/null
@@ -585,27 +585,27 @@ end_time=$(date +%s%N)
 duration=$(((end_time - start_time) / 1000000))
 
 if [ $duration -gt $THRESHOLD ]; then
-  echo "⚠️  Slow response detected: ${duration}ms (threshold: ${THRESHOLD}ms)"
+  echo "⚠️  检测到响应缓慢：${duration}ms（阈值：${THRESHOLD}ms）"
   
-  # Send performance alert
+  # 发送性能告警
   dotnet-http POST "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK" \
-    text="⚠️ Slow API response: $ENDPOINT took ${duration}ms"
+    text="⚠️ API 响应缓慢：$ENDPOINT 耗时 ${duration}ms"
 fi
 ```
 
-## Best Practices Summary
+## 最佳实践总结
 
-1. **Use environment variables** for configuration and secrets
-2. **Implement proper error handling** in scripts
-3. **Create reusable test suites** with .http files
-4. **Combine with other tools** like jq for data processing
-5. **Use meaningful names** for saved requests
-6. **Document your API tests** with comments
-7. **Version control your test files** alongside your code
-8. **Implement retry logic** for flaky endpoints
-9. **Use offline mode** to preview requests
-10. **Monitor and alert** on API health and performance
+1. **使用环境变量**管理配置和密钥
+2. **在脚本中实现正确的错误处理**
+3. **使用 .http 文件创建可复用的测试套件**
+4. **与 jq 等工具结合**处理数据
+5. **为保存的请求使用有意义的名称**
+6. **用注释为 API 测试添加文档说明**
+7. **将测试文件与代码一起纳入版本控制**
+8. **为不稳定端点实现重试逻辑**
+9. **使用离线模式预览请求**
+10. **监控并告警** API 健康状态和性能
 
-## Next Steps
+## 下一步
 
-- Review [debugging guide](../debugging.md) for troubleshooting
+- 参阅[调试指南](../debugging.zh.md)进行故障排查

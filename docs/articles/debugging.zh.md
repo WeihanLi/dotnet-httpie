@@ -1,163 +1,163 @@
-# Debugging & Troubleshooting
+# 调试与故障排查
 
-> 📖 [查看中文文档](debugging.zh.md)
+> 📖 [View English Documentation](debugging.md)
 
-This guide helps you debug issues with dotnet-httpie and troubleshoot common problems.
+本指南帮助您调试 dotnet-httpie 的问题并排查常见故障。
 
-## Debug Mode
+## 调试模式
 
-Enable debug mode to get detailed information about request processing:
+启用调试模式以获取请求处理的详细信息：
 
 ```bash
 dotnet-http GET api.example.com/data --debug
 ```
 
-Debug mode provides:
-- Detailed request/response logging
-- Middleware execution information
-- Error stack traces
-- Performance timing
-- Configuration details
+调试模式提供：
+- 详细的请求/响应日志
+- 中间件执行信息
+- 错误堆栈跟踪
+- 性能计时
+- 配置详情
 
-## Offline Mode (Request Preview)
+## 离线模式（请求预览）
 
-Preview requests without sending them:
+在不实际发送请求的情况下预览请求内容：
 
 ```bash
-# Preview a single request
+# 预览单个请求
 dotnet-http POST api.example.com/users name=John --offline
 
-# Preview HTTP file execution
+# 预览 HTTP 文件执行
 dotnet-http exec requests.http --offline
 
-# Preview with debug information
+# 结合调试信息预览
 dotnet-http POST api.example.com/users name=John --debug --offline
 ```
 
-Offline mode is useful for:
-- Validating request structure
-- Checking JSON formatting
-- Verifying headers and parameters
-- Testing variable substitution
+离线模式适用于：
+- 验证请求结构
+- 检查 JSON 格式
+- 确认请求头和参数
+- 测试变量替换
 
-## Common Issues
+## 常见问题
 
-### 1. Installation Problems
+### 1. 安装问题
 
-#### Tool Not Found After Installation
+#### 安装后找不到工具
 
-**Problem**: `dotnet-http: command not found`
+**问题**：`dotnet-http: command not found`
 
-**Solutions**:
+**解决方案**：
 ```bash
-# Check if tool is installed
+# 检查工具是否已安装
 dotnet tool list --global
 
-# Verify .NET tools path is in PATH
-echo $PATH | grep -q "$HOME/.dotnet/tools" || echo "Tools path not in PATH"
+# 确认 .NET 工具路径是否在 PATH 中
+echo $PATH | grep -q "$HOME/.dotnet/tools" || echo "工具路径不在 PATH 中"
 
-# Add to shell profile (bash/zsh)
+# 添加到 Shell 配置文件（bash/zsh）
 echo 'export PATH="$PATH:$HOME/.dotnet/tools"' >> ~/.bashrc
 source ~/.bashrc
 
-# Reinstall if corrupted
+# 损坏后重新安装
 dotnet tool uninstall --global dotnet-httpie
 dotnet tool install --global dotnet-httpie
 ```
 
-#### Permission Denied
+#### 权限被拒绝
 
-**Problem**: Permission issues during installation
+**问题**：安装时出现权限问题
 
-**Solutions**:
+**解决方案**：
 ```bash
-# Check permissions on tools directory
+# 检查工具目录的权限
 ls -la ~/.dotnet/tools/
 
-# Fix permissions if needed
+# 必要时修复权限
 chmod +x ~/.dotnet/tools/dotnet-http
 
-# Install for current user only
+# 仅为当前用户安装
 dotnet tool install --global dotnet-httpie --tool-path ~/.local/bin
 ```
 
-### 2. Request Issues
+### 2. 请求问题
 
-#### SSL/TLS Certificate Errors
+#### SSL/TLS 证书错误
 
-**Problem**: SSL certificate validation failures
+**问题**：SSL 证书验证失败
 
-**Solutions**:
+**解决方案**：
 ```bash
-# Skip SSL verification (development only)
+# 跳过 SSL 验证（仅限开发环境）
 dotnet-http GET https://self-signed-site.com --verify=no
 
-# Use custom CA certificate
+# 使用自定义 CA 证书
 dotnet-http GET https://internal-api.company.com \
   --ca-cert /path/to/ca-certificate.pem
 
-# Check SSL certificate details
+# 检查 SSL 证书详情
 openssl s_client -connect api.example.com:443 -servername api.example.com
 ```
 
-#### Connection Timeouts
+#### 连接超时
 
-**Problem**: Requests timing out
+**问题**：请求超时
 
-**Solutions**:
+**解决方案**：
 ```bash
-# Increase timeout (if supported)
+# 增加超时时间（如支持）
 dotnet-http GET api.example.com/slow-endpoint --timeout 60
 
-# Check network connectivity
+# 检查网络连接
 ping api.example.com
 curl -I api.example.com
 
-# Test with simpler request first
+# 先用简单请求测试
 dotnet-http GET api.example.com/health
 ```
 
-#### Authentication Failures
+#### 认证失败
 
-**Problem**: 401 Unauthorized responses
+**问题**：收到 401 Unauthorized 响应
 
-**Debug Steps**:
+**调试步骤**：
 ```bash
-# Check token validity
+# 检查令牌有效性
 echo $JWT_TOKEN | base64 -d
 
-# Verify token format
+# 验证令牌格式
 dotnet-http GET api.example.com/verify \
   Authorization:"Bearer $JWT_TOKEN" \
   --debug
 
-# Test with minimal request
+# 用最简单的请求测试
 dotnet-http GET api.example.com/public
 
-# Check header format
+# 检查请求头格式
 dotnet-http GET httpbin.org/headers \
   Authorization:"Bearer $JWT_TOKEN"
 ```
 
-### 3. JSON and Data Issues
+### 3. JSON 和数据问题
 
-#### JSON Parsing Errors
+#### JSON 解析错误
 
-**Problem**: Invalid JSON in request body
+**问题**：请求体中的 JSON 无效
 
-**Debug**:
+**调试**：
 ```bash
-# Preview JSON structure
+# 预览 JSON 结构
 dotnet-http POST api.example.com/users \
   name=John \
   age:=30 \
   tags:='["dev", "api"]' \
   --offline
 
-# Validate JSON manually
+# 手动验证 JSON
 echo '{"name": "John", "age": 30}' | jq .
 
-# Use file for complex JSON
+# 对于复杂 JSON 使用文件
 cat > user.json << EOF
 {
   "name": "John",
@@ -169,231 +169,231 @@ EOF
 dotnet-http POST api.example.com/users @user.json
 ```
 
-#### Character Encoding Issues
+#### 字符编码问题
 
-**Problem**: Special characters not handled correctly
+**问题**：特殊字符处理不正确
 
-**Solutions**:
+**解决方案**：
 ```bash
-# Specify charset
+# 指定字符集
 dotnet-http POST api.example.com/data \
   Content-Type:"application/json; charset=utf-8" \
   message="Hello 世界"
 
-# Use file with proper encoding
+# 使用正确编码的文件
 echo '{"message": "Hello 世界"}' > data.json
 dotnet-http POST api.example.com/data @data.json
 ```
 
-### 4. File Execution Issues
+### 4. 文件执行问题
 
-#### File Not Found
+#### 找不到文件
 
-**Problem**: HTTP files not loading
+**问题**：无法加载 HTTP 文件
 
-**Debug**:
+**调试**：
 ```bash
-# Check file exists and permissions
+# 检查文件是否存在及权限
 ls -la requests.http
 
-# Use absolute path
+# 使用绝对路径
 dotnet-http exec /full/path/to/requests.http
 
-# Check current directory
+# 检查当前目录
 pwd
 dotnet-http exec ./requests.http
 ```
 
-#### Variable Substitution Failures
+#### 变量替换失败
 
-**Problem**: Variables not being replaced
+**问题**：变量未被替换
 
-**Debug**:
+**调试**：
 ```bash
-# Check environment file
+# 检查环境文件
 cat http-client.env.json
 
-# Verify environment selection
+# 验证环境选择
 dotnet-http exec requests.http --env development --debug
 
-# Test variable syntax
-# Good: {{baseUrl}}
-# Bad: {baseUrl} or $baseUrl
+# 测试变量语法
+# 正确：{{baseUrl}}
+# 错误：{baseUrl} 或 $baseUrl
 ```
 
-#### Request Reference Errors
+#### 请求引用错误
 
-**Problem**: Cannot reference previous responses
+**问题**：无法引用前一个响应
 
-**Debug**:
+**调试**：
 ```bash
-# Ensure request names are defined
+# 确保已定义请求名称
 # @name createUser
 POST {{baseUrl}}/users
 
-# Reference with correct syntax
+# 使用正确语法引用
 GET {{baseUrl}}/users/{{createUser.response.body.id}}
 
-# Check response structure
+# 检查响应结构
 dotnet-http exec requests.http --debug --offline
 ```
 
-## Debugging Tools and Techniques
+## 调试工具与技术
 
-### 1. Network Analysis
+### 1. 网络分析
 
-#### Using tcpdump/Wireshark
+#### 使用 tcpdump/Wireshark
 
 ```bash
-# Capture network traffic (Linux/macOS)
+# 抓取网络流量（Linux/macOS）
 sudo tcpdump -i any -w capture.pcap host api.example.com
 
-# Run your request
+# 运行请求
 dotnet-http GET api.example.com/data
 
-# Analyze capture with Wireshark or tcpdump
+# 用 Wireshark 或 tcpdump 分析抓包
 tcpdump -r capture.pcap -A
 ```
 
-#### Using curl for comparison
+#### 与 curl 对比
 
 ```bash
-# Compare with curl behavior
+# 与 curl 行为对比
 curl -v https://api.example.com/data \
   -H "Authorization: Bearer $TOKEN"
 
-# Convert to dotnet-httpie equivalent
+# 转换为 dotnet-httpie 等效命令
 dotnet-http GET api.example.com/data \
   Authorization:"Bearer $TOKEN" \
   --debug
 ```
 
-### 2. Response Analysis
+### 2. 响应分析
 
-#### JSON Processing
+#### JSON 处理
 
 ```bash
-# Pretty print JSON response
+# 格式化打印 JSON 响应
 dotnet-http GET api.example.com/users | jq .
 
-# Extract specific fields
+# 提取特定字段
 dotnet-http GET api.example.com/users | jq '.users[0].id'
 
-# Validate JSON schema
+# 验证 JSON 类型
 dotnet-http GET api.example.com/users | jq 'type'
 ```
 
-#### Header Analysis
+#### 请求头分析
 
 ```bash
-# Show response headers only
+# 仅显示响应头
 dotnet-http HEAD api.example.com/data
 
-# Check specific headers
+# 检查特定请求头
 dotnet-http GET httpbin.org/headers | jq '.headers'
 
-# Trace header propagation
+# 跟踪请求头传播
 dotnet-http GET api.example.com/data \
   X-Trace-ID:"$(uuidgen)" \
   --debug
 ```
 
-### 3. Performance Debugging
+### 3. 性能调试
 
-#### Response Time Analysis
+#### 响应时间分析
 
 ```bash
-# Measure response time
+# 测量响应时间
 time dotnet-http GET api.example.com/data
 
-# Multiple requests for average
+# 多次请求取平均值
 for i in {1..10}; do
   time dotnet-http GET api.example.com/data >/dev/null
 done
 ```
 
-#### Memory and Resource Usage
+#### 内存与资源使用
 
 ```bash
-# Monitor resource usage
+# 监控资源使用
 top -p $(pgrep dotnet-http)
 
-# Memory usage
+# 内存使用
 ps aux | grep dotnet-http
 ```
 
-## Error Analysis
+## 错误分析
 
-### HTTP Status Codes
+### HTTP 状态码
 
-#### 4xx Client Errors
+#### 4xx 客户端错误
 
 ```bash
 # 400 Bad Request
 dotnet-http POST api.example.com/users \
   invalid-json \
-  --debug  # Check request format
+  --debug  # 检查请求格式
 
 # 401 Unauthorized
 dotnet-http GET api.example.com/protected \
-  --debug  # Check authentication
+  --debug  # 检查认证
 
 # 403 Forbidden
 dotnet-http GET api.example.com/admin \
   Authorization:"Bearer $USER_TOKEN" \
-  --debug  # Check permissions
+  --debug  # 检查权限
 
 # 404 Not Found
 dotnet-http GET api.example.com/nonexistent \
-  --debug  # Check URL
+  --debug  # 检查 URL
 
 # 429 Too Many Requests
 dotnet-http GET api.example.com/data \
-  --debug  # Check rate limiting
+  --debug  # 检查速率限制
 ```
 
-#### 5xx Server Errors
+#### 5xx 服务器错误
 
 ```bash
 # 500 Internal Server Error
 dotnet-http POST api.example.com/users \
   name=John \
-  --debug  # Check server logs
+  --debug  # 检查服务器日志
 
 # 502 Bad Gateway
 dotnet-http GET api.example.com/data \
-  --debug  # Check proxy/load balancer
+  --debug  # 检查代理/负载均衡器
 
 # 503 Service Unavailable
 dotnet-http GET api.example.com/health \
-  --debug  # Check service status
+  --debug  # 检查服务状态
 ```
 
-### Error Response Analysis
+### 错误响应分析
 
 ```bash
-# Capture error details
+# 捕获错误详情
 ERROR_RESPONSE=$(dotnet-http GET api.example.com/error --body 2>&1)
 echo "$ERROR_RESPONSE" | jq .
 
-# Check error structure
+# 检查错误结构
 dotnet-http GET api.example.com/error | jq '{error, message, code}'
 ```
 
-## Logging and Monitoring
+## 日志记录与监控
 
-### Request Logging
+### 请求日志
 
 ```bash
-# Log all requests to file
+# 将所有请求记录到文件
 dotnet-http GET api.example.com/data --debug > request.log 2>&1
 
-# Structured logging
+# 结构化日志
 dotnet-http GET api.example.com/data 2>&1 | \
   grep -E "(Request|Response|Error)" > structured.log
 ```
 
-### Automated Health Checks
+### 自动化健康检查
 
 ```bash
 #!/bin/bash
@@ -414,101 +414,101 @@ check_endpoint() {
   fi
 }
 
-# Monitor multiple endpoints
+# 监控多个端点
 check_endpoint "https://api.example.com/health"
 check_endpoint "https://api.example.com/status"
 check_endpoint "https://auth.example.com/health"
 ```
 
-## Docker Debugging
+## Docker 调试
 
-### Container Issues
+### 容器问题
 
 ```bash
-# Run with debug output
+# 以调试输出运行
 docker run --rm weihanli/dotnet-httpie:latest \
   GET api.example.com/data --debug
 
-# Check container logs
+# 检查容器日志
 docker run --name httpie-debug weihanli/dotnet-httpie:latest \
   GET api.example.com/data
 docker logs httpie-debug
 docker rm httpie-debug
 
-# Interactive debugging
+# 交互式调试
 docker run -it --rm weihanli/dotnet-httpie:latest /bin/sh
 ```
 
-### Network Issues in Docker
+### Docker 网络问题
 
 ```bash
-# Test network connectivity
+# 测试网络连通性
 docker run --rm weihanli/dotnet-httpie:latest \
   GET httpbin.org/get
 
-# Use host network
+# 使用主机网络
 docker run --rm --network host \
   weihanli/dotnet-httpie:latest GET localhost:3000/api
 
-# Check DNS resolution
+# 检查 DNS 解析
 docker run --rm weihanli/dotnet-httpie:latest \
   nslookup api.example.com
 ```
 
-## Environment Debugging
+## 环境调试
 
-### Environment Variables
+### 环境变量
 
 ```bash
-# Check all environment variables
+# 检查所有环境变量
 env | grep -i http
 env | grep -i api
 
-# Verify specific variables
+# 验证特定变量
 echo "API_TOKEN: $API_TOKEN"
 echo "BASE_URL: $BASE_URL"
 
-# Debug variable expansion
+# 调试变量展开
 dotnet-http GET "$BASE_URL/data" \
   Authorization:"Bearer $API_TOKEN" \
   --debug
 ```
 
-### Configuration Files
+### 配置文件
 
 ```bash
-# Check HTTP client environment
+# 检查 HTTP 客户端环境
 cat http-client.env.json | jq .
 
-# Validate JSON syntax
-jq empty http-client.env.json && echo "Valid JSON" || echo "Invalid JSON"
+# 验证 JSON 语法
+jq empty http-client.env.json && echo "JSON 格式正确" || echo "JSON 格式错误"
 
-# Check file permissions
+# 检查文件权限
 ls -la http-client.env.json
 ```
 
-## Performance Troubleshooting
+## 性能故障排查
 
-### Slow Requests
+### 请求缓慢
 
 ```bash
-# Add timing information
+# 添加计时信息
 time dotnet-http GET api.example.com/slow-endpoint
 
-# Profile with curl for comparison
+# 用 curl 对比分析
 time curl -s https://api.example.com/slow-endpoint >/dev/null
 
-# Check DNS resolution time
+# 检查 DNS 解析时间
 time nslookup api.example.com
 
-# Test with different endpoints
+# 测试不同端点
 time dotnet-http GET httpbin.org/delay/5
 ```
 
-### Memory Issues
+### 内存问题
 
 ```bash
-# Monitor memory usage during large requests
+# 在大型请求期间监控内存使用
 dotnet-http GET api.example.com/large-dataset &
 PID=$!
 while kill -0 $PID 2>/dev/null; do
@@ -517,76 +517,76 @@ while kill -0 $PID 2>/dev/null; do
 done
 ```
 
-## Advanced Debugging
+## 高级调试
 
-### Custom Middleware Debugging
+### 自定义中间件调试
 
-If you're developing custom middleware:
+如果您正在开发自定义中间件：
 
 ```bash
-# Enable detailed middleware logging
+# 启用详细中间件日志
 dotnet-http GET api.example.com/data \
   --debug \
-  -v  # Verbose mode if available
+  -v  # 详细模式（如可用）
 ```
 
-### Source Code Debugging
+### 源代码调试
 
 ```bash
-# Clone repository for local debugging
+# 克隆仓库进行本地调试
 git clone https://github.com/WeihanLi/dotnet-httpie.git
 cd dotnet-httpie
 
-# Build in debug mode
+# 以调试模式构建
 dotnet build -c Debug
 
-# Run with debugger
+# 附加调试器运行
 dotnet run --project src/HTTPie -- GET api.example.com/data --debug
 ```
 
-## Getting Help
+## 获取帮助
 
-### Information to Include in Bug Reports
+### 提交 Bug 报告时需包含的信息
 
-When reporting issues, include:
+报告问题时，请包含：
 
-1. **Version information**:
+1. **版本信息**：
    ```bash
    dotnet-http --version
    dotnet --version
    ```
 
-2. **Command that failed**:
+2. **失败的命令**：
    ```bash
    dotnet-http GET api.example.com/data --debug
    ```
 
-3. **Expected vs actual behavior**
+3. **预期行为与实际行为**
 
-4. **Error messages** (full output with `--debug`)
+4. **错误信息**（使用 `--debug` 的完整输出）
 
-5. **Environment details**:
-   - Operating system
-   - .NET version
-   - Docker version (if using Docker)
+5. **环境详情**：
+   - 操作系统
+   - .NET 版本
+   - Docker 版本（如使用 Docker）
 
-### Community Resources
+### 社区资源
 
 - [GitHub Issues](https://github.com/WeihanLi/dotnet-httpie/issues)
 
-### Self-Help Checklist
+### 自助排查清单
 
-Before asking for help:
+寻求帮助之前，请先确认：
 
-- [ ] Tried with `--debug` flag
-- [ ] Tested with `--offline` to check request structure
-- [ ] Verified authentication tokens/keys
-- [ ] Checked network connectivity
-- [ ] Tested with a simple request first
-- [ ] Reviewed relevant documentation
-- [ ] Searched existing issues
+- [ ] 已使用 `--debug` 标志
+- [ ] 已使用 `--offline` 检查请求结构
+- [ ] 已验证认证令牌/密钥
+- [ ] 已检查网络连接
+- [ ] 已先用简单请求测试
+- [ ] 已查阅相关文档
+- [ ] 已搜索现有 Issues
 
-## Next Steps
+## 下一步
 
-- Check [common use cases](examples/common-use-cases.md) for working examples
-- Review [CI/CD integration](ci-cd-integration.md) for automated testing
+- 查看[常见使用场景](examples/common-use-cases.zh.md)中的可用示例
+- 参阅 [CI/CD 集成](ci-cd-integration.zh.md)了解自动化测试

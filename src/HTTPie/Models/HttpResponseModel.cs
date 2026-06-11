@@ -15,7 +15,6 @@ public sealed class HttpResponseModel
 
     public Dictionary<string, string> Properties { get; set; } = new();
 
-    [Newtonsoft.Json.JsonIgnore]
     [System.Text.Json.Serialization.JsonIgnore]
     public byte[] Bytes { get; set; } = [];
     public string Body { get; set; } = string.Empty;

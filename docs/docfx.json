@@ -1,0 +1,36 @@
+{
+  "build": {
+    "content": [
+      {
+        "files": [
+          "index.md",
+          "toc.yml",
+          "ReleaseNotes.md",
+          "ReleaseNotes.zh.md",
+          "articles/**/*.md",
+          "articles/**/toc.yml"
+        ]
+      }
+    ],
+    "resource": [
+      {
+        "src": "..",
+        "files": [
+          "images/**"
+        ]
+      }
+    ],
+    "output": "_site",
+    "template": [
+      "default"
+    ],
+    "globalMetadata": {
+      "_appName": "dotnet-httpie",
+      "_appTitle": "dotnet-httpie Documentation",
+      "_enableSearch": true
+    },
+    "sitemap": {
+      "baseUrl": "https://weihanli.github.io/dotnet-httpie"
+    }
+  }
+}

@@ -1,3 +1,3 @@
 #!/bin/sh
 
-dnx dotnet-execute -y ./build/build.cs --args "$@"
+dnx -y dotnet-execute ./build/build.cs --args "$@"

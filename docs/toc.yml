@@ -1,0 +1,8 @@
+- name: Home
+  href: index.md
+- name: Documentation
+  href: articles/README.md
+- name: Release Notes
+  href: ReleaseNotes.md
+- name: GitHub
+  href: https://github.com/WeihanLi/dotnet-httpie
