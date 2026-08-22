@@ -276,8 +276,8 @@ public sealed partial class RequestExecutor(
 
                 // Get encoding from Content-Type header or default to UTF-8
                 var encoding = responseMessage.Content.Headers.ContentType?.CharSet is { } charset
-                    ? System.Text.Encoding.GetEncoding(charset)
-                    : System.Text.Encoding.UTF8;
+                    ? Encoding.GetEncoding(charset)
+                    : Encoding.UTF8;
 
                 using var reader = new StreamReader(stream, encoding);
 

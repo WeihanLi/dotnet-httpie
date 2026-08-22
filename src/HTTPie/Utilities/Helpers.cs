@@ -85,11 +85,11 @@ public static class Helpers
         Func<ParseResult, CancellationToken, Task>? handler = null)
     {
         var command = new RootCommand();
+
         var executeCommand = new ExecuteCommand();
         executeCommand.SetAction((parseResult, cancellationToken) =>
             executeCommand.InvokeAsync(parseResult, cancellationToken, serviceProvider));
         command.Add(executeCommand);
-
         var testCommand = new TestCommand();
         testCommand.SetAction((parseResult, cancellationToken) =>
             testCommand.InvokeAsync(parseResult, cancellationToken, serviceProvider));
@@ -237,9 +237,7 @@ public static class Helpers
 
         // Url
         requestModel.Url = requestModel.ParseResult.UnmatchedTokens.FirstOrDefault(x =>
-                               !x.StartsWith("-", StringComparison.Ordinal)
-                               && !HttpMethods.Contains(x))
-                           ?? string.Empty;
+                               !x.StartsWith('-') && !HttpMethods.Contains(x)) ?? string.Empty;
         if (string.IsNullOrEmpty(requestModel.Url))
         {
             throw new InvalidOperationException("The request url can not be null");

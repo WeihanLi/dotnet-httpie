@@ -34,7 +34,7 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
     };
 
     [GeneratedRegex(@"^[a-zA-Z_\[][\w_\-\[\]]*$")]
-    private static partial Regex PropertyNameRegex();
+    private static partial Regex PropertyNameRegex { get; }
 
     public Option[] SupportedOptions() => [FormOption, JsonOption, MultipartOption, RawDataOption];
 
@@ -43,7 +43,8 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
         var isFormData = requestModel.ParseResult.HasOption(FormOption);
         httpContext.UpdateFlag(Constants.FlagNames.IsFormContentType, isFormData);
 
-        var isMultipart = requestModel.ParseResult.HasOption(MultipartOption);
+        var isMultipart = requestModel.ParseResult.HasOption(MultipartOption) || requestModel.RequestItems
+            .Any(x => x.Contains('@') && PropertyNameRegex.IsMatch(x[..x.IndexOf('@')]));
         httpContext.UpdateFlag(Constants.FlagNames.IsMultipartContentType, isMultipart);
 
         if (isMultipart)
@@ -61,8 +62,6 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
                 .OfType<MultipartTextPart>()
                 .ToList();
 
-            RemoveMultipartContentTypeHeader(requestModel.Headers);
-
             var hasContent = requestModel.FileUploads.Count > 0 || requestModel.MultipartTextParts.Count > 0;
             if (hasContent)
             {
@@ -71,6 +70,7 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
                 {
                     requestModel.Method = HttpMethod.Post;
                 }
+                RemoveMultipartContentTypeHeader(requestModel.Headers);
             }
         }
         else if (requestModel.ParseResult.HasOption(RawDataOption))
@@ -87,9 +87,9 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
                     if (index <= 0) return false;
 
                     if (x[index - 1] == ':')
-                        return PropertyNameRegex().IsMatch(x[..(index - 1)]);
+                        return PropertyNameRegex.IsMatch(x[..(index - 1)]);
 
-                    if (PropertyNameRegex().IsMatch(x[..index]))
+                    if (PropertyNameRegex.IsMatch(x[..index]))
                         return index == x.Length - 1 || x[index + 1] != '=';
 
                     return false;
@@ -178,7 +178,7 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
     private static FileUploadPart? ParseMultipartFileUpload(string item)
     {
         var atIndex = item.IndexOf('@');
-        if (atIndex <= 0 || !PropertyNameRegex().IsMatch(item[..atIndex]))
+        if (atIndex <= 0 || !PropertyNameRegex.IsMatch(item[..atIndex]))
         {
             return null;
         }
@@ -189,14 +189,14 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
     private static MultipartTextPart? ParseMultipartTextPart(string item)
     {
         var rawValueIndex = item.IndexOf(":=", StringComparison.Ordinal);
-        if (rawValueIndex > 0 && PropertyNameRegex().IsMatch(item[..rawValueIndex]))
+        if (rawValueIndex > 0 && PropertyNameRegex.IsMatch(item[..rawValueIndex]))
         {
             return new MultipartTextPart(item[..rawValueIndex], item[(rawValueIndex + 2)..]);
         }
 
         var valueIndex = item.IndexOf('=');
         if (valueIndex <= 0
-            || !PropertyNameRegex().IsMatch(item[..valueIndex])
+            || !PropertyNameRegex.IsMatch(item[..valueIndex])
             || (valueIndex < item.Length - 1 && item[valueIndex + 1] == '='))
         {
             return null;
@@ -209,7 +209,7 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
     {
         var headerNames = headers.Keys
             .Where(x => string.Equals(x, Constants.ContentTypeHeaderName, StringComparison.OrdinalIgnoreCase))
-            .ToList();
+            .ToArray();
         foreach (var headerName in headerNames)
         {
             headers.Remove(headerName);
@@ -250,7 +250,7 @@ public sealed partial class RequestDataMiddleware(HttpContext httpContext) : IRe
                     // Extend array if necessary
                     while (rootArray.Count <= index)
                     {
-                        rootArray.Add((JsonNode?)null);
+                        rootArray.Add(null);
                     }
                     rootArray[index] = CreateJsonValue(value, isRawValue);
                 }
