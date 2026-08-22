@@ -51,6 +51,7 @@ public sealed class RequestMapper : IRequestMapper
             }
 
             request.Content = multipartContent;
+            httpContext.Request.Headers[Constants.ContentTypeHeaderName] = multipartContent.Headers.ContentType?.ToString() ?? "multipart/form-data";
         }
         else if (!string.IsNullOrEmpty(requestModel.Body))
         {
