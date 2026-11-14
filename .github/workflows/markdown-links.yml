@@ -1,6 +1,7 @@
 name: Markdown Link Check
 
 on:
+  workflow_dispatch: 
   push:
     branches:
       - "main"
